@@ -1,4 +1,1 @@
-git branch -m master main
-git fetch origin
-git branch -u origin/main main
-git remote set-head origin -a
+Dataset for used to train food dectection model : https://github.com/NawanolT/THFOOD-100?fbclid=IwY2xjawMmGYRleHRuA2FlbQIxMQABHmeiXpo3ZZqNYvW30N_RcHFD3LJzYLxfniAaqR-lswWMVmlFzeoUQ7FG25NH_aem_kDcAdfFFhcEHsv9aveAeFg
