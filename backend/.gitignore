@@ -1,0 +1,8 @@
+#ignore folders
+images/
+
+#ignore flies
+*.log
+*.tmp
+*.onnx
+*.pt
