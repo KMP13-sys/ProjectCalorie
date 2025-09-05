@@ -66,12 +66,17 @@ def train_model(
     print("Starting training...")
     results = model.train(
         data=dataset_path,
-        epochs=5,
-        imgsz=224,
-        batch=16,
+        epochs=30,
+        imgsz=288,
+        batch=8,
         device=device,
         project='C:/Users/User/Documents/ProjectCalorie/backend/training',
-        name='food_training'
+        name='food_training',
+
+        patience=15,     # Early stopping เร็วขึ้น
+        save_period=5,   # Save ทุก 5 epochs
+        plots=True,
+        val=True
     )
     
     # Copy best model to models folder
@@ -173,11 +178,6 @@ def export_models(model_path):
             print(f"  ✓ {fmt}: Ready for frontend")
     else:
         print("  ✗ ONNX export failed - frontend will need alternative solution")
-    
-    print(f"\nModel usage:")
-    print("  Backend API: Use .pt file with PyTorch")
-    print("  React Web: Use .onnx file with ONNX.js")
-    print("  Flutter Mobile: Use .onnx file with ONNX Runtime")
     
     print(f"\nExport completed!")
 

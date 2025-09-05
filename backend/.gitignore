@@ -1,8 +1,7 @@
 #ignore folders
 images/
+weights/
 
 #ignore flies
 *.log
 *.tmp
-*.onnx
-*.pt
