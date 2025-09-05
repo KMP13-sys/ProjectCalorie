@@ -1,3 +1,7 @@
+
+*ถึงเพื่อนๆ ก่อนจะเริ่มงานต่อในทุกๆครั้ง กรุณาทำการ pull ก่อนเสมอ*
+*git pull origin main*
+
 This is a project for the 3rd year, 1st semester.
 -------------------------------------------------
 
