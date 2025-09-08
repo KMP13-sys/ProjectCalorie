@@ -1,7 +1,9 @@
 #ignore folders
 images/
-weights/
+database/
 
 #ignore flies
 *.log
 *.tmp
+*.csv
+*.png

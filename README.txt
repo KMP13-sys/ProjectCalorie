@@ -6,6 +6,6 @@ This is a project for the 3rd year, 1st semester.
 -------------------------------------------------
 
 Dataset for training ML foods detection : *THFOOD-100* https://github.com/NawanolT/THFOOD-100
-Model to train : Efficientnet for classification model
+Model to train : EfficientNet for classification model
 
 Tech stack for frontend : Flutter for mobile, React for web.
