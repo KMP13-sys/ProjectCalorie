@@ -1,6 +1,5 @@
 #ignore folders
 images/
-database/
 
 #ignore flies
 *.log
