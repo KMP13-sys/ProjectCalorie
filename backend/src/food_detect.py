@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import os
 
 # Load environment variables
-load_dotenv('../config/database/.env')
+load_dotenv('../src/config/.env')
 
 app = Flask(__name__)
 
@@ -25,10 +25,10 @@ DB_CONFIG = {
 }
 
 # Load mappings
-with open('../config/food_classification_model/food_class_name.json', 'r', encoding='utf-8') as f:
+with open('../src/config/food_classification_model/food_class_name.json', 'r', encoding='utf-8') as f:
     class_names = json.load(f)['class_names']
 
-with open('../config/food_classification_model/class_mapping.json', 'r', encoding='utf-8') as f:
+with open('../src/config/food_classification_model/class_mapping.json', 'r', encoding='utf-8') as f:
     class_to_idx = json.load(f)['class_to_idx']
 
 idx_to_class = {v: k for k, v in class_to_idx.items()}
