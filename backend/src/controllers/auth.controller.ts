@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken"; // สร้างและตรวจสอบ
 // สมัครสมาชิก
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password} = req.body;
+    const { username, email, phone_number, password } = req.body;
 
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
@@ -24,8 +24,8 @@ export const register = async (req: Request, res: Response) => {
 
     // INSERT user ใหม่
     const [result]: any = await db.query(
-      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-      [username, email, hashedPassword]
+      "INSERT INTO users (username, email, phone_number, password) VALUES (?, ?, ?, ?)",
+      [username, email, phone_number, hashedPassword]
     );
 
     // สร้าง token ให้ user หลังจากสมัครสำเร็จ 
@@ -52,14 +52,14 @@ export const register = async (req: Request, res: Response) => {
 // เข้าสู่ระบบ
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     // ค้นหา user ตาม email
-    const [rows]: any = await db.query("SELECT * FROM users WHERE email = ?", [
-      email,
+    const [rows]: any = await db.query("SELECT * FROM users WHERE username = ?", [
+      username,
     ]);
     if (rows.length === 0) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid username or password" });
     }
 
     const user: User = rows[0];
@@ -67,12 +67,12 @@ export const login = async (req: Request, res: Response) => {
     // ตรวจสอบรหัสผ่าน
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid username or password" });
     }
 
     // สร้าง token ให้ user
     const token = jwt.sign(
-      { userId: user.user_id, email: user.email }, // payload
+      { userId: user.user_id, username: user.username }, // payload
       process.env.JWT_SECRET || "secretkey",       // กุญแจลับ
       { expiresIn: "1h" }                          // อายุ token
     );
@@ -80,7 +80,8 @@ export const login = async (req: Request, res: Response) => {
     // ส่ง token กลับไปให้ client ใช้เก็บใน localStorage หรือ cookie
     res.json({ 
       message: "Login successful", 
-      user: { id: user.user_id, email: user.email },
+      user: { id: user.user_id, email: user.email, username: user.username, phone_number: user.phone_number, 
+        age: user.age, gender: user.gender, height: user.height, weight: user.weight, goal: user.goal },
       token
     });
 
