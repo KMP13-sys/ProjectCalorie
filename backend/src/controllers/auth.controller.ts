@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken"; // สร้างและตรวจสอบ
 // สมัครสมาชิก
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password, age, gender, height, weight, goal } = req.body;
+    const { username, email, password} = req.body;
 
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
@@ -18,14 +18,14 @@ export const register = async (req: Request, res: Response) => {
     if (rows.length > 0) {
       return res.status(400).json({ message: "Username or email already exists" });
     }
-
+    
     // เข้ารหัสรหัสผ่านก่อนเก็บลง DB
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // INSERT user ใหม่
     const [result]: any = await db.query(
-      "INSERT INTO users (username, email, password, age, gender, height, weight, goal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [username, email, hashedPassword, age, gender, height, weight, goal]
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+      [username, email, hashedPassword]
     );
 
     // สร้าง token ให้ user หลังจากสมัครสำเร็จ 
@@ -34,7 +34,6 @@ export const register = async (req: Request, res: Response) => {
       process.env.JWT_SECRET || "secretkey", // กุญแจลับ
       { expiresIn: "1h" } // อายุของ token
     );
-
     res.status(201).json({ 
       message: "User registered successfully", 
       token 
@@ -46,7 +45,6 @@ export const register = async (req: Request, res: Response) => {
     if (err.code === "ER_DUP_ENTRY") {
       return res.status(400).json({ message: "Username or email already exists" });
     }
-
     res.status(500).json({ message: "Internal server error" });
   }
 };
