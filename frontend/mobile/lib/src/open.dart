@@ -44,9 +44,9 @@ class _SplashScreenState extends State<SplashScreen> {
             const Text(
               'CAL-DEFICITS',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 40,
                 fontFamily: 'TA8bit', // ใช้ฟอนต์ 8-bit
-                color: Colors.black,
+                color: const Color(0xFF204130),
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
               ),
@@ -55,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const Text(
               'Loading...',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 20,
                 fontFamily: 'TA8bit', // ใช้ฟอนต์ 8-bit
                 color: Colors.black54,
               ),

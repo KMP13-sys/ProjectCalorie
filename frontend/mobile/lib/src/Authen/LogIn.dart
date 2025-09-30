@@ -28,50 +28,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const SizedBox(height: 80),
                   
-                  Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.black, width: 3),
-                      borderRadius: BorderRadius.circular(0),
-                    ),
-                    child: const Icon(
-                      Icons.restaurant_menu,
-                      size: 80,
-                      color: Colors.green,
-                    ),
+                  Image.asset(
+                    'assets/pic/logo.png',
+                    width: 400,
+                    height: 400,
+                    fit: BoxFit.contain,
                   ),
                   
-                  const SizedBox(height: 40),
+                 // const SizedBox(height: 40),
                   
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.white.withOpacity(0.4), // สีขาว --% โปร่งใส
                       border: Border.all(color: Colors.black, width: 3),
                       borderRadius: BorderRadius.circular(0),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                            color: const Color(0xFFE0E0E0),
-                            child: const Text(
-                              'CAL-DEFICITS',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                letterSpacing: 1.5,
+                          Center(
+                              child: const Text(
+                                'CAL-DEFICITS',
+                                style: TextStyle(
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF204130),
+                                  letterSpacing: 1.5,
+                                ),
                               ),
-                            ),
                           ),
-                        ),
-                        
+                          
                         const SizedBox(height: 20),
                         
                         // Username Field
@@ -79,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           height: 45,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE0E0E0),
+                            color: const Color(0x606D6D6D),
                             border: Border.all(color: Colors.black, width: 2),
                             borderRadius: BorderRadius.circular(0),
                           ),
@@ -88,15 +76,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Username',
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               hintStyle: TextStyle(
                                 color: Colors.black54,
-                                fontSize: 14,
+                                fontSize: 24,
                               ),
                             ),
                             style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
+                              color: const Color(0xFF515151),
+                              fontSize: 24,
                             ),
                           ),
                         ),
@@ -108,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           height: 45,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE0E0E0),
+                            color: const Color(0x606D6D6D),
                             border: Border.all(color: Colors.black, width: 2),
                             borderRadius: BorderRadius.circular(0),
                           ),
@@ -118,14 +106,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Password',
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               hintStyle: TextStyle(
                                 color: Colors.black54,
-                                fontSize: 14,
+                                fontSize: 24,
                               ),
                             ),
                             style: const TextStyle(
-                              color: Colors.black,
+                              color: const Color(0xFF515151),
                               fontSize: 14,
                             ),
                           ),
@@ -139,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 100,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE0E0E0),
+                              color: const Color(0xFFC9E09A),
                               border: Border.all(color: Colors.black, width: 2),
                               borderRadius: BorderRadius.circular(0),
                             ),
@@ -164,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     'LOG IN',
                                     style: TextStyle(
                                       color: Colors.black,
-                                      fontSize: 12,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 1,
                                     ),
@@ -186,8 +174,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text(
                                 'Forgot Password?',
                                 style: TextStyle(
-                                  color: Colors.black54,
-                                  fontSize: 11,
+                                  color: Colors.black,
+                                  fontSize: 12,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -199,8 +187,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text(
                                 "I Don't have account",
                                 style: TextStyle(
-                                  color: Colors.black54,
-                                  fontSize: 11,
+                                  color: Colors.black,
+                                  fontSize: 12,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
