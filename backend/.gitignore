@@ -1,5 +1,6 @@
 #ignore folders
 images/
+**/node_modules
 
 #ignore flies
 *.log
