@@ -20,6 +20,18 @@ out/
 dist/
 build/Release
 
+# Next.js specific
+next-env.d.ts
+.vercel
+
+# Yarn specific
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
 # TypeScript
 *.tsbuildinfo
 .tscache/
@@ -99,6 +111,14 @@ venv.bak/
 # checkpoints/
 # logs/
 
+# Backend training data and images
+backend/images/
+**/images/
+
+# Training temporary files
+backend/training/**/*.csv
+backend/training/**/*.tmp
+
 # =============================================================================
 # FLUTTER / DART
 # =============================================================================
@@ -110,6 +130,7 @@ venv.bak/
 .pub/
 build/
 **/doc/api/
+.metadata
 
 # Flutter plugins
 .flutter-plugins
@@ -117,22 +138,21 @@ build/
 
 # Flutter platform-specific ephemeral files
 **/Flutter/ephemeral/
-flutter/ephemeral/
-flutter/ephemeral
+**/flutter/ephemeral/
+**/flutter/ephemeral
 **/ios/Flutter/.last_build_id
 
-# Flutter platform builds
-android/app/build/
-android/app/debug/
-android/app/profile/
-android/app/release/
-ios/Flutter/App.framework
-ios/Flutter/Flutter.framework
-ios/build/
-linux/build/
-macos/build/
-windows/build/
-web/build/
+# Flutter platform builds  
+**/android/app/build/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/build/
+**/linux/build/
+**/macos/build/
+**/windows/build/
 
 # Flutter symbols and obfuscation
 app.*.symbols
@@ -143,14 +163,14 @@ app.*.map.json
 # =============================================================================
 
 # Gradle
-gradle-wrapper.jar
-.gradle/
-/captures/
-gradlew
-gradlew.bat
-local.properties
-GeneratedPluginRegistrant.java
-.cxx/
+**/gradle-wrapper.jar
+**/.gradle/
+**/captures/
+**/gradlew
+**/gradlew.bat
+**/local.properties
+**/GeneratedPluginRegistrant.java
+**/.cxx/
 
 # Android signing
 key.properties

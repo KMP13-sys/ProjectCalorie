@@ -1,9 +1,0 @@
-#ignore folders
-images/
-**/node_modules
-
-#ignore flies
-*.log
-*.tmp
-*.csv
-*.png
