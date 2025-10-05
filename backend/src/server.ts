@@ -1,13 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config(); // โหลดไฟล์ .env ก่อนใช้งานทุกตัว
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 
 // routes
 import authRoutes from "./routes/auth.routes";
-import profileRoutes from "./routes/profile.routes";
-
-// โหลด environment variables (.env)
-dotenv.config();
+import userRoutes from "./routes/user.routes";
 
 const app = express();
 
@@ -24,7 +23,7 @@ app.use(express.json());
 
 // ====== Routes ======
 app.use("/auth", authRoutes);
-app.use("/profile", profileRoutes);
+app.use("/api/users", userRoutes);
 
 // route root สำหรับทดสอบ
 app.get("/", (req, res) => {
