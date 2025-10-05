@@ -34,27 +34,13 @@ export default function Open() {
         <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg tracking-wider">
           CAL-DEFICITS
         </h1>
-
-        {/* Subtitle */}
-        <p className="text-xl text-white/90 font-medium">
-          ติดตามแคลอรี่ เพื่อสุขภาพที่ดี
-        </p>
-
-        {/* Loading Text */}
         <p className="text-white/80 text-lg animate-pulse">
           กำลังโหลด...
         </p>
 
         {/* Loading Spinner */}
-        <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-
-        {/* Skip Button */}
-        <button
-          onClick={handleSkip}
-          className="mt-8 px-8 py-4 bg-white text-emerald-600 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 hover:bg-emerald-50"
-        >
-          เริ่มต้นใช้งาน →
-        </button>
+        <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin">
+        </div>
       </div>
 
       <style jsx>{`

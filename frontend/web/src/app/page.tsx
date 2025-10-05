@@ -41,22 +41,12 @@ if (currentPage === 'register') {
           CAL-DEFICITS
         </h1>
 
-        <p className="text-xl text-white/90 font-medium">
-          ติดตามแคลอรี่ เพื่อสุขภาพที่ดี
-        </p>
-
         <p className="text-white/80 text-lg animate-pulse">
           กำลังโหลด...
         </p>
 
         <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
 
-        <button
-          onClick={() => setCurrentPage('login')}
-          className="mt-8 px-8 py-4 bg-white text-emerald-600 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
-        >
-          เริ่มต้นใช้งาน →
-        </button>
       </div>
     </div>
   )

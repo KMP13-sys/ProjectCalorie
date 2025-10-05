@@ -1,95 +1,145 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { authAPI } from '@/api'
 
-interface LogInProps {
-  onNavigateToRegister: () => void
-}
-
-export default function LogIn({ onNavigateToRegister }: LogInProps) {
+export default function LoginPage() {
+  const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleLogin = (e: React.MouseEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
 
+    // Validation
     if (!username || !password) {
-      alert('กรุณากรอก Username และ Password')
+      setError('กรุณากรอก Username และ Password')
       return
     }
 
-    console.log('Login:', { username, password })
-    alert('เข้าสู่ระบบสำเร็จ!')
-  }
+    setIsLoading(true)
 
-  const handleForgotPassword = () => {
-    alert('กรุณาติดต่อผู้ดูแลระบบเพื่อรีเซ็ตรหัสผ่าน')
+    try {
+      // เรียก API Login
+      const data = await authAPI.login(username, password)
+
+      console.log('Login successful:', data)
+      
+      // แสดงข้อความสำเร็จ
+      alert(`ยินดีต้อนรับ ${data.user.username}!`)
+      
+      // Redirect ไปหน้า dashboard
+      router.push('/dashboard')
+
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#c8f4c8] p-4">
+      <div className="w-full max-w-md bg-white p-8 pixel-border">
+        {/* Logo */}
         <div className="flex justify-center mb-6">
-          <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-5xl">🥗</span>
+          <div className="w-32 h-32 flex items-center justify-center">
+            <Image 
+              src="/pic/logo.png" 
+              alt="Salad Bowl"
+              width={128}
+              height={128}
+              className="object-contain pixel-art"
+              priority
+            />
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2 tracking-wider">
+        {/* Title */}
+        <h1 
+          className="text-2xl md:text-3xl font-bold text-center text-[#2d5016] mb-8 tracking-[0.2em]"
+          style={{
+            fontFamily: 'Pixel, sans-serif',
+            textShadow: '3px 3px 0px rgba(45, 80, 22, 0.2)'
+          }}
+        >
           CAL-DEFICITS
         </h1>
-        <p className="text-center text-gray-500 mb-8">
-          ติดตามแคลอรี่ เพื่อสุขภาพที่ดี
-        </p>
 
-        <div className="space-y-4">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border-4 border-red-500 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Login Form */}
+        <form onSubmit={handleLogin} className="space-y-6">
+          {/* Username Field */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Username
+            <label 
+              className="block text-sm font-bold text-[#2d5016] mb-2 tracking-wider"
+              style={{ fontFamily: 'Pixel, sans-serif' }}
+            >
+              USERNAME
             </label>
             <input
               type="text"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-              placeholder="กรอก Username"
+              className="w-full px-4 py-3 border-4 border-[#2d5016] focus:outline-none focus:border-[#f56e6e] transition-colors bg-white disabled:opacity-50"
+              placeholder="Enter username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              disabled={isLoading}
+              style={{ fontFamily: 'monospace' }}
             />
           </div>
 
+          {/* Password Field */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+            <label 
+              className="block text-sm font-bold text-[#2d5016] mb-2 tracking-wider"
+              style={{ fontFamily: 'Pixel, sans-serif' }}
+            >
+              PASSWORD
             </label>
             <input
               type="password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-              placeholder="กรอก Password"
+              className="w-full px-4 py-3 border-4 border-[#2d5016] focus:outline-none focus:border-[#f56e6e] transition-colors bg-white disabled:opacity-50"
+              placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+              style={{ fontFamily: 'monospace' }}
             />
           </div>
 
+          {/* Login Button */}
           <button
-            onClick={handleLogin}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-lg hover:from-green-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#f56e6e] text-white font-bold py-4 border-4 border-[#2d5016] hover-pixel transition-all tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ fontFamily: 'Pixel, sans-serif' }}
           >
-            เข้าสู่ระบบ
+            {isLoading ? 'LOADING...' : 'LOGIN'}
           </button>
-        </div>
+        </form>
 
-        <div className="mt-6 space-y-2 text-center">
-          <button
-            className="block w-full text-emerald-600 hover:text-emerald-700 font-medium text-sm hover:underline"
-            onClick={handleForgotPassword}
+        {/* Links */}
+        <div className="mt-6 space-y-3 text-center">
+          <Link 
+            href="/register"
+            className="block w-full text-[#2d5016] hover:text-[#f56e6e] font-bold text-sm tracking-wider transition-colors"
+            style={{ fontFamily: 'Pixel, sans-serif' }}
           >
-            ลืมรหัสผ่าน?
-          </button>
-          <button
-            className="block w-full text-gray-600 hover:text-gray-700 font-medium text-sm hover:underline"
-            onClick={onNavigateToRegister}
-          >
-            ยังไม่มีบัญชี? สมัครสมาชิก
-          </button>
+            CREATE ACCOUNT
+          </Link>
         </div>
       </div>
     </div>
