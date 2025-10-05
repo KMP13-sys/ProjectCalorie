@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import LogIn from './LogIn'
 import Register from './Register'
+import Image from 'next/image'
+
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'open' | 'login' | 'register'>('open')
@@ -30,12 +32,18 @@ if (currentPage === 'register') {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600">
       <div className="flex flex-col items-center justify-center gap-8 p-8 text-center">
-        <div className="relative w-48 h-48">
-          <div className="absolute inset-0 bg-white rounded-full opacity-20 blur-2xl"></div>
-          <div className="relative w-full h-full bg-white rounded-full flex items-center justify-center shadow-2xl">
-            <div className="text-8xl">🥗</div>
-          </div>
-        </div>
+           <div className="flex justify-center mb-6">
+             <div className="w-32 h-32 flex items-center justify-center">
+               <Image 
+                 src="/pic/logo.png" 
+                 alt="Salad Bowl"
+                 width={128}
+                 height={128}
+                 className="object-contain pixel-art"
+                 priority
+               />
+             </div>
+           </div>
 
         <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg tracking-wider">
           CAL-DEFICITS

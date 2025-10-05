@@ -6,7 +6,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { authAPI } from '@/api'
 
-export default function LoginPage() {
+type LogInProps = {
+  onNavigateToRegister: () => void
+}
+
+export default function LoginPage({ onNavigateToRegister }: LogInProps) {
   const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')

@@ -315,32 +315,6 @@ export default function RegisterPage() {
           </Link>
         </div>
       </div>
-
-      <style jsx>{`
-        .pixel-art {
-          image-rendering: pixelated;
-          image-rendering: -moz-crisp-edges;
-          image-rendering: crisp-edges;
-        }
-
-        .pixel-border {
-          box-shadow: 
-            0 0 0 4px #2d5016,
-            8px 8px 0 4px rgba(45, 80, 22, 0.3);
-        }
-
-        .hover-pixel:hover:not(:disabled) {
-          transform: translate(4px, 4px);
-          box-shadow: 
-            0 0 0 4px #2d5016,
-            4px 4px 0 4px rgba(45, 80, 22, 0.3);
-        }
-
-        .hover-pixel:active:not(:disabled) {
-          transform: translate(0, 0);
-          box-shadow: 0 0 0 4px #2d5016;
-        }
-      `}</style>
     </div>
   )
 }
