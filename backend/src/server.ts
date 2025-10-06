@@ -4,9 +4,10 @@ dotenv.config(); // โหลดไฟล์ .env ก่อนใช้งาน
 import express from "express";
 import cors from "cors";
 
-// routes
+// import routes
 import authRoutes from "./routes/auth.routes";
-import userRoutes from "./routes/user.routes";
+import userRoutes from "./routes/profile.routes";
+import profileRoutes from "./routes/profile.routes";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(express.json());
 // ====== Routes ======
 app.use("/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api", profileRoutes);
 
 // route root สำหรับทดสอบ
 app.get("/", (req, res) => {
@@ -31,7 +33,7 @@ app.get("/", (req, res) => {
 });
 
 // ====== Server Start ======
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
