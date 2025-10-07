@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-# All set enviriment variables.
+# All set enviriment variables
 APP_PORT_DEFAULT=4000
 SSH_PORT_DEFAULT=22
 PORT=4000 
