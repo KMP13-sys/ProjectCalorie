@@ -1,9 +1,10 @@
 import express from "express";
-import { updateUserProfile } from "../controllers/update.controller";
+import { updateUser } from "../controllers/update.controller";
+import { validateToken } from "../middlewares/validateToken";
 
 const router = express.Router();
 
-// PUT /api/users/:id
-router.put("/users/:id", updateUserProfile);
+// PUT /api/update/:id
+router.put("/:id", validateToken, updateUser);
 
 export default router;
