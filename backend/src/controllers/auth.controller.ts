@@ -7,8 +7,21 @@ import jwt from "jsonwebtoken"; // สร้างและตรวจสอบ
 
 // สมัครสมาชิก
 export const register = async (req: Request, res: Response) => {
+  // ตรวจสอบ JWT_SECRET
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET environment variable is not set");
+  }
+  
   try {
-    const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
+    const { username, 
+            email, 
+            phone_number, 
+            password, 
+            age, 
+            gender, 
+            height, 
+            weight, 
+            goal } = req.body;
 
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
@@ -28,10 +41,6 @@ export const register = async (req: Request, res: Response) => {
       [username, email, phone_number, hashedPassword, age, gender, height, weight, goal]
     );
 
-    // ตรวจสอบ JWT_SECRET
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET environment variable is not set");
-    }
 
     // สร้าง token ให้ user หลังจากสมัครสำเร็จ 
     const token = jwt.sign(
@@ -85,8 +94,16 @@ export const login = async (req: Request, res: Response) => {
     // ส่ง token กลับไปให้ client ใช้เก็บใน localStorage หรือ cookie
     res.json({ 
       message: "Login successful", 
-      user: { id: user.user_id, email: user.email, username: user.username, phone_number: user.phone_number, 
-        age: user.age, gender: user.gender, height: user.height, weight: user.weight, goal: user.goal },
+      user: { 
+        id: user.user_id,
+        email: user.email, 
+        username: user.username, 
+        phone_number: user.phone_number, 
+        age: user.age, 
+        gender: user.gender, 
+        height: user.height, 
+        weight: user.weight, 
+        goal: user.goal },
       token
     });
 
