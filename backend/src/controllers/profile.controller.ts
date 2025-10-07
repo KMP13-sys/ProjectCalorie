@@ -23,9 +23,19 @@ export const getUserProfile = async (req: Request, res: Response) => {
 export const updateUserProfile = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.params.id);
+    const authenticatedUserId = (req as any).user.userId;
+    if (userId !== authenticatedUserId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     if (!userId) return res.status(400).json({ message: "Invalid user id" });
-
-    const allowedFields = ["height", "weight", "goal_id", "phone_number", "allergies"];
+    
+    const allowedFields = [
+      "height",
+      "weight",
+      "goal_id",
+      "phone_number",
+      "allergies",
+    ];
     const updateData: any = {};
 
     // ตรวจเฉพาะ field ที่อนุญาตให้อัปเดต
