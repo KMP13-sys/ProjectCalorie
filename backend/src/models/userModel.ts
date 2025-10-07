@@ -17,7 +17,7 @@ export interface User {
 
 // ดึงข้อมูลผู้ใช้ตาม ID
 export const getUserById = async (id: number): Promise<User | null> => {
-  const [rows]: any = await pool.query("SELECT * FROM Users WHERE user_id = ?", [id]);
+  const [rows]: any = await pool.query("SELECT * FROM users WHERE user_id = ?", [id]);
   return rows.length ? rows[0] : null;
 };
 
@@ -36,11 +36,11 @@ export const updateUserById = async (id: number, data: Partial<User>) => {
 
   if (!fields.length) return null;
 
-  const sql = `UPDATE Users SET ${fields.join(", ")} WHERE user_id = ?`;
+  const sql = `UPDATE users SET ${fields.join(", ")} WHERE user_id = ?`;
   values.push(id);
   await pool.query(sql, values);
 
   // ดึงข้อมูลล่าสุดกลับไป
-  const [rows]: any = await pool.query("SELECT * FROM Users WHERE user_id = ?", [id]);
+  const [rows]: any = await pool.query("SELECT * FROM users WHERE user_id = ?", [id]);
   return rows[0];
 };
