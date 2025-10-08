@@ -1,4 +1,4 @@
-// src/models/userModel.ts
+import pool from "../config/db";
 
 export interface User {
   user_id: number;              // INT, Primary Key, Auto Increment
@@ -14,3 +14,33 @@ export interface User {
   created_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP
   updated_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP ON UPDATE
 }
+
+// ดึงข้อมูลผู้ใช้ตาม ID
+export const getUserById = async (id: number): Promise<User | null> => {
+  const [rows]: any = await pool.query("SELECT * FROM users WHERE user_id = ?", [id]);
+  return rows.length ? rows[0] : null;
+};
+
+// อัปเดตข้อมูลผู้ใช้
+export const updateUserById = async (id: number, data: Partial<User>) => {
+  const fields = [];
+  const values: any[] = [];
+
+  // สร้าง query update แบบ dynamic
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== undefined) {
+      fields.push(`${key} = ?`);
+      values.push(value);
+    }
+  }
+
+  if (!fields.length) return null;
+
+  const sql = `UPDATE users SET ${fields.join(", ")} WHERE user_id = ?`;
+  values.push(id);
+  await pool.query(sql, values);
+
+  // ดึงข้อมูลล่าสุดกลับไป
+  const [rows]: any = await pool.query("SELECT * FROM users WHERE user_id = ?", [id]);
+  return rows[0];
+};

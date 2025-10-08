@@ -1,27 +1,37 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
-import cors from "cors"; // เพิ่มบรรทัดนี้
+import cors from "cors";
+
+// import routes
 import authRoutes from "./routes/auth.routes";
+import userRoutes from "./routes/profile.routes";
+import updateRoutes from "./routes/update.routes";
 
 const app = express();
 
-// เพิ่ม CORS (ต้องอยู่ก่อน middleware อื่นๆ)
+// ====== Middlewares ======
 app.use(cors({
-  origin: '*', // อนุญาตทุก origin (สำหรับ development)
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
 
-// route สำหรับ auth
+// ====== Routes ======
 app.use("/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/update", updateRoutes);
 
-// route root สำหรับทดสอบ
+// ====== Root test route ======
 app.get("/", (req, res) => {
-  res.send("Tent Server is running...");
+  res.send("Server is running...");
 });
 
-const PORT = process.env.PORT || 5000;
+// ====== Server Start ======
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken"; // สร้างและตรวจสอบ
 // สมัครสมาชิก
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, phone_number, password } = req.body;
+    const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
 
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
@@ -22,16 +22,21 @@ export const register = async (req: Request, res: Response) => {
     // เข้ารหัสรหัสผ่านก่อนเก็บลง DB
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // INSERT user ใหม่
+    // INSERT user ใหม่ (เพิ่ม age, gender, height, weight, goal)
     const [result]: any = await db.query(
-      "INSERT INTO users (username, email, phone_number, password) VALUES (?, ?, ?, ?)",
-      [username, email, phone_number, hashedPassword]
+      "INSERT INTO users (username, email, phone_number, password, age, gender, height, weight, goal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [username, email, phone_number, hashedPassword, age, gender, height, weight, goal]
     );
+
+    // ตรวจสอบ JWT_SECRET
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET environment variable is not set");
+    }
 
     // สร้าง token ให้ user หลังจากสมัครสำเร็จ 
     const token = jwt.sign(
       { userId: result.insertId, email }, // payload ที่จะเก็บใน token (xxxxx.yyyyy.zzzzz)
-      process.env.JWT_SECRET || "secretkey", // กุญแจลับ
+      process.env.JWT_SECRET as string, // กุญแจลับ
       { expiresIn: "1h" } // อายุของ token
     );
     res.status(201).json({ 
@@ -73,7 +78,7 @@ export const login = async (req: Request, res: Response) => {
     // สร้าง token ให้ user
     const token = jwt.sign(
       { userId: user.user_id, username: user.username }, // payload
-      process.env.JWT_SECRET || "secretkey",       // กุญแจลับ
+      process.env.JWT_SECRET as string, // กุญแจลับ
       { expiresIn: "1h" }                          // อายุ token
     );
 
