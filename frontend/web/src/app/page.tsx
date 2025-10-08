@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import LogIn from './LogIn'
-import Register from './Register'
+import LogIn from './Authen/LogIn'
+import Register from './Authen/Register'
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'open' | 'login' | 'register'>('open')

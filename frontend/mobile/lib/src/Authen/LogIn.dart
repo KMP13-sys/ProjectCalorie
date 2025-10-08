@@ -27,16 +27,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 80),
-                  
                   Image.asset(
                     'assets/pic/logo.png',
                     width: 400,
                     height: 400,
                     fit: BoxFit.contain,
                   ),
-                  
-                 // const SizedBox(height: 40),
-                  
+
+                  // const SizedBox(height: 40),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -48,20 +46,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                          Center(
-                              child: const Text(
-                                'CAL-DEFICITS',
-                                style: TextStyle(
-                                  fontSize: 50,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF204130),
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
+                        Center(
+                          child: const Text(
+                            'CAL-DEFICITS',
+                            style: TextStyle(
+                              fontSize: 50,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF204130),
+                              letterSpacing: 1.5,
+                            ),
                           ),
-                          
+                        ),
+
                         const SizedBox(height: 20),
-                        
+
                         // Username Field
                         Container(
                           width: double.infinity,
@@ -76,7 +74,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Username',
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               hintStyle: TextStyle(
                                 color: Colors.black54,
                                 fontSize: 24,
@@ -88,9 +89,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 15),
-                        
+
                         // Password Field
                         Container(
                           width: double.infinity,
@@ -106,7 +107,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Password',
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               hintStyle: TextStyle(
                                 color: Colors.black54,
                                 fontSize: 24,
@@ -118,9 +122,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Login Button
                         Center(
                           child: Container(
@@ -140,29 +144,32 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               child: _isLoading
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.black,
+                                            ),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'LOG IN',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1,
+                                      ),
                                     ),
-                                  )
-                                : const Text(
-                                    'LOG IN',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1,
-                                    ),
-                                  ),
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Footer Links
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -198,20 +205,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
-          
+
           // Loading overlay
           if (_isLoading)
             Container(
               color: Colors.black26,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: const Center(child: CircularProgressIndicator()),
             ),
         ],
       ),
@@ -221,37 +226,37 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
-    
+
     // Validation
     if (username.isEmpty) {
       _showError('กรุณากรอก Username');
       return;
     }
-    
+
     if (password.isEmpty) {
       _showError('กรุณากรอก Password');
       return;
     }
-    
+
     // เรียก API
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final response = await ApiService.login(
         username: username,
         password: password,
       );
-      
+
       setState(() {
         _isLoading = false;
       });
-      
+
       if (response.success) {
         // Login สำเร็จ
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -265,20 +270,18 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         );
-        
+
         // บันทึก token ถ้าต้องการ (ใช้ shared_preferences)
         // await SharedPreferences.getInstance().then((prefs) {
         //   prefs.setString('token', response.token ?? '');
         //   prefs.setInt('userId', response.user?.id ?? 0);
         //   prefs.setString('userEmail', response.user?.email ?? '');
         // });
-        
+
         // ไปหน้า Home
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const HomePage(),
-          ),
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
       } else {
         // มี error
@@ -295,15 +298,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.red[600],
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(0),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
       ),
     );
   }
@@ -327,10 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text(
-                'ตกลง',
-                style: TextStyle(color: Colors.black),
-              ),
+              child: const Text('ตกลง', style: TextStyle(color: Colors.black)),
             ),
           ],
         );
@@ -341,9 +336,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showRegisterDialog() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const RegisterScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const RegisterScreen()),
     );
   }
 
@@ -366,10 +359,7 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Cal-Deficits',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFDBFFC8),
         elevation: 0,
@@ -404,10 +394,7 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 30),
             const Text(
               'ยินดีต้อนรับสู่',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.black54,
-              ),
+              style: TextStyle(fontSize: 20, color: Colors.black54),
             ),
             const Text(
               'Cal-Deficits!',
@@ -496,9 +483,7 @@ class HomePage extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const LoginScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
                 );
               },
               child: const Text(
