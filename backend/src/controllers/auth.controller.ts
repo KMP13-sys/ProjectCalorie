@@ -5,6 +5,8 @@ import { User } from "../models/userModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"; // สร้างและตรวจสอบ token
 
+// TODO: Recent merge from 8cb611c50f5629fe8c8943e736208571f9d6d1a5. Please verify arguments and functionality.
+
 // helper validation functions (simple, fast, no external deps)
 const isNonEmptyString = (v: any) => typeof v === "string" && v.trim().length > 0;
 const isEmail = (v: string) =>
@@ -73,8 +75,8 @@ export const register = async (req: Request, res: Response) => {
 
     // INSERT user ใหม่ (เพิ่ม age, gender, height, weight, goal)
     const [result]: any = await db.query(
-      "INSERT INTO users (username, email, phone_number, password, age, gender, height, weight, goal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [username, email, phone_number || null, hashedPassword, age || null, gender || null, height || null, weight || null, goal || null]
+      "INSERT INTO users (username, email, phone_number, password) VALUES (?, ?, ?, ?)",
+      [username, email, phone_number, hashedPassword]
     );
 
 
