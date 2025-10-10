@@ -13,15 +13,7 @@ export const register = async (req: Request, res: Response) => {
   }
   
   try {
-    const { username, 
-            email, 
-            phone_number, 
-            password, 
-            age, 
-            gender, 
-            height, 
-            weight, 
-            goal } = req.body;
+    const { username, email, phone_number, password } = req.body;
 
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
@@ -37,8 +29,8 @@ export const register = async (req: Request, res: Response) => {
 
     // INSERT user ใหม่ (เพิ่ม age, gender, height, weight, goal)
     const [result]: any = await db.query(
-      "INSERT INTO users (username, email, phone_number, password, age, gender, height, weight, goal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [username, email, phone_number, hashedPassword, age, gender, height, weight, goal]
+      "INSERT INTO users (username, email, phone_number, password) VALUES (?, ?, ?, ?)",
+      [username, email, phone_number, hashedPassword]
     );
 
 

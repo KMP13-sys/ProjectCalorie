@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'LogIn.dart'; // import หน้า Login
+import 'editprofile.dart'; // import หน้า Login
 import 'api_service.dart'; // import API service
+
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -242,7 +243,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const LoginScreen(),
+                                  builder: (context) => const EditProfilePage(),
                                 ),
                               );
                             },
@@ -402,7 +403,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
+            MaterialPageRoute(builder: (context) => const EditProfilePage()),
           );
         });
       } else {

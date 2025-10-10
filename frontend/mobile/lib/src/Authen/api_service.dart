@@ -5,11 +5,11 @@ import 'auth_models.dart';
 
 class ApiService {
   // Base URL ของ API
-  static const String baseUrl = 'http://localhost:5000/auth';
-  
+  static const String baseUrl = 'http://localhost:4000/auth';
+
   // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
   // static const String baseUrl = 'http://10.0.2.2:5000/auth';
-  
+
   // สำหรับ iOS Simulator ใช้ localhost ได้เลย
   // static const String baseUrl = 'http://localhost:5000/auth';
 
@@ -22,12 +22,10 @@ class ApiService {
   }) async {
     try {
       final url = Uri.parse('$baseUrl/register');
-      
+
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
           'email': email,
@@ -67,16 +65,11 @@ class ApiService {
   }) async {
     try {
       final url = Uri.parse('$baseUrl/login');
-      
+
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-        }),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username, 'password': password}),
       );
 
       final Map<String, dynamic> data = jsonDecode(response.body);
@@ -87,9 +80,7 @@ class ApiService {
           success: true,
           message: data['message'],
           token: data['token'],
-          user: data['user'] != null 
-            ? UserData.fromJson(data['user'])
-            : null,
+          user: data['user'] != null ? UserData.fromJson(data['user']) : null,
         );
       } else {
         // มี error

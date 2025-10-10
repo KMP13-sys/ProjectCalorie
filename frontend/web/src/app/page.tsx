@@ -1,10 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+<<<<<<< HEAD
+import LogIn from './Authen/LogIn'
+import Register from './Authen/Register'
+=======
 import LogIn from './LogIn'
 import Register from './Register'
 import Image from 'next/image'
 
+>>>>>>> 6e22588326cb695b2284d0c498ba8529eabdca64
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'open' | 'login' | 'register'>('open')
