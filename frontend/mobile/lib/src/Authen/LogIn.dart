@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Register.dart';
+import 'home.dart';
 import 'api_service.dart'; // import API service
 
 class LoginScreen extends StatefulWidget {
@@ -271,18 +272,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        // บันทึก token ถ้าต้องการ (ใช้ shared_preferences)
-        // await SharedPreferences.getInstance().then((prefs) {
-        //   prefs.setString('token', response.token ?? '');
-        //   prefs.setInt('userId', response.user?.id ?? 0);
-        //   prefs.setString('userEmail', response.user?.email ?? '');
-        // });
 
-        // ไปหน้า Home
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+      // บันทึก token ถ้าต้องการ (ใช้ shared_preferences)
+      // await SharedPreferences.getInstance().then((prefs) {
+      //   prefs.setString('token', response.token ?? '');
+      //   prefs.setInt('userId', response.user?.id ?? 0);
+      //   prefs.setString('userEmail', response.user?.email ?? '');
+      // });
+
+      // ไปหน้า Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
       } else {
         // มี error
         _showError(response.message);
@@ -345,155 +347,5 @@ class _LoginScreenState extends State<LoginScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-}
-
-// HomePage สำหรับหลังจาก login สำเร็จ
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFDBFFC8),
-      appBar: AppBar(
-        title: const Text(
-          'Cal-Deficits',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: const Color(0xFFDBFFC8),
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
-            icon: const Icon(Icons.logout, color: Colors.black),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.black, width: 3),
-                borderRadius: BorderRadius.circular(0),
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                size: 80,
-                color: Colors.green,
-              ),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'ยินดีต้อนรับสู่',
-              style: TextStyle(fontSize: 20, color: Colors.black54),
-            ),
-            const Text(
-              'Cal-Deficits!',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'เข้าสู่ระบบสำเร็จ',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.green,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 50),
-            Container(
-              width: 200,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.black, width: 2),
-                borderRadius: BorderRadius.circular(0),
-              ),
-              child: TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('ฟีเจอร์นี้กำลังพัฒนา'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                },
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                ),
-                child: const Text(
-                  'เริ่มใช้งาน',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
-            side: const BorderSide(color: Colors.black, width: 2),
-          ),
-          title: const Text(
-            'ออกจากระบบ',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text('คุณต้องการออกจากระบบหรือไม่?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'ยกเลิก',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-              child: const Text(
-                'ออกจากระบบ',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

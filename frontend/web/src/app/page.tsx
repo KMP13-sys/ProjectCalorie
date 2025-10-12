@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Open from './pages/open'
-import LogIn from './pages/login/page'
+import Login from './pages/login/page'
 import Register from './pages/register/page'
 
 export default function Home() {
@@ -17,7 +17,7 @@ export default function Home() {
 
   // แสดงหน้า Login
   if (currentPage === 'login') {
-    return <LogIn onNavigateToRegister={() => setCurrentPage('register')} />
+    return <Login onNavigateToRegister={() => setCurrentPage('register')} />
   }
 
   // แสดงหน้า Open (Splash Screen) พร้อม callback
