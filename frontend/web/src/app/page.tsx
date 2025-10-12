@@ -1,15 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-<<<<<<< HEAD
-import LogIn from './Authen/LogIn'
-import Register from './Authen/Register'
-=======
-import LogIn from './LogIn'
-import Register from './Register'
+import 'LoginPage'
+import 'register'
 import Image from 'next/image'
+import LoginPage from './login/page'
 
->>>>>>> 6e22588326cb695b2284d0c498ba8529eabdca64
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'open' | 'login' | 'register'>('open')
@@ -25,12 +21,12 @@ export default function Home() {
 
 // แสดงหน้า Register
 if (currentPage === 'register') {
-  return <Register />
+  return <register />
 }
 
   // แสดงหน้า Login
   if (currentPage === 'login') {
-    return <LogIn onNavigateToRegister={() => setCurrentPage('register')} />
+    return <login onNavigateToRegister={() => setCurrentPage('register')} />
   }
 
   // แสดงหน้า Open (Splash Screen)
