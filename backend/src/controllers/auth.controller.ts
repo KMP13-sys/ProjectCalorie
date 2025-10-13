@@ -25,6 +25,14 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
+    // ตรวจสอบหมายเลขโทรศัพท์ (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone_number)) {
+      return res.status(400).json({ 
+        message: "Phone number must be 10 digits (0-9 only)" 
+      });
+    }
+
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",

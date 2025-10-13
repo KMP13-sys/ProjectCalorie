@@ -53,17 +53,23 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     // Username validation
     const username = formData.username.trim();
-    
+
     if (!/[a-zA-Z]/.test(username)) {
       setError('Username ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว');
       return;
     }
-    
+
     if (username.length < 3) {
       setError('Username ต้องมีอย่างน้อย 3 ตัวอักษร');
+      return;
+    }
+
+    // Phone validation (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
+    if (!/^[0-9]{10}$/.test(formData.phone.trim())) {
+      setError('กรุณากรอกหมายเลขโทรศัพท์ 10 หลัก');
       return;
     }
 
@@ -72,7 +78,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
       setError('Password ไม่ตรงกัน!');
       return;
     }
-    
+
     if (formData.password.length < 6) {
       setError('Password ต้องมีอย่างน้อย 6 ตัวอักษร');
       return;
@@ -97,7 +103,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
       setError('กรุณากรอกน้ำหนักที่ถูกต้อง');
       return;
     }
-    
+
     if (!formData.agreedToTerms) {
       setError('กรุณายอมรับข้อกำหนดและเงื่อนไข');
       return;
