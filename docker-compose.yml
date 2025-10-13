@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  # ใช้ image ของ MySQL 8.0 และสร้าง database ชื่อ calories_app
+  mysql:
+    image: mysql:9.4
+    container_name: calories_db
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: calories_app
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # สร้าง container จาก Dockerfile ที่อยู่ใน backend/
+  # ใช้ environment เชื่อม MySQL ผ่านชื่อ service mysql
+  backend:
+    build: ./backend
+    container_name: calories_backend
+    ports:
+      - "4000:4000"
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: 1234
+      DB_NAME: calories_app
+      DB_PORT: 3306
+    depends_on:
+      - mysql
+    command: npm run start
+
+  # รัน Next.js ผ่าน NGINX ที่พอร์ต 3000
+  frontend:
+    build: ./frontend
+    container_name: calories_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
