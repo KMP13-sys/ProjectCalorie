@@ -24,6 +24,14 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
     }
   }, [showSuccessModal]);
 
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // อนุญาตแค่ a-z, A-Z, 0-9
+    const sanitized = value.replace(/[^a-zA-Z0-9]/g, '');
+    setUsername(sanitized);
+    if (error) setError('');
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -31,6 +39,17 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
     // Validation
     if (!username.trim()) {
       setError('กรุณากรอก Username');
+      return;
+    }
+
+    // Username validation
+    if (!/[a-zA-Z]/.test(username)) {
+      setError('Username ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว');
+      return;
+    }
+
+    if (username.length < 3) {
+      setError('Username ต้องมีอย่างน้อย 3 ตัวอักษร');
       return;
     }
     
@@ -159,11 +178,9 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
                     type="text"
                     placeholder="Enter username..."
                     value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
-                      if (error) setError('');
-                    }}
+                    onChange={handleUsernameChange}
                     required
+                    minLength={3}
                     className="w-full px-4 py-3 bg-gray-100 border-4 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono"
                     style={{ fontFamily: 'monospace' }}
                   />
@@ -313,7 +330,7 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
                   LOGIN COMPLETE!
                 </p>
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'monospace' }}>
-                  Welcome back, Player!
+                  Welcome back, User!
                 </p>
               </div>
 

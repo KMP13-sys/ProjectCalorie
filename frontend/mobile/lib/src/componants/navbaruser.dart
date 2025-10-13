@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/src/Authen/profile.dart';
-import 'home.dart';
-import 'profile.dart';
+import 'package:mobile/src/profile/profile.dart';
+import '../home/home.dart';
+import '../profile/profile.dart';
 
 
 class NavBarUser extends StatelessWidget {

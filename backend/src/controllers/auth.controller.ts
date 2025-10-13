@@ -10,6 +10,21 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
 
+    // validation username
+    const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{3,}$/;
+    if (!usernameRegex.test(username)) {
+      return res.status(400).json({ 
+        message: "Username must contain at least one letter and only alphanumeric characters, minimum 3 characters" 
+      });
+    }
+
+    // ตรวจสอบว่าไม่ใช่ตัวเลขอย่างเดียว
+    if (/^\d+$/.test(username)) {
+      return res.status(400).json({ 
+        message: "Username must contain at least one letter" 
+      });
+    }
+
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",

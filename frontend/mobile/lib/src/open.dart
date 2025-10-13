@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Authen/LogIn.dart'; // import หน้า login
+import 'authen/LogIn.dart'; // import หน้า login
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

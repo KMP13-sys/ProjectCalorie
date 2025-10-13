@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
-import 'navbaruser.dart';
+import '../authen/api_service.dart';
+import '../componants/navbaruser.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

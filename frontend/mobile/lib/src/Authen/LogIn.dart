@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Register.dart';
-import 'home.dart';
+import '../home/home.dart';
 import 'api_service.dart'; // import API service
 
 class LoginScreen extends StatefulWidget {

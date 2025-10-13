@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'navbaruser.dart';
-import 'LogIn.dart';
+import '../componants/navbaruser.dart';
+import '../authen/LogIn.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
