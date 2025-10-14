@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import path from "path";
 import express from "express";
 import cors from "cors";
 
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/update", updateRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ====== Root test route ======
 app.get("/", (req, res) => {
