@@ -17,9 +17,6 @@ export const updateUser = async (req: Request, res: Response) => {
 
     // รับข้อมูลที่จะอัปเดตจาก body
     const {
-      username,
-      email,
-      phone_number,
       age,
       gender,
       height,
@@ -28,9 +25,6 @@ export const updateUser = async (req: Request, res: Response) => {
     } = req.body;
 
     const updatedUser = await updateUserById(userId, {
-      username,
-      email,
-      phone_number,
       age,
       gender,
       height,

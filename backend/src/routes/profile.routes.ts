@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { getUserProfile, updateUserProfile } from "../controllers/profile.controller";
+import { getUserProfile, updateProfileImage, upload } from "../controllers/profile.controller";
 import { validateToken } from "../middlewares/validateToken";
 
 const router = Router();
 
+// ดึงโปรไฟล์
 router.get("/:id", validateToken, getUserProfile);
-router.put("/:id", validateToken, updateUserProfile);
+
+// อัปเดทรูปโปรไฟล์
+router.put("/:id/image", validateToken, upload.single("profile_image"), updateProfileImage);
 
 export default router;
