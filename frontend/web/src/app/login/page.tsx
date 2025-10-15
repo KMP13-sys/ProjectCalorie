@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { authAPI } from '@/app/pages/api';
+import main from '../main/page';
 
 interface LoginPageProps {
   onNavigateToRegister?: () => void;
@@ -18,7 +19,7 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
   useEffect(() => {
     if (showSuccessModal) {
       const timer = setTimeout(() => {
-        window.location.href = '/dashboard'; // เปลี่ยนเป็นหน้าที่ต้องการ
+        window.location.href = '/main'; // เปลี่ยนเป็นหน้าที่ต้องการ
       }, 2000);
       return () => clearTimeout(timer);
     }
