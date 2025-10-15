@@ -19,6 +19,11 @@ class ApiService {
     required String email,
     required String phone_number,
     required String password,
+    required int age,
+    required String gender,
+    required double height,
+    required double weight,
+    required String goal,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/register');
@@ -31,6 +36,11 @@ class ApiService {
           'email': email,
           'phone_number': phone_number,
           'password': password,
+          'age': age,
+          'gender': gender,
+          'height': height,
+          'weight': weight,
+          'goal': goal,
         }),
       );
 

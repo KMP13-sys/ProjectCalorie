@@ -1,0 +1,6 @@
+FROM mysql:9.4
+
+ENV MYSQL_ROOT_PASSWORD=1234
+ENV MYSQL_DATABASE=shopdee
+
+COPY ./schema.sql /docker-entrypoint-initdb.d/

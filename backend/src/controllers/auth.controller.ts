@@ -13,7 +13,30 @@ export const register = async (req: Request, res: Response) => {
   }
   
   try {
-    const { username, email, phone_number, password } = req.body;
+    const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
+
+    // validation username
+    const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{3,}$/;
+    if (!usernameRegex.test(username)) {
+      return res.status(400).json({ 
+        message: "Username must contain at least one letter and only alphanumeric characters, minimum 3 characters" 
+      });
+    }
+
+    // ตรวจสอบว่าไม่ใช่ตัวเลขอย่างเดียว
+    if (/^\d+$/.test(username)) {
+      return res.status(400).json({ 
+        message: "Username must contain at least one letter" 
+      });
+    }
+
+    // ตรวจสอบหมายเลขโทรศัพท์ (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone_number)) {
+      return res.status(400).json({ 
+        message: "Phone number must be 10 digits (0-9 only)" 
+      });
+    }
 
     // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
     const [rows]: any = await db.query(
@@ -29,8 +52,8 @@ export const register = async (req: Request, res: Response) => {
 
     // INSERT user ใหม่ (เพิ่ม age, gender, height, weight, goal)
     const [result]: any = await db.query(
-      "INSERT INTO users (username, email, phone_number, password) VALUES (?, ?, ?, ?)",
-      [username, email, phone_number, hashedPassword]
+      "INSERT INTO users (username, email, phone_number, password, age, gender, height, weight, goal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [username, email, phone_number, hashedPassword, age, gender, height, weight, goal]
     );
 
 

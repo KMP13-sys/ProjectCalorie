@@ -13,7 +13,6 @@ theme: {
       '8bit-sm': '40px',
       '8bit-base': '24px',
       '8bit-lg': '10px',
-
     },
     fontFamily: {
       ta8bit: ['TA8bit', 'sans-serif'],
