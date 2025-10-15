@@ -4,10 +4,10 @@ import { validateToken } from "../middlewares/validateToken";
 
 const router = Router();
 
-// ดึงข้อมูลโปรไฟล์ผู้ใช้
+// ดึงโปรไฟล์
 router.get("/:id", validateToken, getUserProfile);
 
-// อัปโหลด/อัปเดทรูปโปรไฟล์
+// อัปเดทรูปโปรไฟล์
 router.put("/:id/image", validateToken, upload.single("profile_image"), updateProfileImage);
 
 export default router;

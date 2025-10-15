@@ -52,7 +52,6 @@ export const updateProfileImage = async (req: Request, res: Response) => {
 
     const imageName = req.file.filename;
 
-    // ✅ เปลี่ยนชื่อฟิลด์ตรงนี้ให้ตรงกับตาราง
     await db.query("UPDATE users SET image_profile = ? WHERE user_id = ?", [imageName, userId]);
 
     res.json({

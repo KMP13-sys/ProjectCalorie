@@ -9,8 +9,11 @@ import cors from "cors";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/profile.routes";
 import updateRoutes from "./routes/update.routes";
+import profileRoutes from "./routes/profile.routes";
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 
 // ====== Middlewares ======
 app.use(cors({
@@ -21,11 +24,14 @@ app.use(cors({
 
 app.use(express.json());
 
+// เสิร์ฟไฟล์ static สำหรับรูปที่อัปโหลด
+app.use("/uploads", express.static("src/uploads"));
+
 // ====== Routes ======
 app.use("/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/update", updateRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/api/profile", profileRoutes);
 
 // ====== Root test route ======
 app.get("/", (req, res) => {
