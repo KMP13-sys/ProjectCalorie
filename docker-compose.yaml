@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # ใช้ image ของ MySQL 8.0 และสร้าง database ชื่อ calories_app
   mysql:
