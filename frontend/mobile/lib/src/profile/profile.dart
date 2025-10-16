@@ -265,35 +265,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             vertical: 12,
                                             horizontal: 16,
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[100],
-                                            border: Border.all(
-                                              color: Colors.grey[800]!,
-                                              width: 4,
-                                            ),
-                                          ),
-                                          child: const Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                '● ',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Color(0xFF10b981),
-                                                ),
-                                              ),
-                                              Text(
-                                                'STATUS: ACTIVE',
-                                                style: TextStyle(
-                                                  fontFamily: 'TA8bit',
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black87,
-                                                  letterSpacing: 1,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
                                         ),
                                       ],
                                     ),
@@ -566,7 +537,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Expanded(
           child: _buildPixelButton(
             'LOGOUT ▶',
-            const Color(0xFFdc2626),
+            const Color(0xFFfb7185), // rose-400
             Colors.white,
             _handleLogout,
           ),
@@ -1080,37 +1051,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Stack(
               children: [
-                // Corner Pixels
+                // Corner Pixels - เปลี่ยนเป็นสีชมพู pink-300
                 Positioned(
                   top: 0,
                   left: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFdc2626)),
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
                 ),
                 Positioned(
                   top: 0,
                   right: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFdc2626)),
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
                 ),
                 Positioned(
                   bottom: 0,
                   left: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFdc2626)),
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
                 ),
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFdc2626)),
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
                 ),
 
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Header
+                    // Header - เปลี่ยนเป็นสี rose-400
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFdc2626),
+                        color: Color(0xFFfb7185), // rose-400
                         border: Border(
                           bottom: BorderSide(color: Colors.black, width: 4),
                         ),
@@ -1138,21 +1109,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
                         children: [
-                          // Warning Icon
+                          // Warning Icon - เปลี่ยนเป็นสี rose-400
                           Container(
                             width: 64,
                             height: 64,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFfecaca),
+                              color: const Color(0xFFfb7185), // rose-400
                               border: Border.all(
-                                color: const Color(0xFFdc2626),
+                                color: Colors.black,
                                 width: 4,
                               ),
                             ),
                             child: const Center(
                               child: Text(
-                                '⚠',
-                                style: TextStyle(fontSize: 40),
+                                '?',
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -1173,7 +1148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Pixel decoration
+                          // Pixel decoration - เปลี่ยนเป็นสี pink-400
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -1181,7 +1156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFdc2626),
+                                  color: const Color(0xFFf472b6), // pink-400
                                   border: Border.all(color: Colors.black, width: 1),
                                 ),
                               ),
@@ -1190,7 +1165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFdc2626),
+                                  color: const Color(0xFFf472b6), // pink-400
                                   border: Border.all(color: Colors.black, width: 1),
                                 ),
                               ),
@@ -1199,7 +1174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFdc2626),
+                                  color: const Color(0xFFf472b6), // pink-400
                                   border: Border.all(color: Colors.black, width: 1),
                                 ),
                               ),
@@ -1225,7 +1200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Expanded(
                                 child: _buildPixelButton(
                                   'LOGOUT',
-                                  const Color(0xFFdc2626),
+                                  const Color(0xFFfb7185), // rose-400
                                   Colors.white,
                                   () {
                                     // TODO: ลบข้อมูล token, user data

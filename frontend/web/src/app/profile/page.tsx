@@ -266,16 +266,6 @@ export default function ProfilePage() {
                     <div className="w-2 h-2 bg-[#8bc273]"></div>
                     <div className="w-2 h-2 bg-[#a8d88e]"></div>
                   </div>
-
-                  <div className="bg-gray-100 border-3 border-gray-800 px-4 py-2" style={{ borderWidth: '3px' }}>
-                    <span 
-                      className="text-xs font-bold text-gray-800"
-                      style={{ fontFamily: 'monospace' }}
-                    >
-                      <span className="text-green-500">● </span>
-                      STATUS: ACTIVE
-                    </span>
-                  </div>
                 </div>
 
                 {/* Personal Info Section */}
@@ -388,7 +378,7 @@ export default function ProfilePage() {
                     </button>
                     <button
                       onClick={() => setShowLogoutModal(true)}
-                      className="py-3.5 bg-red-600 text-white font-bold text-xs border-4 border-black hover:bg-red-700 transition"
+                      className="py-3.5 bg-rose-400 text-white font-bold text-xs border-4 border-black hover:bg-rose-500 transition"
                       style={{
                         fontFamily: 'monospace',
                         boxShadow: '4px 4px 0 rgba(0, 0, 0, 0.3)',
@@ -614,12 +604,12 @@ function LogoutModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
         className="bg-white relative max-w-md w-full"
         style={{ border: '8px solid black', boxShadow: '8px 8px 0 rgba(0, 0, 0, 0.5)' }}
       >
-        <div className="absolute top-0 left-0 w-4 h-4 bg-red-600"></div>
-        <div className="absolute top-0 right-0 w-4 h-4 bg-red-600"></div>
-        <div className="absolute bottom-0 left-0 w-4 h-4 bg-red-600"></div>
-        <div className="absolute bottom-0 right-0 w-4 h-4 bg-red-600"></div>
+        <div className="absolute top-0 left-0 w-4 h-4 bg-pink-300"></div>
+        <div className="absolute top-0 right-0 w-4 h-4 bg-pink-300"></div>
+        <div className="absolute bottom-0 left-0 w-4 h-4 bg-pink-300"></div>
+        <div className="absolute bottom-0 right-0 w-4 h-4 bg-pink-300"></div>
 
-        <div className="py-3 border-b-4 border-black bg-red-600">
+        <div className="py-3 border-b-4 border-black bg-rose-400">
           <h3 
             className="text-xl font-bold text-white text-center"
             style={{ fontFamily: 'monospace', textShadow: '2px 2px 0 rgba(0, 0, 0, 0.5)' }}
@@ -631,7 +621,7 @@ function LogoutModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
         <div className="p-8 text-center">
           {/* Warning Icon */}
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-red-600 border-4 border-black flex items-center justify-center">
+            <div className="w-20 h-20 bg-rose-400 border-4 border-black flex items-center justify-center">
               <div className="text-6xl text-white font-bold">?</div>
             </div>
           </div>
@@ -641,9 +631,9 @@ function LogoutModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
           </p>
 
           <div className="flex justify-center gap-1.5 mb-6">
-            <div className="w-2 h-2 bg-red-600 border border-black"></div>
-            <div className="w-2 h-2 bg-red-600 border border-black"></div>
-            <div className="w-2 h-2 bg-red-600 border border-black"></div>
+            <div className="w-2 h-2 bg-pink-400 border border-black"></div>
+            <div className="w-2 h-2 bg-pink-400 border border-black"></div>
+            <div className="w-2 h-2 bg-pink-400 border border-black"></div>
           </div>
 
           <div className="flex gap-3">
@@ -660,7 +650,7 @@ function LogoutModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm:
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 py-3.5 bg-red-600 text-white font-bold text-sm border-4 border-black hover:bg-red-700 transition"
+              className="flex-1 py-3.5 bg-rose-400 text-white font-bold text-sm border-4 border-black hover:bg-rose-500 transition"
               style={{
                 fontFamily: 'monospace',
                 boxShadow: '4px 4px 0 rgba(0, 0, 0, 0.3)',
