@@ -3,8 +3,10 @@ food_model_web.onnx      # สำหรับ web เป็น JavaScript/ONNX.j
 food_model_mobile.pt     # สำหรับ mobile andriod/ios เป็น TorchScript format
 class_mapping.json       # เป็นข้อมูล class mapping คือ โมเดลจำเป็น index 0, 1, 2 ต้องมีไฟล์นี้เพื่อกำหนดให้รู้ตามคลาสที่ใช้เป็น id 1, 2, 3 ในดาต้าเบสได้
 
-# แก้ไขให้ตามดาต้าเบสเครื่องตัวเองก่อนใช้ api
-.env
+# Setup Environment Variables
+1. Copy .env.example to .env: `cp src/config/.env.example src/config/.env`
+2. Update the values in .env according to your database configuration
+3. Never commit the .env file to version control
 
 ***ไกด์ไลน์ในการเรียกใช้โมเดลในแต่ละแพลตฟอร์ม***
 

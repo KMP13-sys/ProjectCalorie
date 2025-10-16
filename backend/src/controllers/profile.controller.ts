@@ -46,6 +46,10 @@ export const getUserProfile = async (req: Request, res: Response) => {
 export const updateProfileImage = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.params.id);
+    const authenticatedUserId = (req as any).user.userId;
+    if (userId !== authenticatedUserId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     if (!userId) return res.status(400).json({ message: "Invalid user id" });
 
     if (!req.file) return res.status(400).json({ message: "No image uploaded" });
