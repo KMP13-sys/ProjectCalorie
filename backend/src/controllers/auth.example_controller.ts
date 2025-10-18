@@ -20,7 +20,7 @@ const registerSchema = z.object({
   gender: z.enum(["male", "female", "other"]),
   height: z.number().positive().min(50).max(300), // cm
   weight: z.number().positive().min(20).max(500), // kg
-  goal: z.enum(["lose_weight", "maintain", "gain_muscle"]),
+  goal: z.enum(["lose_weight", "maintain_weight", "gain_weight"]),
 });
 
 const loginSchema = z.object({
@@ -42,7 +42,7 @@ export const register = async (req: Request, res: Response) => {
     if (!validationResult.success) {
       return res.status(400).json({ 
         message: "Validation failed", 
-        errors: validationResult.error.errors.map(err => ({
+        errors: validationResult.error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }))
@@ -122,7 +122,7 @@ export const login = async (req: Request, res: Response) => {
     if (!validationResult.success) {
       return res.status(400).json({ 
         message: "Validation failed", 
-        errors: validationResult.error.errors.map(err => ({
+        errors: validationResult.error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }))

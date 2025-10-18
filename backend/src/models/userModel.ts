@@ -14,6 +14,9 @@ export interface User {
   goal?: string;                // VARCHAR(50), Optional
   created_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP
   updated_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP ON UPDATE
+  refresh_token?: string;     //  VARCHAR(500), Optional
+  refresh_token_expires_at?: Date; // DATETIME, Optional
+  last_login_at?: Date;        // DATETIME, Optional
 }
 
 // ดึงข้อมูลผู้ใช้ตาม ID
