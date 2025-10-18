@@ -13,14 +13,13 @@ const registerSchema = z.object({
   password: z.string()
     .min(8, "Password must be at least 8 characters")
     .max(100)
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
   age: z.number().int().min(13, "Must be at least 13 years old").max(120),
-  gender: z.enum(["male", "female", "other"]),
+  gender: z.enum(["male", "female"]),
   height: z.number().positive().min(50).max(300), // cm
   weight: z.number().positive().min(20).max(500), // kg
-  goal: z.enum(["lose_weight", "maintain_weight", "gain_weight"]),
+  goal: z.enum(["lose weight", "maintain weight", "gain weight"]),
 });
 
 const loginSchema = z.object({

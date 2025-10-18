@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
-import 'api_service.dart';
+import '../../service/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -346,7 +346,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                       label: 'GENDER *',
                                       value: _selectedGender,
                                       hint: 'Select...',
-                                      items: const ['Male', 'Female'],
+                                      items: const ['MALE', 'FEMALE'],
                                       onChanged: (value) {
                                         setState(
                                           () => _selectedGender = value ?? '',
@@ -386,9 +386,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 value: _selectedGoal,
                                 hint: 'Select goal...',
                                 items: const [
-                                  'Lose Weight',
-                                  'Maintain Weight',
-                                  'Gain Weight',
+                                  'LOSE WEIGHT',
+                                  'MAINTAIN WEIGHT',
+                                  'GAIN WEIGHT',
                                 ],
                                 onChanged: (value) {
                                   setState(() => _selectedGoal = value ?? '');
@@ -1291,7 +1291,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                             _buildPrivacySection(
                               '1. ข้อมูลที่เราเก็บรวบรวม',
                               'CAL-DEFICITS เก็บรวบรวมข้อมูลส่วนบุคคลของคุณ เช่น ชื่อผู้ใช้ อีเมล หมายเลขโทรศัพท์ และข้อมูลสุขภาพที่เกี่ยวข้องกับการคำนวณแคลอรี่ เพื่อใช้ในการให้บริการและปรับปรุงประสบการณ์การใช้งาน',
-                              
                             ),
                             const SizedBox(height: 16),
 
