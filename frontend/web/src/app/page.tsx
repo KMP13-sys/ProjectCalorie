@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Open from './pages/open'
-import Login from './pages/login/page'
-import Register from './pages/register/page'
+import Login from './login/page'
+import Register from './register/page'
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'open' | 'login' | 'register'>('open')

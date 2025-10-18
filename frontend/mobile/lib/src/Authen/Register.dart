@@ -1291,6 +1291,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                             _buildPrivacySection(
                               '1. ข้อมูลที่เราเก็บรวบรวม',
                               'CAL-DEFICITS เก็บรวบรวมข้อมูลส่วนบุคคลของคุณ เช่น ชื่อผู้ใช้ อีเมล หมายเลขโทรศัพท์ และข้อมูลสุขภาพที่เกี่ยวข้องกับการคำนวณแคลอรี่ เพื่อใช้ในการให้บริการและปรับปรุงประสบการณ์การใช้งาน',
+                              
                             ),
                             const SizedBox(height: 16),
 
@@ -1340,7 +1341,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   Text(
                                     'ติดต่อเรา',
                                     style: TextStyle(
-                                      fontFamily: 'TA8bit',
+                                      fontFamily: 'monospace',
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black87,
@@ -1350,7 +1351,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   Text(
                                     'หากคุณมีคำถามเกี่ยวกับนโยบายความเป็นส่วนตัว กรุณาติดต่อเราที่:',
                                     style: TextStyle(
-                                      fontFamily: 'TA8bit',
+                                      fontFamily: 'monospace',
                                       fontSize: 11,
                                       color: Colors.black87,
                                     ),
@@ -1359,7 +1360,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   Text(
                                     'Email: support@cal-deficits.com\nวันที่มีผลบังคับใช้: 12 ตุลาคม 2025',
                                     style: TextStyle(
-                                      fontFamily: 'TA8bit',
+                                      fontFamily: 'monospace',
                                       fontSize: 11,
                                       color: Colors.black87,
                                     ),
@@ -1426,7 +1427,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         Text(
           title,
           style: const TextStyle(
-            fontFamily: 'TA8bit',
+            fontFamily: 'monospace',
             fontSize: 13,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -1436,7 +1437,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         Text(
           content,
           style: const TextStyle(
-            fontFamily: 'TA8bit',
+            fontFamily: 'monospace',
             fontSize: 11,
             color: Colors.black87,
             height: 1.5,

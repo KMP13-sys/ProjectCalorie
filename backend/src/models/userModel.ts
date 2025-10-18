@@ -4,7 +4,8 @@ export interface User {
   user_id: number;              // INT, Primary Key, Auto Increment
   username: string;             // VARCHAR(50), NOT NULL, UNIQUE
   email: string;                // VARCHAR(100), NOT NULL, UNIQUE
-  password: string;             // VARCHAR(255), NOT NULL
+  password: string;
+  image_profile: string;             // VARCHAR(255), NOT NULL
   phone_number?: string;        // VARCHAR(15), Optional
   age?: number;                  // INT, Optional (with CHECK 1-120)
   gender?: 'male' | 'female';    // ENUM, Optional

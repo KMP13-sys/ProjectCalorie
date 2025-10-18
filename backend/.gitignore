@@ -1,8 +1,0 @@
-#ignore folders
-images/
-
-#ignore flies
-*.log
-*.tmp
-*.csv
-*.png

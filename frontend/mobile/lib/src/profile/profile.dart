@@ -12,242 +12,1243 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   // ข้อมูลผู้ใช้ (ควรดึงจาก database จริง)
   final String username = 'MyPeach';
-  final String weight = '65 kg';
-  final String age = '25 years';
-  final String height = '170 cm';
-  final String gender = 'Male';
-  final String goal = 'Lose Weight';
+  
+  // Controllers สำหรับแก้ไขข้อมูล
+  late TextEditingController _weightController;
+  late TextEditingController _heightController;
+  late TextEditingController _ageController;
+  String _selectedGender = 'Male';
+  String _selectedGoal = 'Lose Weight';
+  
+  // State สำหรับ toggle edit mode
+  bool _isEditing = false;
+  bool _isLoading = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with current data
+    _weightController = TextEditingController(text: '65');
+    _heightController = TextEditingController(text: '170');
+    _ageController = TextEditingController(text: '25');
+  }
+  
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _heightController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDBFFC8),
-      body: Column(
+      body: Stack(
         children: [
-          // Navbar
-          NavBarUser(username: username),
-
-          // เนื้อหาหน้า Profile
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-
-                    // หัวข้อ PROFILE
-                    const Text(
-                      'PROFILE',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF204130),
-                        letterSpacing: 3,
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // รูปโปรไฟล์
-                    Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(90),
-                        child: Image.asset(
-                          'assets/default_profile.jpg',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            // ถ้าไม่มีรูป แสดงไอคอน
-                            return Container(
-                              color: Colors.white,
-                              child: const Icon(
-                                Icons.person,
-                                size: 100,
-                                color: Color(0xFF204130),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // ฟิลด์ข้อมูล
-                    _buildInfoField('weight', weight),
-                    const SizedBox(height: 15),
-
-                    _buildInfoField('age', age),
-                    const SizedBox(height: 15),
-
-                    _buildInfoField('height', height),
-                    const SizedBox(height: 15),
-
-                    _buildInfoField('gender', gender),
-                    const SizedBox(height: 15),
-
-                    _buildInfoField('goal', goal),
-
-                    const SizedBox(height: 40),
-
-                    // ปุ่ม LOG OUT
-                    Container(
-                      width: 150,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFC9E09A),
-                        border: Border.all(
-                          color: const Color(0xFF204130),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(0),
-                      ),
-                      child: TextButton(
-                        onPressed: _handleLogout,
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
-                          ),
-                        ),
-                        child: const Text(
-                          'LOG OUT',
-                          style: TextStyle(
-                            color: Color(0xFF204130),
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
+          // Background with gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF6fa85e),
+                  Color(0xFF8bc273),
+                  Color(0xFFa8d88e),
+                ],
               ),
             ),
           ),
+
+          // Pixel Grid Background
+          CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
+
+          Column(
+            children: [
+              // Navbar
+              NavBarUser(username: username),
+
+              // เนื้อหาหน้า Profile
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16),
+
+                        // Profile Card
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 500),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: Colors.black,
+                              width: 8,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                offset: const Offset(12, 12),
+                                blurRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              // Corner Pixels
+                              ..._buildCornerPixels(),
+
+                              Column(
+                                children: [
+                                  // Header Bar
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
+                                      ),
+                                      border: Border(
+                                        bottom: BorderSide(color: Colors.black, width: 6),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      '◆ PROFILE ◆',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'TA8bit',
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        letterSpacing: 2,
+                                        shadows: [
+                                          Shadow(
+                                            offset: Offset(3, 3),
+                                            color: Color(0x80000000),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Content
+                                  Padding(
+                                    padding: const EdgeInsets.all(32.0),
+                                    child: Column(
+                                      children: [
+                                        // Avatar แบบ Pixel Art
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                              colors: [
+                                                Color(0xFFa8d88e),
+                                                Color(0xFF8bc273),
+                                              ],
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.black,
+                                              width: 4,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.2),
+                                                offset: const Offset(4, 4),
+                                                blurRadius: 0,
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Icon(
+                                            Icons.person,
+                                            size: 100,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 24),
+
+                                        // Username
+                                        Text(
+                                          username.toUpperCase(),
+                                          style: const TextStyle(
+                                            fontFamily: 'TA8bit',
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1f2937),
+                                            letterSpacing: 2,
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 8),
+
+                                        // Pixel Dots
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 8,
+                                              height: 8,
+                                              color: const Color(0xFF6fa85e),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Container(
+                                              width: 8,
+                                              height: 8,
+                                              color: const Color(0xFF8bc273),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Container(
+                                              width: 8,
+                                              height: 8,
+                                              color: const Color(0xFFa8d88e),
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 32),
+
+                                        // Info Section
+                                        Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[100],
+                                            border: Border.all(
+                                              color: Colors.grey[800]!,
+                                              width: 4,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                '▶ PERSONAL INFO',
+                                                style: TextStyle(
+                                                  fontFamily: 'TA8bit',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 16),
+
+                                              _buildInfoField('WEIGHT', _weightController, 'kg'),
+                                              const SizedBox(height: 12),
+
+                                              _buildInfoField('HEIGHT', _heightController, 'cm'),
+                                              const SizedBox(height: 12),
+
+                                              _buildInfoField('AGE', _ageController, 'years'),
+                                              const SizedBox(height: 12),
+
+                                              _buildGenderField(),
+                                              const SizedBox(height: 12),
+
+                                              _buildGoalField(),
+                                            ],
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 32),
+
+                                        // Buttons (เปลี่ยนตาม state)
+                                        _isEditing ? _buildEditModeButtons() : _buildNormalModeButtons(),
+
+                                        const SizedBox(height: 24),
+
+                                        // Status
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  // Widget สำหรับแสดงฟิลด์ข้อมูล
-  Widget _buildInfoField(String label, String value) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        border: Border.all(
-          color: const Color(0xFF204130),
-          width: 2,
+  List<Widget> _buildCornerPixels() {
+    return [
+      Positioned(
+        top: 0,
+        left: 0,
+        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+      ),
+      Positioned(
+        top: 0,
+        right: 0,
+        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+      ),
+      Positioned(
+        bottom: 0,
+        left: 0,
+        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+      ),
+      Positioned(
+        bottom: 0,
+        right: 0,
+        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+      ),
+    ];
+  }
+
+  // Widget Info Field (รองรับทั้ง read-only และ editable)
+  Widget _buildInfoField(String label, TextEditingController controller, String unit) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$label *',
+          style: const TextStyle(
+            fontFamily: 'TA8bit',
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xFF204130),
-              fontWeight: FontWeight.w500,
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: _isEditing ? 0 : 10,
+          ),
+          decoration: BoxDecoration(
+            color: _isEditing ? Colors.white : Colors.grey[100],
+            border: Border.all(
+              color: _isEditing ? const Color(0xFF6fa85e) : Colors.grey[800]!,
+              width: 3,
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xFF204130),
-              fontWeight: FontWeight.w600,
+          child: _isEditing
+              ? TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(
+                    fontFamily: 'TA8bit',
+                    fontSize: 13,
+                    color: Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    suffixText: unit,
+                    suffixStyle: TextStyle(
+                      fontFamily: 'TA8bit',
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${controller.text} $unit',
+                      style: const TextStyle(
+                        fontFamily: 'TA8bit',
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  // Widget Gender Field
+  Widget _buildGenderField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'GENDER *',
+          style: TextStyle(
+            fontFamily: 'TA8bit',
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: _isEditing ? 0 : 10,
+          ),
+          decoration: BoxDecoration(
+            color: _isEditing ? Colors.white : Colors.grey[100],
+            border: Border.all(
+              color: _isEditing ? const Color(0xFF6fa85e) : Colors.grey[800]!,
+              width: 3,
             ),
+          ),
+          child: _isEditing
+              ? DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedGender,
+                    isExpanded: true,
+                    style: const TextStyle(
+                      fontFamily: 'TA8bit',
+                      fontSize: 13,
+                      color: Colors.black87,
+                    ),
+                    dropdownColor: Colors.white,
+                    icon: Icon(Icons.arrow_drop_down, color: Colors.grey[800]),
+                    items: ['Male', 'Female'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() => _selectedGender = value!);
+                    },
+                  ),
+                )
+              : Text(
+                  _selectedGender.toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'TA8bit',
+                    fontSize: 13,
+                    color: Colors.black87,
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  // Widget Goal Field
+  Widget _buildGoalField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'GOAL *',
+          style: TextStyle(
+            fontFamily: 'TA8bit',
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: _isEditing ? 0 : 10,
+          ),
+          decoration: BoxDecoration(
+            color: _isEditing ? Colors.white : Colors.grey[100],
+            border: Border.all(
+              color: _isEditing ? const Color(0xFF6fa85e) : Colors.grey[800]!,
+              width: 3,
+            ),
+          ),
+          child: _isEditing
+              ? DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedGoal,
+                    isExpanded: true,
+                    style: const TextStyle(
+                      fontFamily: 'TA8bit',
+                      fontSize: 13,
+                      color: Colors.black87,
+                    ),
+                    dropdownColor: Colors.white,
+                    icon: Icon(Icons.arrow_drop_down, color: Colors.grey[800]),
+                    items: ['Lose Weight', 'Maintain Weight', 'Gain Weight']
+                        .map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() => _selectedGoal = value!);
+                    },
+                  ),
+                )
+              : Text(
+                  _selectedGoal.toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'TA8bit',
+                    fontSize: 13,
+                    color: Colors.black87,
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  // Normal Mode Buttons
+  Widget _buildNormalModeButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildPixelButton(
+            '◀ BACK',
+            Colors.grey[800]!,
+            Colors.white,
+            () {
+              Navigator.pop(context);
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _buildPixelButton(
+            '✎ EDIT',
+            const Color(0xFF6fa85e),
+            Colors.white,
+            () {
+              setState(() => _isEditing = true);
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _buildPixelButton(
+            'LOGOUT ▶',
+            const Color(0xFFfb7185), // rose-400
+            Colors.white,
+            _handleLogout,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Edit Mode Buttons
+  Widget _buildEditModeButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildPixelButton(
+            '✗ CANCEL',
+            Colors.grey[800]!,
+            Colors.white,
+            _handleCancel,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _isLoading
+              ? Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6fa85e),
+                    border: Border.all(color: Colors.black, width: 4),
+                  ),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              : _buildPixelButton(
+                  '✓ SAVE',
+                  const Color(0xFF6fa85e),
+                  Colors.white,
+                  _handleSave,
+                ),
+        ),
+      ],
+    );
+  }
+
+  // Handle Cancel
+  void _handleCancel() {
+    setState(() {
+      // รีเซ็ตค่ากลับไปเป็นค่าเดิม
+      _weightController.text = '65';
+      _heightController.text = '170';
+      _ageController.text = '25';
+      _selectedGender = 'Male';
+      _selectedGoal = 'Lose Weight';
+      _isEditing = false;
+    });
+  }
+
+  // Handle Save
+  Future<void> _handleSave() async {
+    // Validation
+    final weight = double.tryParse(_weightController.text);
+    final height = double.tryParse(_heightController.text);
+    final age = int.tryParse(_ageController.text);
+
+    if (weight == null || weight < 30 || weight > 300) {
+      _showErrorDialog('⚠ กรุณากรอกน้ำหนักที่ถูกต้อง (30-300 kg)');
+      return;
+    }
+
+    if (height == null || height < 100 || height > 250) {
+      _showErrorDialog('⚠ กรุณากรอกส่วนสูงที่ถูกต้อง (100-250 cm)');
+      return;
+    }
+
+    if (age == null || age < 10 || age > 120) {
+      _showErrorDialog('⚠ กรุณากรอกอายุที่ถูกต้อง (10-120 years)');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // TODO: เรียก API update profile
+      // await ApiService.updateProfile(
+      //   weight: weight,
+      //   height: height,
+      //   age: age,
+      //   gender: _selectedGender.toLowerCase(),
+      //   goal: _selectedGoal.toLowerCase(),
+      // );
+
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
+
+      setState(() {
+        _isLoading = false;
+        _isEditing = false;
+      });
+
+      // แสดง success message
+      if (mounted) {
+        _showSuccessDialog('✓ บันทึกข้อมูลเรียบร้อย!');
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorDialog('✗ เกิดข้อผิดพลาด: ${e.toString()}');
+    }
+  }
+
+  // Show Error Dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => _buildMessageDialog(
+        title: 'ERROR',
+        message: message,
+        color: const Color(0xFFdc2626),
+        icon: '⚠',
+      ),
+    );
+  }
+
+  // Show Success Dialog
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => _buildMessageDialog(
+        title: 'SUCCESS',
+        message: message,
+        color: const Color(0xFF10b981),
+        icon: '✓',
+      ),
+    );
+  }
+
+  // Message Dialog (แบบน่ารักๆ)
+  Widget _buildMessageDialog({
+    required String title,
+    required String message,
+    required Color color,
+    required String icon,
+  }) {
+    final isSuccess = title == 'SUCCESS';
+    
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isSuccess 
+                ? [const Color(0xFFa8d88e), const Color(0xFF8bc273)]
+                : [const Color(0xFFfecaca), const Color(0xFFfca5a5)],
+          ),
+          border: Border.all(color: Colors.black, width: 8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              offset: const Offset(8, 8),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Corner Pixels
+            Positioned(top: 0, left: 0, child: Container(width: 16, height: 16, color: color)),
+            Positioned(top: 0, right: 0, child: Container(width: 16, height: 16, color: color)),
+            Positioned(bottom: 0, left: 0, child: Container(width: 16, height: 16, color: color)),
+            Positioned(bottom: 0, right: 0, child: Container(width: 16, height: 16, color: color)),
+
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: color,
+                    border: const Border(
+                      bottom: BorderSide(color: Colors.black, width: 4),
+                    ),
+                  ),
+                  child: Text(
+                    isSuccess ? '★ SUCCESS! ★' : '◆ $title ◆',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'TA8bit',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                      shadows: [
+                        Shadow(offset: Offset(2, 2), color: Color(0x80000000)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    children: [
+                      // Pixel Icon (Heart สำหรับ success, Warning สำหรับ error)
+                      isSuccess ? _buildPixelHeart() : _buildPixelWarning(),
+
+                      const SizedBox(height: 24),
+
+                      // Message Box (สีขาวแบบในรูป)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.black, width: 4),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              isSuccess ? 'PROFILE UPDATED!' : 'ERROR!',
+                              style: const TextStyle(
+                                fontFamily: 'TA8bit',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1f2937),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isSuccess 
+                                  ? 'Changes saved successfully!'
+                                  : message,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'TA8bit',
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Continue Button (full width gradient)
+                      SizedBox(
+                        width: double.infinity,
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isSuccess
+                                    ? [const Color(0xFF6fa85e), const Color(0xFF8bc273)]
+                                    : [const Color(0xFFdc2626), const Color(0xFFef4444)],
+                              ),
+                              border: Border.all(color: Colors.black, width: 4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  offset: const Offset(4, 4),
+                                  blurRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              '▶ CONTINUE',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'TA8bit',
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 1,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(2, 2),
+                                    color: Color(0x80000000),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Pixel Heart Icon (5x5)
+  Widget _buildPixelHeart() {
+    return SizedBox(
+      width: 80,
+      height: 80,
+      child: Column(
+        children: [
+          // Row 1
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+            ],
+          ),
+          // Row 2
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: const Color(0xFFff8787)),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: const Color(0xFFff8787)),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+            ],
+          ),
+          // Row 3
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: const Color(0xFFff8787)),
+              Container(width: 16, height: 16, color: const Color(0xFFff8787)),
+              Container(width: 16, height: 16, color: const Color(0xFFff8787)),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+            ],
+          ),
+          // Row 4
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: const Color(0xFFff8787)),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+            ],
+          ),
+          // Row 5
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: Colors.transparent),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // ฟังก์ชัน Logout
+  // Pixel Warning Icon (5x5)
+  Widget _buildPixelWarning() {
+    return SizedBox(
+      width: 80,
+      height: 80,
+      child: Column(
+        children: [
+          // Row 1
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: Colors.transparent),
+            ],
+          ),
+          // Row 2
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+              Container(width: 16, height: 16, color: const Color(0xFFfde047)),
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+            ],
+          ),
+          // Row 3
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+              Container(width: 16, height: 16, color: const Color(0xFFfde047)),
+              Container(width: 16, height: 16, color: const Color(0xFFfef08a)),
+              Container(width: 16, height: 16, color: const Color(0xFFfde047)),
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+            ],
+          ),
+          // Row 4
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+              Container(width: 16, height: 16, color: const Color(0xFFfde047)),
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+            ],
+          ),
+          // Row 5
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
+              Container(width: 16, height: 16, color: Colors.transparent),
+              Container(width: 16, height: 16, color: Colors.transparent),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget Button แบบ Pixel Art
+  Widget _buildPixelButton(
+    String text,
+    Color bgColor,
+    Color textColor,
+    VoidCallback onPressed,
+  ) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: bgColor,
+          border: Border.all(
+            color: Colors.black,
+            width: 4,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              offset: const Offset(4, 4),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'TA8bit',
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+            letterSpacing: 1,
+            shadows: textColor == Colors.white
+                ? [
+                    const Shadow(
+                      offset: Offset(2, 2),
+                      color: Color(0x80000000),
+                    ),
+                  ]
+                : [],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ฟังก์ชัน Logout แบบ Pixel Art
   void _handleLogout() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
-            side: const BorderSide(
-              color: Color(0xFF204130),
-              width: 3,
-            ),
-          ),
-          backgroundColor: const Color(0xFFDBFFC8),
-          title: const Text(
-            'ออกจากระบบ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF204130),
-            ),
-          ),
-          content: const Text(
-            'คุณต้องการออกจากระบบหรือไม่?',
-            style: TextStyle(color: Color(0xFF204130)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'ยกเลิก',
-                style: TextStyle(
-                  color: Color(0xFF204130),
-                  fontWeight: FontWeight.bold,
-                ),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: Colors.black,
+                width: 8,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  offset: const Offset(8, 8),
+                  blurRadius: 0,
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                // TODO: ลบข้อมูล token, user data
-                // await SharedPreferences.getInstance().then((prefs) {
-                //   prefs.clear();
-                // });
+            child: Stack(
+              children: [
+                // Corner Pixels - เปลี่ยนเป็นสีชมพู pink-300
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                ),
 
-                Navigator.of(context).pop(); // ปิด dialog
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false, // ลบ stack ทั้งหมด
-                );
-              },
-              child: const Text(
-                'ออกจากระบบ',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header - เปลี่ยนเป็นสี rose-400
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFfb7185), // rose-400
+                        border: Border(
+                          bottom: BorderSide(color: Colors.black, width: 4),
+                        ),
+                      ),
+                      child: const Text(
+                        '◆ WARNING ◆',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'TA8bit',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(2, 2),
+                              color: Color(0x80000000),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        children: [
+                          // Warning Icon - เปลี่ยนเป็นสี rose-400
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFfb7185), // rose-400
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 4,
+                              ),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '?',
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Message
+                          const Text(
+                            'DO YOU WANT TO\nLOG OUT?',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'TA8bit',
+                              fontSize: 14,
+                              color: Color(0xFF1f2937),
+                              height: 1.5,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Pixel decoration - เปลี่ยนเป็นสี pink-400
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFf472b6), // pink-400
+                                  border: Border.all(color: Colors.black, width: 1),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFf472b6), // pink-400
+                                  border: Border.all(color: Colors.black, width: 1),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFf472b6), // pink-400
+                                  border: Border.all(color: Colors.black, width: 1),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildPixelButton(
+                                  'CANCEL',
+                                  Colors.grey[800]!,
+                                  Colors.white,
+                                  () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildPixelButton(
+                                  'LOGOUT',
+                                  const Color(0xFFfb7185), // rose-400
+                                  Colors.white,
+                                  () {
+                                    // TODO: ลบข้อมูล token, user data
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) => const LoginScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
   }
+}
+
+// Pixel Grid Painter
+class PixelGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.1)
+      ..strokeWidth = 1;
+
+    const spacing = 50.0;
+
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
