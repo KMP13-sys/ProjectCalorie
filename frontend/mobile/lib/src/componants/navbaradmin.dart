@@ -17,10 +17,11 @@ class NavBarUser extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: 70, // ← เพิ่มความสูงขึ้นนิดหน่อย
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // ← เพิ่ม padding
-      decoration: const BoxDecoration(
-        color: Color(0xFFffffff),
-      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 8,
+      ), // ← เพิ่ม padding
+      decoration: const BoxDecoration(color: Color(0xFFffffff)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center, // ← อยู่กลางแนวตั้ง
@@ -29,17 +30,14 @@ class NavBarUser extends StatelessWidget {
           GestureDetector(
             onTap: onLogoTap,
             child: Container(
-              width: 60,// ← ขนาดโลโก้
-              height:60, // ← สูงเต็มที่
+              width: 60, // ← ขนาดโลโก้
+              height: 60, // ← สูงเต็มที่
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(50),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
-                child: Image.asset(
-                  'assets/pic/logo.png',
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset('assets/pic/logo.png', fit: BoxFit.cover),
               ),
             ),
           ),
@@ -54,7 +52,7 @@ class NavBarUser extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: Color(0xFF204130),
               letterSpacing: 2,
-              fontFamily: 'TA8bit'
+              fontFamily: 'TA8bit',
             ),
           ),
 
@@ -81,10 +79,7 @@ class NavBarUser extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF204130),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFF204130), width: 2),
               ),
               child: const Icon(
                 Icons.person,

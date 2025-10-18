@@ -3,14 +3,10 @@ import 'package:mobile/src/profile/profile.dart';
 import '../home/home.dart';
 import '../profile/profile.dart';
 
-
 class NavBarUser extends StatelessWidget {
   final String username;
 
-  const NavBarUser({
-    Key? key,
-    this.username = 'User',
-  }) : super(key: key);
+  const NavBarUser({Key? key, this.username = 'User'}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +14,7 @@ class NavBarUser extends StatelessWidget {
       width: double.infinity,
       height: 70,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffffff),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFffffff)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -42,10 +36,7 @@ class NavBarUser extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
-                child: Image.asset(
-                  'assets/pic/logo.png',
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset('assets/pic/logo.png', fit: BoxFit.cover),
               ),
             ),
           ),
@@ -92,10 +83,7 @@ class NavBarUser extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF204130),
-                  width: 2,
-                ),
+                border: Border.all(color: const Color(0xFF204130), width: 2),
               ),
               child: const Icon(
                 Icons.person,
@@ -111,4 +99,3 @@ class NavBarUser extends StatelessWidget {
     );
   }
 }
-
