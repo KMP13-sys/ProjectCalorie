@@ -28,10 +28,10 @@ class _NavBarUserState extends State<NavBarUser> {
   Future<void> _loadUserProfile() async {
     try {
       final userId = await StorageHelper.getUserId();
-
+      
       if (userId != null) {
         final userProfile = await ProfileService.getUserProfile(userId);
-
+        
         if (userProfile != null && mounted) {
           setState(() {
             username = userProfile.username;
@@ -74,7 +74,12 @@ class _NavBarUserState extends State<NavBarUser> {
         gradient: const LinearGradient(
           colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
         ),
-        border: const Border(bottom: BorderSide(color: Colors.black, width: 6)),
+        border: const Border(
+          bottom: BorderSide(
+            color: Colors.black,
+            width: 6,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
@@ -85,7 +90,7 @@ class _NavBarUserState extends State<NavBarUser> {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -98,29 +103,12 @@ class _NavBarUserState extends State<NavBarUser> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => const HomeScreen()),
                       );
                     },
                     child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFFa8d88e), Color(0xFF8bc273)],
-                        ),
-                        border: Border.all(color: Colors.black, width: 4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            offset: const Offset(3, 3),
-                            blurRadius: 0,
-                          ),
-                        ],
-                      ),
+                      width: 60,
+                      height: 60,
                       child: Image.asset(
                         'assets/pic/logo.png',
                         fit: BoxFit.cover,
@@ -128,7 +116,10 @@ class _NavBarUserState extends State<NavBarUser> {
                           return Container(
                             color: const Color(0xFF8bc273),
                             child: const Center(
-                              child: Text('🥗', style: TextStyle(fontSize: 24)),
+                              child: Text(
+                                '🥗',
+                                style: TextStyle(fontSize: 24),
+                              ),
                             ),
                           );
                         },
@@ -143,9 +134,7 @@ class _NavBarUserState extends State<NavBarUser> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => const HomeScreen()),
                       );
                     },
                     child: Column(
@@ -192,13 +181,13 @@ class _NavBarUserState extends State<NavBarUser> {
                       children: [
                         // Username with pixel decoration
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(color: Colors.black, width: 3),
+                            border: Border.all(
+                              color: Colors.black,
+                              width: 3,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.3),
@@ -243,9 +232,7 @@ class _NavBarUserState extends State<NavBarUser> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => const ProfileScreen(),
-                              ),
+                              MaterialPageRoute(builder: (context) => const ProfileScreen()),
                             );
                           },
                           child: Container(
@@ -253,7 +240,10 @@ class _NavBarUserState extends State<NavBarUser> {
                             height: 44,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              border: Border.all(color: Colors.black, width: 4),
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 4,
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.3),
@@ -298,7 +288,11 @@ class _NavBarUserState extends State<NavBarUser> {
           },
           errorBuilder: (context, error, stackTrace) {
             return const Center(
-              child: Icon(Icons.person, color: Color(0xFF6fa85e), size: 24),
+              child: Icon(
+                Icons.person,
+                color: Color(0xFF6fa85e),
+                size: 24,
+              ),
             );
           },
         ),
@@ -306,7 +300,11 @@ class _NavBarUserState extends State<NavBarUser> {
     } else {
       // ไม่มีรูป ใช้ icon
       return const Center(
-        child: Icon(Icons.person, color: Color(0xFF6fa85e), size: 24),
+        child: Icon(
+          Icons.person,
+          color: Color(0xFF6fa85e),
+          size: 24,
+        ),
       );
     }
   }
@@ -319,7 +317,10 @@ class _NavBarUserState extends State<NavBarUser> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(color: Colors.black, width: 3),
+            border: Border.all(
+              color: Colors.black,
+              width: 3,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
@@ -349,7 +350,10 @@ class _NavBarUserState extends State<NavBarUser> {
           height: 44,
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(color: Colors.black, width: 4),
+            border: Border.all(
+              color: Colors.black,
+              width: 4,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
@@ -380,7 +384,10 @@ class _NavBarUserState extends State<NavBarUser> {
       height: 6,
       decoration: BoxDecoration(
         color: color,
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(
+          color: Colors.black,
+          width: 1,
+        ),
       ),
     );
   }
