@@ -5,15 +5,18 @@ export interface User {
   username: string;             // VARCHAR(50), NOT NULL, UNIQUE
   email: string;                // VARCHAR(100), NOT NULL, UNIQUE
   password: string;
-  image_profile: string;             // VARCHAR(255), NOT NULL
+  image_profile?: string;       // VARCHAR(255), Optional
   phone_number?: string;        // VARCHAR(15), Optional
   age?: number;                  // INT, Optional (with CHECK 1-120)
   gender?: 'male' | 'female';    // ENUM, Optional
   height?: number;               // DECIMAL(5,2), Optional (50-300)
   weight?: number;               // DECIMAL(5,2), Optional (20-300)
-  goal?: string;                // VARCHAR(50), Optional
+  goal?: 'lose weight' | 'maintain weight' | 'gain weight';  // VARCHAR(50), Optional
   created_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP
   updated_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP ON UPDATE
+  refresh_token?: string;     //  VARCHAR(500), Optional
+  refresh_token_expires_at?: Date; // DATETIME, Optional
+  last_login_at?: Date;        // DATETIME, Optional
 }
 
 // ดึงข้อมูลผู้ใช้ตาม ID
