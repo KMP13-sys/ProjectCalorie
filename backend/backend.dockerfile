@@ -6,7 +6,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 # คัดลอกไฟล์ที่จำเป็นสำหรับการติดตั้ง dependencies
-COPY package.json package-lock.json ./
+COPY package*json ./
 
 # ติดตั้ง dependencies ทั้งหมด (รวม devDependencies)
 RUN npm install
@@ -14,9 +14,12 @@ RUN npm install
 # คัดลอกซอร์สโค้ดทั้งหมดเข้าไปใน container
 COPY . .
 
+# สร้างโฟลเดอร์ uploads สำหรับเก็บไฟล์ที่อัพโหลด (ถ้ายังไม่มี)
+RUN mkdir /app/src/uploads
+
 # ติดตั้ง TypeScript และคอมไพล์จาก src -> dist
 RUN npm install -g typescript
-RUN tsc
+RUN npm run build
 
 # STAGE 2: Run (Production)
 FROM node:22-alpine AS runner
@@ -51,7 +54,6 @@ RUN echo '#!/bin/sh' > /wait-for.sh && \
     chmod +x /wait-for.sh
 
 # Config Port & Start Command
-
 EXPOSE 4000
 
 # ใช้ wait-for script เพื่อรอ MySQL ก่อนรัน API

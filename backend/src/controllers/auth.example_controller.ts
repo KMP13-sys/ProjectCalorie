@@ -11,16 +11,15 @@ const registerSchema = z.object({
   email: z.string().email("Invalid email format").max(100),
   phone_number: z.string().regex(/^[0-9]{10}$/, "Phone number must be 10 digits"),
   password: z.string()
-    .min(8, "Password must be at least 8 characters")
+    .min(6, "Password must be at least 6 characters")
     .max(100)
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
   age: z.number().int().min(13, "Must be at least 13 years old").max(120),
-  gender: z.enum(["male", "female", "other"]),
+  gender: z.enum(["male", "female"]),
   height: z.number().positive().min(50).max(300), // cm
   weight: z.number().positive().min(20).max(500), // kg
-  goal: z.enum(["lose_weight", "maintain", "gain_muscle"]),
+  goal: z.enum(["lose weight", "maintain weight", "gain weight"]),
 });
 
 const loginSchema = z.object({
@@ -42,7 +41,7 @@ export const register = async (req: Request, res: Response) => {
     if (!validationResult.success) {
       return res.status(400).json({ 
         message: "Validation failed", 
-        errors: validationResult.error.errors.map(err => ({
+        errors: validationResult.error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }))
@@ -122,7 +121,7 @@ export const login = async (req: Request, res: Response) => {
     if (!validationResult.success) {
       return res.status(400).json({ 
         message: "Validation failed", 
-        errors: validationResult.error.errors.map(err => ({
+        errors: validationResult.error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }))
