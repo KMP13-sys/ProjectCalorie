@@ -1148,31 +1148,31 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // Pixel Success Message
-  void _showPixelSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.green[700],
-            border: Border.all(color: Colors.black, width: 3),
-          ),
-          child: Text(
-            message,
-            style: const TextStyle(
-              fontFamily: 'TA8bit',
-              fontSize: 14,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+  // // Pixel Success Message
+  // void _showPixelSuccess(String message) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Container(
+  //         padding: const EdgeInsets.all(12),
+  //         decoration: BoxDecoration(
+  //           color: Colors.green[700],
+  //           border: Border.all(color: Colors.black, width: 3),
+  //         ),
+  //         child: Text(
+  //           message,
+  //           style: const TextStyle(
+  //             fontFamily: 'TA8bit',
+  //             fontSize: 14,
+  //             color: Colors.white,
+  //           ),
+  //         ),
+  //       ),
+  //       backgroundColor: Colors.transparent,
+  //       elevation: 0,
+  //       behavior: SnackBarBehavior.floating,
+  //     ),
+  //   );
+  // }
 
   // Privacy Policy Dialog
   void _showPrivacyPolicyDialog() {

@@ -4,7 +4,7 @@ import 'package:mobile/src/profile/profile.dart';
 import '../home/home.dart';
 import '../../service/storage_helper.dart';
 import '../../service/profile_service.dart';
-import '../../service/user_models.dart';
+//import '../../service/user_models.dart';
 
 class NavBarUser extends StatefulWidget {
   const NavBarUser({Key? key}) : super(key: key);
