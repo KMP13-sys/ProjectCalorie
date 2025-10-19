@@ -9,63 +9,7 @@ import '../../service/user_models.dart';
 class NavBarUser extends StatefulWidget {
   const NavBarUser({Key? key}) : super(key: key);
 
-  @override
-  State<NavBarUser> createState() => _NavBarUserState();
-}
-
-class _NavBarUserState extends State<NavBarUser> {
-  String username = 'USER'; // ค่าเริ่มต้น
-  String? profileImageUrl;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserProfile();
-  }
-
-  // ฟังก์ชันดึงข้อมูล User จาก API
-  Future<void> _loadUserProfile() async {
-    try {
-      final userId = await StorageHelper.getUserId();
-
-      if (userId != null) {
-        final userProfile = await ProfileService.getUserProfile(userId);
-
-        if (userProfile != null && mounted) {
-          setState(() {
-            username = userProfile.username;
-            profileImageUrl = userProfile.imageProfileUrl;
-            isLoading = false;
-          });
-        } else {
-          // ถ้าดึงข้อมูลไม่สำเร็จ ใช้ username จาก storage แทน
-          final storedUsername = await StorageHelper.getUsername();
-          if (mounted) {
-            setState(() {
-              username = storedUsername ?? 'USER';
-              isLoading = false;
-            });
-          }
-        }
-      } else {
-        // ไม่มี userId ใน storage
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
-        }
-      }
-    } catch (e) {
-      print('Error loading user profile: $e');
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
-
+  const NavBarUser({super.key, this.username = ''});
   @override
   Widget build(BuildContext context) {
     return Container(

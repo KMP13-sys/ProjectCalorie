@@ -28,6 +28,8 @@ app.use(express.json());
 // เสิร์ฟไฟล์ static สำหรับรูปที่อัปโหลด
 app.use("/uploads", express.static("src/uploads"));
 
+app.use(express.urlencoded({ extended: true }));
+
 // ====== Routes ======
 app.use("/auth", authRoutes);
 app.use("/api/users", userRoutes);
