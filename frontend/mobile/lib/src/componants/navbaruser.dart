@@ -28,10 +28,10 @@ class _NavBarUserState extends State<NavBarUser> {
   Future<void> _loadUserProfile() async {
     try {
       final userId = await StorageHelper.getUserId();
-      
+
       if (userId != null) {
         final userProfile = await ProfileService.getUserProfile(userId);
-        
+
         if (userProfile != null && mounted) {
           setState(() {
             username = userProfile.username;
@@ -74,12 +74,7 @@ class _NavBarUserState extends State<NavBarUser> {
         gradient: const LinearGradient(
           colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
         ),
-        border: const Border(
-          bottom: BorderSide(
-            color: Colors.black,
-            width: 6,
-          ),
-        ),
+        border: const Border(bottom: BorderSide(color: Colors.black, width: 6)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
@@ -103,7 +98,9 @@ class _NavBarUserState extends State<NavBarUser> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
                       );
                     },
                     child: Container(
@@ -116,10 +113,7 @@ class _NavBarUserState extends State<NavBarUser> {
                           return Container(
                             color: const Color(0xFF8bc273),
                             child: const Center(
-                              child: Text(
-                                '🥗',
-                                style: TextStyle(fontSize: 24),
-                              ),
+                              child: Text('🥗', style: TextStyle(fontSize: 24)),
                             ),
                           );
                         },
@@ -134,7 +128,9 @@ class _NavBarUserState extends State<NavBarUser> {
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
                       );
                     },
                     child: Column(
@@ -181,13 +177,13 @@ class _NavBarUserState extends State<NavBarUser> {
                       children: [
                         // Username with pixel decoration
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(
-                              color: Colors.black,
-                              width: 3,
-                            ),
+                            border: Border.all(color: Colors.black, width: 2),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.3),
@@ -200,8 +196,8 @@ class _NavBarUserState extends State<NavBarUser> {
                             children: [
                               // Pixel star
                               Container(
-                                width: 8,
-                                height: 8,
+                                width: 5,
+                                height: 5,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF6fa85e),
                                   border: Border.all(
@@ -232,18 +228,17 @@ class _NavBarUserState extends State<NavBarUser> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileScreen(),
+                              ),
                             );
                           },
                           child: Container(
-                            width: 44,
-                            height: 44,
+                            width: 50,
+                            height: 50,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 4,
-                              ),
+                              border: Border.all(color: Colors.black, width: 2),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.3),
@@ -288,11 +283,7 @@ class _NavBarUserState extends State<NavBarUser> {
           },
           errorBuilder: (context, error, stackTrace) {
             return const Center(
-              child: Icon(
-                Icons.person,
-                color: Color(0xFF6fa85e),
-                size: 24,
-              ),
+              child: Icon(Icons.person, color: Color(0xFF6fa85e), size: 24),
             );
           },
         ),
@@ -300,11 +291,7 @@ class _NavBarUserState extends State<NavBarUser> {
     } else {
       // ไม่มีรูป ใช้ icon
       return const Center(
-        child: Icon(
-          Icons.person,
-          color: Color(0xFF6fa85e),
-          size: 24,
-        ),
+        child: Icon(Icons.person, color: Color(0xFF6fa85e), size: 24),
       );
     }
   }
@@ -317,10 +304,7 @@ class _NavBarUserState extends State<NavBarUser> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(
-              color: Colors.black,
-              width: 3,
-            ),
+            border: Border.all(color: Colors.black, width: 3),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
@@ -350,10 +334,7 @@ class _NavBarUserState extends State<NavBarUser> {
           height: 44,
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(
-              color: Colors.black,
-              width: 4,
-            ),
+            border: Border.all(color: Colors.black, width: 4),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
@@ -384,10 +365,7 @@ class _NavBarUserState extends State<NavBarUser> {
       height: 6,
       decoration: BoxDecoration(
         color: color,
-        border: Border.all(
-          color: Colors.black,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.black, width: 1),
       ),
     );
   }

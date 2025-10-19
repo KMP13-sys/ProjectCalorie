@@ -9,12 +9,12 @@ export const getTodayMeals = async (req: Request, res: Response) => {
 
     const [rows]: any = await db.query(
       `
-      SELECT f.food_name, f.calories, md.meal_time
+      SELECT f.food_name, f.calories
       FROM Meals m
       JOIN MealDetails md ON m.meal_id = md.meal_id
       JOIN Foods f ON md.food_id = f.food_id
       WHERE m.user_id = ? AND m.date = CURDATE()
-      ORDER BY md.meal_time ASC
+      ORDER BY md.meal_detail_id ASC
       `,
       [userId]
     );
