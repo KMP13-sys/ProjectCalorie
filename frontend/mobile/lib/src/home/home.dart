@@ -13,8 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // ตัวแปรเก็บข้อมูล
-  String _username = 'Guest';
-  double _currentCalories = 1006;
+  double _currentCalories = 2000;
   double _targetCalories = 2200;
   bool _isLoading = true;
 
@@ -40,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           // Navbar
-          NavBarUser(username: _username),
+          NavBarUser(),
           
           // Content (แบ่งครึ่งซ้าย-ขวา)
           Expanded(
