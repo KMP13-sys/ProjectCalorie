@@ -2,16 +2,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_models.dart';
+import 'storage_helper.dart'; // ← เพิ่มบรรทัดนี้
 
 class ApiService {
   // Base URL ของ API
   static const String baseUrl = 'http://localhost:4000/auth';
 
   // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
-  // static const String baseUrl = 'http://10.0.2.2:5000/auth';
+  // static const String baseUrl = 'http://10.0.2.2:4000/auth';
 
   // สำหรับ iOS Simulator ใช้ localhost ได้เลย
-  // static const String baseUrl = 'http://localhost:5000/auth';
+  // static const String baseUrl = 'http://localhost:4000/auth';
 
   // ฟังก์ชันสมัครสมาชิก
   static Future<AuthResponse> register({
@@ -47,7 +48,17 @@ class ApiService {
       final Map<String, dynamic> data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        // สมัครสำเร็จ
+        // สมัครสำเร็จ - บันทึก token
+        if (data['token'] != null) {
+          await StorageHelper.saveToken(data['token']);
+
+          // ถ้ามี user data ให้บันทึก user_id และ username ด้วย
+          if (data['user'] != null) {
+            await StorageHelper.saveUserId(data['user']['id']);
+            await StorageHelper.saveUsername(data['user']['username']);
+          }
+        }
+
         return AuthResponse(
           success: true,
           message: data['message'],
@@ -85,7 +96,15 @@ class ApiService {
       final Map<String, dynamic> data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        // Login สำเร็จ
+        // Login สำเร็จ - บันทึก token และข้อมูล user
+        if (data['token'] != null && data['user'] != null) {
+          await StorageHelper.saveLoginData(
+            token: data['token'],
+            userId: data['user']['id'],
+            username: data['user']['username'],
+          );
+        }
+
         return LoginResponse(
           success: true,
           message: data['message'],

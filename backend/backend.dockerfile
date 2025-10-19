@@ -54,7 +54,6 @@ RUN echo '#!/bin/sh' > /wait-for.sh && \
     chmod +x /wait-for.sh
 
 # Config Port & Start Command
-
 EXPOSE 4000
 
 # ใช้ wait-for script เพื่อรอ MySQL ก่อนรัน API

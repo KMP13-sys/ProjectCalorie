@@ -1,6 +1,12 @@
+// lib/src/profile/profile.dart
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../componants/navbaruser.dart';
 import '../authen/login.dart';
+import '../../service/storage_helper.dart';
+import '../../service/profile_service.dart';
+import '../../service/user_models.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -10,29 +16,36 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // ข้อมูลผู้ใช้ (ควรดึงจาก database จริง)
-  final String username = 'MyPeach';
-  
+  // ข้อมูลผู้ใช้
+  UserProfile? userProfile;
+  bool isLoadingProfile = true;
+
   // Controllers สำหรับแก้ไขข้อมูล
   late TextEditingController _weightController;
   late TextEditingController _heightController;
   late TextEditingController _ageController;
-  String _selectedGender = 'Male';
-  String _selectedGoal = 'Lose Weight';
-  
+  String _selectedGender = 'male';
+  String _selectedGoal = 'lose weight';
+
   // State สำหรับ toggle edit mode
   bool _isEditing = false;
   bool _isLoading = false;
-  
+
+  // สำหรับอัปโหลดรูป
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
+
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with current data
-    _weightController = TextEditingController(text: '65');
-    _heightController = TextEditingController(text: '170');
-    _ageController = TextEditingController(text: '25');
+    // Initialize controllers
+    _weightController = TextEditingController();
+    _heightController = TextEditingController();
+    _ageController = TextEditingController();
+
+    _loadUserProfile();
   }
-  
+
   @override
   void dispose() {
     _weightController.dispose();
@@ -41,8 +54,109 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  // โหลดข้อมูล User จาก API
+  Future<void> _loadUserProfile() async {
+    try {
+      final userId = await StorageHelper.getUserId();
+
+      if (userId != null) {
+        final profile = await ProfileService.getUserProfile(userId);
+
+        if (profile != null && mounted) {
+          setState(() {
+            userProfile = profile;
+            _weightController.text = profile.weight?.toString() ?? '';
+            _heightController.text = profile.height?.toString() ?? '';
+            _ageController.text = profile.age?.toString() ?? '';
+            _selectedGender = profile.gender ?? 'male';
+            _selectedGoal =
+                profile.goal ?? 'lose weight'; // ✅ แก้เป็น 'lose weight'
+            isLoadingProfile = false;
+          });
+        } else {
+          setState(() => isLoadingProfile = false);
+        }
+      } else {
+        setState(() => isLoadingProfile = false);
+      }
+    } catch (e) {
+      print('Error loading profile: $e');
+      setState(() => isLoadingProfile = false);
+    }
+  }
+
+  // เลือกรูปจาก Gallery
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+
+        // อัปโหลดรูปทันที
+        await _uploadProfileImage();
+      }
+    } catch (e) {
+      _showErrorDialog('เกิดข้อผิดพลาดในการเลือกรูป: ${e.toString()}');
+    }
+  }
+
+  // อัปโหลดรูปโปรไฟล์
+  Future<void> _uploadProfileImage() async {
+    if (_selectedImage == null || userProfile == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await ProfileService.updateProfileImage(
+        userId: userProfile!.userId,
+        imageFile: _selectedImage!,
+      );
+
+      setState(() => _isLoading = false);
+
+      if (result['success']) {
+        // อัปโหลดสำเร็จ - โหลดข้อมูลใหม่
+        await _loadUserProfile();
+
+        if (mounted) {
+          _showSuccessDialog('✓ อัปเดทรูปโปรไฟล์เรียบร้อย!');
+        }
+      } else {
+        _showErrorDialog(result['message']);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorDialog('เกิดข้อผิดพลาด: ${e.toString()}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isLoadingProfile) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF6fa85e), Color(0xFF8bc273), Color(0xFFa8d88e)],
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -66,8 +180,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           Column(
             children: [
-              // Navbar
-              NavBarUser(username: username),
+              // Navbar - ไม่ต้องส่ง parameter แล้ว
+              const NavBarUser(),
 
               // เนื้อหาหน้า Profile
               Expanded(
@@ -83,10 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           constraints: const BoxConstraints(maxWidth: 500),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(
-                              color: Colors.black,
-                              width: 8,
-                            ),
+                            border: Border.all(color: Colors.black, width: 8),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.3),
@@ -105,13 +216,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   // Header Bar
                                   Container(
                                     width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                     decoration: const BoxDecoration(
                                       gradient: LinearGradient(
-                                        colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
+                                        colors: [
+                                          Color(0xFF6fa85e),
+                                          Color(0xFF8bc273),
+                                        ],
                                       ),
                                       border: Border(
-                                        bottom: BorderSide(color: Colors.black, width: 6),
+                                        bottom: BorderSide(
+                                          color: Colors.black,
+                                          width: 6,
+                                        ),
                                       ),
                                     ),
                                     child: const Text(
@@ -138,42 +257,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     padding: const EdgeInsets.all(32.0),
                                     child: Column(
                                       children: [
-                                        // Avatar แบบ Pixel Art
-                                        Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            gradient: const LinearGradient(
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                              colors: [
-                                                Color(0xFFa8d88e),
-                                                Color(0xFF8bc273),
-                                              ],
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.black,
-                                              width: 4,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.2),
-                                                offset: const Offset(4, 4),
-                                                blurRadius: 0,
+                                        // Avatar แบบ Pixel Art พร้อมปุ่มเปลี่ยนรูป
+                                        Stack(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                gradient: const LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    Color(0xFFa8d88e),
+                                                    Color(0xFF8bc273),
+                                                  ],
+                                                ),
+                                                border: Border.all(
+                                                  color: Colors.black,
+                                                  width: 4,
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.2),
+                                                    offset: const Offset(4, 4),
+                                                    blurRadius: 0,
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                          child: const Icon(
-                                            Icons.person,
-                                            size: 100,
-                                            color: Colors.white,
-                                          ),
+                                              child: _buildProfileAvatar(),
+                                            ),
+                                            // ปุ่มแก้ไขรูป
+                                            Positioned(
+                                              bottom: 0,
+                                              right: 0,
+                                              child: GestureDetector(
+                                                onTap: _isLoading
+                                                    ? null
+                                                    : _pickImage,
+                                                child: Container(
+                                                  width: 40,
+                                                  height: 40,
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(
+                                                      0xFF6fa85e,
+                                                    ),
+                                                    border: Border.all(
+                                                      color: Colors.black,
+                                                      width: 3,
+                                                    ),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withOpacity(0.3),
+                                                        offset: const Offset(
+                                                          2,
+                                                          2,
+                                                        ),
+                                                        blurRadius: 0,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: _isLoading
+                                                      ? const Center(
+                                                          child: SizedBox(
+                                                            width: 20,
+                                                            height: 20,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                                  strokeWidth:
+                                                                      2,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                          ),
+                                                        )
+                                                      : const Icon(
+                                                          Icons.camera_alt,
+                                                          color: Colors.white,
+                                                          size: 20,
+                                                        ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
 
                                         const SizedBox(height: 24),
 
                                         // Username
                                         Text(
-                                          username.toUpperCase(),
+                                          (userProfile?.username ?? 'USER')
+                                              .toUpperCase(),
                                           style: const TextStyle(
                                             fontFamily: 'TA8bit',
                                             fontSize: 24,
@@ -187,7 +361,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                         // Pixel Dots
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Container(
                                               width: 8,
@@ -222,7 +397,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                           ),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               const Text(
                                                 '▶ PERSONAL INFO',
@@ -235,13 +411,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               ),
                                               const SizedBox(height: 16),
 
-                                              _buildInfoField('WEIGHT', _weightController, 'kg'),
+                                              _buildInfoField(
+                                                'WEIGHT',
+                                                _weightController,
+                                                'kg',
+                                              ),
                                               const SizedBox(height: 12),
 
-                                              _buildInfoField('HEIGHT', _heightController, 'cm'),
+                                              _buildInfoField(
+                                                'HEIGHT',
+                                                _heightController,
+                                                'cm',
+                                              ),
                                               const SizedBox(height: 12),
 
-                                              _buildInfoField('AGE', _ageController, 'years'),
+                                              _buildInfoField(
+                                                'AGE',
+                                                _ageController,
+                                                'years',
+                                              ),
                                               const SizedBox(height: 12),
 
                                               _buildGenderField(),
@@ -255,17 +443,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         const SizedBox(height: 32),
 
                                         // Buttons (เปลี่ยนตาม state)
-                                        _isEditing ? _buildEditModeButtons() : _buildNormalModeButtons(),
+                                        _isEditing
+                                            ? _buildEditModeButtons()
+                                            : _buildNormalModeButtons(),
 
                                         const SizedBox(height: 24),
-
-                                        // Status
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 16,
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -286,6 +468,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  // Widget แสดงรูปโปรไฟล์
+  Widget _buildProfileAvatar() {
+    // ถ้ามีรูปที่เลือกจาก gallery
+    if (_selectedImage != null) {
+      return ClipRect(
+        child: Image.file(
+          _selectedImage!,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    // ถ้ามีรูปจาก backend
+    if (userProfile?.imageProfileUrl != null &&
+        userProfile!.imageProfileUrl!.isNotEmpty) {
+      return ClipRect(
+        child: Image.network(
+          userProfile!.imageProfileUrl!,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const SizedBox(
+              width: 100,
+              height: 100,
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(Icons.person, size: 100, color: Colors.white);
+          },
+        ),
+      );
+    }
+
+    // ไม่มีรูป - แสดง icon
+    return const Icon(Icons.person, size: 100, color: Colors.white);
   }
 
   List<Widget> _buildCornerPixels() {
@@ -314,7 +540,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Widget Info Field (รองรับทั้ง read-only และ editable)
-  Widget _buildInfoField(String label, TextEditingController controller, String unit) {
+  Widget _buildInfoField(
+    String label,
+    TextEditingController controller,
+    String unit,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -365,7 +595,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${controller.text} $unit',
+                      controller.text.isEmpty
+                          ? '-'
+                          : '${controller.text} $unit',
                       style: const TextStyle(
                         fontFamily: 'TA8bit',
                         fontSize: 13,
@@ -419,10 +651,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     dropdownColor: Colors.white,
                     icon: Icon(Icons.arrow_drop_down, color: Colors.grey[800]),
-                    items: ['Male', 'Female'].map((String value) {
+                    items: ['male', 'female'].map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value.toUpperCase()),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -483,13 +715,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     dropdownColor: Colors.white,
                     icon: Icon(Icons.arrow_drop_down, color: Colors.grey[800]),
-                    items: ['Lose Weight', 'Maintain Weight', 'Gain Weight']
+                    items: ['lose weight', 'maintain weight', 'gain weight']
                         .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value.toUpperCase()), // แสดงเป็นตัวใหญ่
+                          );
+                        })
+                        .toList(),
                     onChanged: (value) {
                       setState(() => _selectedGoal = value!);
                     },
@@ -537,7 +770,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Expanded(
           child: _buildPixelButton(
             'LOGOUT ▶',
-            const Color(0xFFfb7185), // rose-400
+            const Color(0xFFfb7185),
             Colors.white,
             _handleLogout,
           ),
@@ -592,61 +825,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Handle Cancel
   void _handleCancel() {
     setState(() {
-      // รีเซ็ตค่ากลับไปเป็นค่าเดิม
-      _weightController.text = '65';
-      _heightController.text = '170';
-      _ageController.text = '25';
-      _selectedGender = 'Male';
-      _selectedGoal = 'Lose Weight';
+      if (userProfile != null) {
+        _weightController.text = userProfile!.weight?.toString() ?? '';
+        _heightController.text = userProfile!.height?.toString() ?? '';
+        _ageController.text = userProfile!.age?.toString() ?? '';
+        _selectedGender = userProfile!.gender ?? 'male';
+        _selectedGoal = userProfile!.goal ?? 'lose weight';
+      }
       _isEditing = false;
     });
   }
 
   // Handle Save
   Future<void> _handleSave() async {
+    if (userProfile == null) return;
+
     // Validation
     final weight = double.tryParse(_weightController.text);
     final height = double.tryParse(_heightController.text);
     final age = int.tryParse(_ageController.text);
 
-    if (weight == null || weight < 30 || weight > 300) {
-      _showErrorDialog('⚠ กรุณากรอกน้ำหนักที่ถูกต้อง (30-300 kg)');
+    if (weight == null || weight < 20 || weight > 300) {
+      _showErrorDialog('⚠ กรุณากรอกน้ำหนักที่ถูกต้อง');
       return;
     }
 
-    if (height == null || height < 100 || height > 250) {
-      _showErrorDialog('⚠ กรุณากรอกส่วนสูงที่ถูกต้อง (100-250 cm)');
+    if (height == null || height < 50 || height > 300) {
+      _showErrorDialog('⚠ กรุณากรอกส่วนสูงที่ถูกต้อง');
       return;
     }
 
-    if (age == null || age < 10 || age > 120) {
-      _showErrorDialog('⚠ กรุณากรอกอายุที่ถูกต้อง (10-120 years)');
+    if (age == null || age < 1 || age > 120) {
+      _showErrorDialog('⚠ กรุณากรอกอายุที่ถูกต้อง');
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      // TODO: เรียก API update profile
-      // await ApiService.updateProfile(
-      //   weight: weight,
-      //   height: height,
-      //   age: age,
-      //   gender: _selectedGender.toLowerCase(),
-      //   goal: _selectedGoal.toLowerCase(),
-      // );
+      // เรียก API update profile
+      final result = await ProfileService.updateProfile(
+        userId: userProfile!.userId,
+        weight: weight,
+        height: height,
+        age: age,
+        gender: _selectedGender,
+        goal: _selectedGoal,
+      );
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      setState(() => _isLoading = false);
 
-      setState(() {
-        _isLoading = false;
-        _isEditing = false;
-      });
+      if (result['success']) {
+        // บันทึกสำเร็จ - โหลดข้อมูลใหม่
+        await _loadUserProfile();
 
-      // แสดง success message
-      if (mounted) {
-        _showSuccessDialog('✓ บันทึกข้อมูลเรียบร้อย!');
+        setState(() => _isEditing = false);
+
+        if (mounted) {
+          _showSuccessDialog('✓ บันทึกข้อมูลเรียบร้อย!');
+        }
+      } else {
+        _showErrorDialog(result['message']);
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -680,7 +919,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Message Dialog (แบบน่ารักๆ)
+  // Message Dialog
   Widget _buildMessageDialog({
     required String title,
     required String message,
@@ -688,7 +927,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String icon,
   }) {
     final isSuccess = title == 'SUCCESS';
-    
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
@@ -696,7 +935,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: isSuccess 
+            colors: isSuccess
                 ? [const Color(0xFFa8d88e), const Color(0xFF8bc273)]
                 : [const Color(0xFFfecaca), const Color(0xFFfca5a5)],
           ),
@@ -712,10 +951,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Stack(
           children: [
             // Corner Pixels
-            Positioned(top: 0, left: 0, child: Container(width: 16, height: 16, color: color)),
-            Positioned(top: 0, right: 0, child: Container(width: 16, height: 16, color: color)),
-            Positioned(bottom: 0, left: 0, child: Container(width: 16, height: 16, color: color)),
-            Positioned(bottom: 0, right: 0, child: Container(width: 16, height: 16, color: color)),
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(width: 16, height: 16, color: color),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(width: 16, height: 16, color: color),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: Container(width: 16, height: 16, color: color),
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(width: 16, height: 16, color: color),
+            ),
 
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -750,12 +1005,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.all(32.0),
                   child: Column(
                     children: [
-                      // Pixel Icon (Heart สำหรับ success, Warning สำหรับ error)
+                      // Pixel Icon
                       isSuccess ? _buildPixelHeart() : _buildPixelWarning(),
 
                       const SizedBox(height: 24),
 
-                      // Message Box (สีขาวแบบในรูป)
+                      // Message Box
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -776,7 +1031,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              isSuccess 
+                              isSuccess
                                   ? 'Changes saved successfully!'
                                   : message,
                               textAlign: TextAlign.center,
@@ -792,7 +1047,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Continue Button (full width gradient)
+                      // Continue Button
                       SizedBox(
                         width: double.infinity,
                         child: GestureDetector(
@@ -802,8 +1057,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: isSuccess
-                                    ? [const Color(0xFF6fa85e), const Color(0xFF8bc273)]
-                                    : [const Color(0xFFdc2626), const Color(0xFFef4444)],
+                                    ? [
+                                        const Color(0xFF6fa85e),
+                                        const Color(0xFF8bc273),
+                                      ]
+                                    : [
+                                        const Color(0xFFdc2626),
+                                        const Color(0xFFef4444),
+                                      ],
                               ),
                               border: Border.all(color: Colors.black, width: 4),
                               boxShadow: [
@@ -845,14 +1106,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Pixel Heart Icon (5x5)
+  // Pixel Heart Icon
   Widget _buildPixelHeart() {
     return SizedBox(
       width: 80,
       height: 80,
       child: Column(
         children: [
-          // Row 1
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -863,7 +1123,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: Colors.transparent),
             ],
           ),
-          // Row 2
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -874,7 +1133,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
             ],
           ),
-          // Row 3
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -885,7 +1143,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: const Color(0xFFff6b6b)),
             ],
           ),
-          // Row 4
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -896,7 +1153,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: Colors.transparent),
             ],
           ),
-          // Row 5
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -912,14 +1168,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Pixel Warning Icon (5x5)
+  // Pixel Warning Icon
   Widget _buildPixelWarning() {
     return SizedBox(
       width: 80,
       height: 80,
       child: Column(
         children: [
-          // Row 1
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -930,7 +1185,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: Colors.transparent),
             ],
           ),
-          // Row 2
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -941,7 +1195,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: Colors.transparent),
             ],
           ),
-          // Row 3
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -952,7 +1205,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: const Color(0xFFfbbf24)),
             ],
           ),
-          // Row 4
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -963,7 +1215,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(width: 16, height: 16, color: Colors.transparent),
             ],
           ),
-          // Row 5
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -992,10 +1243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: bgColor,
-          border: Border.all(
-            color: Colors.black,
-            width: 4,
-          ),
+          border: Border.all(color: Colors.black, width: 4),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -1014,12 +1262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: textColor,
             letterSpacing: 1,
             shadows: textColor == Colors.white
-                ? [
-                    const Shadow(
-                      offset: Offset(2, 2),
-                      color: Color(0x80000000),
-                    ),
-                  ]
+                ? [const Shadow(offset: Offset(2, 2), color: Color(0x80000000))]
                 : [],
           ),
         ),
@@ -1027,7 +1270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ฟังก์ชัน Logout แบบ Pixel Art
+  // ฟังก์ชัน Logout
   void _handleLogout() {
     showDialog(
       context: context,
@@ -1037,10 +1280,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(
-                color: Colors.black,
-                width: 8,
-              ),
+              border: Border.all(color: Colors.black, width: 8),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.5),
@@ -1051,37 +1291,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Stack(
               children: [
-                // Corner Pixels - เปลี่ยนเป็นสีชมพู pink-300
+                // Corner Pixels
                 Positioned(
                   top: 0,
                   left: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFf9a8d4),
+                  ),
                 ),
                 Positioned(
                   top: 0,
                   right: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFf9a8d4),
+                  ),
                 ),
                 Positioned(
                   bottom: 0,
                   left: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFf9a8d4),
+                  ),
                 ),
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: Container(width: 16, height: 16, color: const Color(0xFFf9a8d4)),
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFf9a8d4),
+                  ),
                 ),
 
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Header - เปลี่ยนเป็นสี rose-400
+                    // Header
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFfb7185), // rose-400
+                        color: Color(0xFFfb7185),
                         border: Border(
                           bottom: BorderSide(color: Colors.black, width: 4),
                         ),
@@ -1109,16 +1365,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
                         children: [
-                          // Warning Icon - เปลี่ยนเป็นสี rose-400
+                          // Warning Icon
                           Container(
                             width: 64,
                             height: 64,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFfb7185), // rose-400
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 4,
-                              ),
+                              color: const Color(0xFFfb7185),
+                              border: Border.all(color: Colors.black, width: 4),
                             ),
                             child: const Center(
                               child: Text(
@@ -1148,7 +1401,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Pixel decoration - เปลี่ยนเป็นสี pink-400
+                          // Pixel decoration
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -1156,8 +1409,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFf472b6), // pink-400
-                                  border: Border.all(color: Colors.black, width: 1),
+                                  color: const Color(0xFFf472b6),
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 1,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -1165,8 +1421,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFf472b6), // pink-400
-                                  border: Border.all(color: Colors.black, width: 1),
+                                  color: const Color(0xFFf472b6),
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 1,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -1174,8 +1433,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFf472b6), // pink-400
-                                  border: Border.all(color: Colors.black, width: 1),
+                                  color: const Color(0xFFf472b6),
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 1,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1200,17 +1462,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Expanded(
                                 child: _buildPixelButton(
                                   'LOGOUT',
-                                  const Color(0xFFfb7185), // rose-400
+                                  const Color(0xFFfb7185),
                                   Colors.white,
-                                  () {
-                                    // TODO: ลบข้อมูล token, user data
-                                    Navigator.of(context).pop();
-                                    Navigator.of(context).pushAndRemoveUntil(
-                                      MaterialPageRoute(
-                                        builder: (context) => const LoginScreen(),
-                                      ),
-                                      (route) => false,
-                                    );
+                                  () async {
+                                    // ลบข้อมูล token, user data
+                                    await StorageHelper.clearAll();
+
+                                    if (mounted) {
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const LoginScreen(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    }
                                   },
                                 ),
                               ),
