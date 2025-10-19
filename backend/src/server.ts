@@ -36,6 +36,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/update", updateRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/daily", dailyRoutes);
+app.use("/daily", dailyRoutes);
 
 // ====== Root test route ======
 app.get("/", (req, res) => {
