@@ -31,3 +31,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Docker files
+*.dockerfile
+docker-compose.yml
+.dockerignore
+
+# Visual Studio Code
+.vscode/

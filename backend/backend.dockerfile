@@ -1,4 +1,3 @@
-
 # STAGE 1: Build (Compile TypeScript)
 FROM node:22-alpine AS builder
 
@@ -14,9 +13,6 @@ RUN npm install
 # คัดลอกซอร์สโค้ดทั้งหมดเข้าไปใน container
 COPY . .
 
-# สร้างโฟลเดอร์ uploads สำหรับเก็บไฟล์ที่อัพโหลด (ถ้ายังไม่มี)
-RUN mkdir /app/src/uploads
-
 # ติดตั้ง TypeScript และคอมไพล์จาก src -> dist
 RUN npm install -g typescript
 RUN npm run build
@@ -28,7 +24,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # คัดลอกเฉพาะ dependencies ที่ใช้จริงใน production
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN npm install --omit=dev
 
 # คัดลอกไฟล์ที่คอมไพล์แล้วจาก builder stage
