@@ -9,7 +9,7 @@ class ApiService {
   static const String baseUrl = 'http://localhost:4000/auth';
 
   // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
-  // static const String baseUrl = 'http://10.0.2.2:4000/auth';
+  //static const String baseUrl = 'http://10.0.2.2:4000/auth';
 
   // สำหรับ iOS Simulator ใช้ localhost ได้เลย
   // static const String baseUrl = 'http://localhost:4000/auth';

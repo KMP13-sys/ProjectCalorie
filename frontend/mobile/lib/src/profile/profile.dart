@@ -286,59 +286,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               ),
                                               child: _buildProfileAvatar(),
                                             ),
-                                            // ปุ่มแก้ไขรูป
-                                            Positioned(
-                                              bottom: 0,
-                                              right: 0,
-                                              child: GestureDetector(
-                                                onTap: _isLoading
-                                                    ? null
-                                                    : _pickImage,
-                                                child: Container(
-                                                  width: 40,
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(
-                                                      0xFF6fa85e,
-                                                    ),
-                                                    border: Border.all(
-                                                      color: Colors.black,
-                                                      width: 3,
-                                                    ),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.black
-                                                            .withOpacity(0.3),
-                                                        offset: const Offset(
-                                                          2,
-                                                          2,
-                                                        ),
-                                                        blurRadius: 0,
+                                            // ✅ ปุ่มแก้ไขรูป - แสดงเฉพาะใน Edit Mode
+                                            if (_isEditing)
+                                              Positioned(
+                                                bottom: 0,
+                                                right: 0,
+                                                child: GestureDetector(
+                                                  onTap: _isLoading
+                                                      ? null
+                                                      : _pickImage,
+                                                  child: Container(
+                                                    width: 40,
+                                                    height: 40,
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xFF6fa85e,
                                                       ),
-                                                    ],
-                                                  ),
-                                                  child: _isLoading
-                                                      ? const Center(
-                                                          child: SizedBox(
-                                                            width: 20,
-                                                            height: 20,
-                                                            child:
-                                                                CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                  color: Colors
-                                                                      .white,
+                                                      border: Border.all(
+                                                        color: Colors.black,
+                                                        width: 3,
+                                                      ),
+                                                    ),
+                                                    child: _isLoading
+                                                        ? const Center(
+                                                            child: SizedBox(
+                                                              width: 20,
+                                                              height: 20,
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                            ),
+                                                          )
+                                                        : Padding(
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  8,
                                                                 ),
+                                                            // ✅ เปลี่ยนจาก Icon เป็น Image.asset
+                                                            child: Image.asset(
+                                                              'assets/pic/camera.png',
+                                                              width: 30,
+                                                              height: 30,
+                                                            ),
                                                           ),
-                                                        )
-                                                      : const Icon(
-                                                          Icons.camera_alt,
-                                                          color: Colors.white,
-                                                          size: 20,
-                                                        ),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
                                           ],
                                         ),
 
@@ -504,14 +501,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
           errorBuilder: (context, error, stackTrace) {
-            return const Icon(Icons.person, size: 100, color: Colors.white);
+            return Container(
+              width: 100,
+              height: 100,
+              color: Colors.white,
+              child: Center(
+                child: Image.asset(
+                  'assets/pic/person.png',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            );
           },
         ),
       );
     }
 
-    // ไม่มีรูป - แสดง icon
-    return const Icon(Icons.person, size: 100, color: Colors.white);
+    // ✅ ไม่มีรูป - ใช้ person.png
+    return Container(
+      width: 100,
+      height: 100,
+      color: Colors.white,
+      child: Center(
+        child: Image.asset(
+          'assets/pic/person.png',
+          width: 60,
+          height: 60,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
   }
 
   List<Widget> _buildCornerPixels() {

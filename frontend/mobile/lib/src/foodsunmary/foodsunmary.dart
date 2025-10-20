@@ -48,10 +48,7 @@ class CameraIconButton extends StatelessWidget {
                 ),
                 subtitle: const Text(
                   'เปิดกล้องเพื่อถ่ายรูปใหม่',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(fontFamily: 'monospace', fontSize: 12),
                 ),
                 onTap: () => Navigator.pop(context, ImageSource.camera),
                 shape: RoundedRectangleBorder(
@@ -76,10 +73,7 @@ class CameraIconButton extends StatelessWidget {
                 ),
                 subtitle: const Text(
                   'เลือกรูปจากแกลเลอรี่',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(fontFamily: 'monospace', fontSize: 12),
                 ),
                 onTap: () => Navigator.pop(context, ImageSource.gallery),
                 shape: RoundedRectangleBorder(
@@ -94,10 +88,7 @@ class CameraIconButton extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               child: const Text(
                 'ยกเลิก',
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontFamily: 'monospace', color: Colors.grey),
               ),
             ),
           ],
@@ -109,7 +100,7 @@ class CameraIconButton extends StatelessWidget {
     if (source == null) return;
 
     final ImagePicker picker = ImagePicker();
-    
+
     try {
       // เปิดกล้องหรือแกลเลอรี่ตามที่เลือก
       final XFile? image = await picker.pickImage(
@@ -119,7 +110,7 @@ class CameraIconButton extends StatelessWidget {
 
       if (image != null) {
         final File imageFile = File(image.path);
-        
+
         // ส่งรูปกลับผ่าน callback (ถ้ามี)
         if (onImageCaptured != null) {
           onImageCaptured!(imageFile);
@@ -162,11 +153,7 @@ class CameraIconButton extends StatelessWidget {
       color: const Color(0xFFD4F2C1),
       child: Center(
         child: IconButton(
-          icon: Icon(
-            Icons.camera_alt,
-            size: size,
-            color: color,
-          ),
+          icon: Icon(Icons.camera_alt, size: size, color: color),
           onPressed: () => _openCamera(context),
           tooltip: 'เปิดกล้อง',
         ),
@@ -237,10 +224,7 @@ class FoodDetailScreen extends StatelessWidget {
                   ],
                 ),
                 child: ClipRect(
-                  child: Image.file(
-                    imageFile,
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.file(imageFile, fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -272,10 +256,7 @@ class FoodDetailScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
                         border: const Border(
-                          bottom: BorderSide(
-                            color: Colors.black,
-                            width: 3,
-                          ),
+                          bottom: BorderSide(color: Colors.black, width: 3),
                         ),
                       ),
                       child: Text(
@@ -346,11 +327,7 @@ class FoodDetailScreen extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(
-                            Icons.save,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                          Icon(Icons.save, color: Colors.white, size: 24),
                           SizedBox(width: 12),
                           Text(
                             'SAVE',
@@ -381,10 +358,7 @@ class FoodDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontFamily: 'monospace',
-          ),
+          style: const TextStyle(fontSize: 16, fontFamily: 'monospace'),
         ),
         Text(
           ': $value',
@@ -467,24 +441,21 @@ class _CameraIconDemoState extends State<CameraIconDemo> {
                 const SizedBox(height: 24),
                 const Text(
                   'คลิกไอคอนเพื่อเปิดกล้อง',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'monospace',
-                  ),
+                  style: TextStyle(fontSize: 16, fontFamily: 'monospace'),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // ไอคอนกล้อง
                 CameraIconButton(
                   size: 64,
                   color: const Color(0xFF6fa85e),
                   onImageCaptured: _handleImageCaptured,
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 const Text(
-                  'เมื่อถ่ายรูป/เลือกรูปเสร็จ\nจะเด้ง popup ขึ้นมาอัตโนมัติ! 🎉',
+                  'เมื่อถ่ายรูป/เลือกรูปเสร็จ\nจะเด้ง popup ขึ้นมาอัตโนมัติ',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,

@@ -207,7 +207,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   style={{ boxShadow: '4px 4px 0px rgba(0,0,0,0.2)' }}
                 >
                   <img
-                    src="/pic/logoja.png"
+                    src="/pic/logo.png"
                     alt="Logo"
                     className="w-32 h-32 object-contain"
                     style={{ imageRendering: 'pixelated' }}

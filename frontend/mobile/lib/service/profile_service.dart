@@ -10,7 +10,7 @@ class ProfileService {
   static const String baseUrl = 'http://localhost:4000/api/profile';
 
   // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
-  // static const String baseUrl = 'http://10.0.2.2:4000/api/profile';
+  //static const String baseUrl = 'http://10.0.2.2:4000/api/profile';
 
   // สำหรับ iOS Simulator ใช้ localhost ได้เลย
   // static const String baseUrl = 'http://localhost:4000/api/profile';
@@ -116,7 +116,8 @@ class ProfileService {
       }
 
       final url = Uri.parse('http://localhost:4000/api/update/$userId');
-      // หรือใช้ baseUrl ที่คุณตั้งไว้สำหรับ update profile
+      // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
+      //final url = Uri.parse('http://10.0.2.2:4000/api/update/$userId');
 
       final Map<String, dynamic> body = {};
       if (weight != null) body['weight'] = weight;

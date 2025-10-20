@@ -266,8 +266,8 @@ class _NavBarUserState extends State<NavBarUser> {
         child: Image.network(
           profileImageUrl!,
           fit: BoxFit.cover,
-          width: 44,
-          height: 44,
+          width: 50,
+          height: 50,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return const Center(
@@ -282,16 +282,37 @@ class _NavBarUserState extends State<NavBarUser> {
             );
           },
           errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Icon(Icons.person, color: Color(0xFF6fa85e), size: 24),
+            // ✅ เปลี่ยนจาก Icon เป็น Image.asset พร้อมพื้นหลังสีขาว
+            return Container(
+              width: 50,
+              height: 50,
+              color: Colors.white,
+              child: Center(
+                child: Image.asset(
+                  'assets/pic/person.png',
+                  width: 30,
+                  height: 30,
+                  fit: BoxFit.contain,
+                ),
+              ),
             );
           },
         ),
       );
     } else {
-      // ไม่มีรูป ใช้ icon
-      return const Center(
-        child: Icon(Icons.person, color: Color(0xFF6fa85e), size: 24),
+      // ✅ ไม่มีรูป - ใช้ person.png พร้อมพื้นหลังสีขาว
+      return Container(
+        width: 50,
+        height: 50,
+        color: Colors.white,
+        child: Center(
+          child: Image.asset(
+            'assets/pic/person.png',
+            width: 30,
+            height: 30,
+            fit: BoxFit.contain,
+          ),
+        ),
       );
     }
   }
