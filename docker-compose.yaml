@@ -4,7 +4,7 @@ services:
     build:
       context: ./backend/src/config
       dockerfile: db.dockerfile
-    container_name: calories_db
+    container_name: db 
     environment:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: calories_app
@@ -19,7 +19,7 @@ services:
     build:
       context: ./backend
       dockerfile: backend.dockerfile
-    container_name: calories_backend
+    container_name: backend
     ports:
       - "4000:4000"
     environment:
@@ -37,9 +37,9 @@ services:
     build:
       context: ./frontend/web
       dockerfile: frontend-web.dockerfile 
-    container_name: calories_frontend-frontend-web
+    container_name: frontend-web
     ports:
-      - "3000:80"
+      - "80:3000"
     depends_on:
       - backend
 
