@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../componants/navbaruser.dart';
 import '../componants/Kcalbar.dart';
+import '../componants/camera.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,11 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       
-                      // เส้นแบ่ง (optional)
-                      Container(
-                        width: 3,
-                        color: Colors.black.withOpacity(0.1),
-                      ),
+                      // // เส้นแบ่ง (optional)
+                      // Container(
+                      //   width: 3,
+                      //   color: Colors.black.withOpacity(0.1),
+                      // ),
                       
                       // ฝั่งขวา - ว่างไว้สำหรับเนื้อหาอื่น
                       Expanded(
@@ -95,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
           ),
+
+            CameraIconButton()
         ],
       ),
     );
