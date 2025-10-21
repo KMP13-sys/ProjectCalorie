@@ -66,7 +66,9 @@ export const register = async (req: Request, res: Response) => {
     }
     
     // เข้ารหัสรหัสผ่านก่อนเก็บลง DB
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const passwordPepper = process.env.PASSWORD_PEPPER || '';
+    const pepperedPassword = password + passwordPepper;
+    const hashedPassword = await bcrypt.hash(pepperedPassword, 10);
 
     // INSERT user ใหม่ (เพิ่ม age, gender, height, weight, goal)
     const [result]: any = await db.query(
@@ -112,7 +114,9 @@ export const login = async (req: Request, res: Response) => {
     const user: User = rows[0];
 
     // ตรวจสอบรหัสผ่าน
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const passwordPepper = process.env.PASSWORD_PEPPER || '';
+    const pepperedPassword = password + passwordPepper;
+    const isPasswordValid = await bcrypt.compare(pepperedPassword, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: "Invalid username or password" });
     }
