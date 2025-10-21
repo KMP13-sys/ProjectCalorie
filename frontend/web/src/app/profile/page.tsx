@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import NavBarUser from '../pages/componants/NavBarUser';
+import Link from 'next/link';
 
 // Pixel Grid Background Component
 const PixelGridBackground = () => (
@@ -110,6 +111,7 @@ export default function PixelProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
   
   const [profileData, setProfileData] = useState({
     username: 'TEST1',
@@ -146,6 +148,15 @@ export default function PixelProfilePage() {
   const confirmLogout = () => {
     console.log('Logging out...');
     setShowLogoutPopup(false);
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeletePopup(true);
+  };
+
+  const confirmDelete = () => {
+    console.log('Deleting account...');
+    setShowDeletePopup(false);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,7 +238,6 @@ export default function PixelProfilePage() {
  
                  <div className="space-y-4">
                    <div>
-                    {/* แสดงสีตัวอักษรแบบ Flutter (dark gray) */}
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>WEIGHT *</label>
                     <div className="border-4 border-gray-800 p-3 bg-white font-bold" style={{ color: '#1f2937' }}>
                       {profileData.weight} kg
@@ -266,9 +276,12 @@ export default function PixelProfilePage() {
  
                {/* Buttons */}
                <div className="flex gap-3">
+                
                  <button className="flex-1 bg-gray-800 text-white border-4 border-black p-4 font-bold text-sm hover:bg-gray-700 transition-colors" style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}>
-                   ◀ BACK
-                 </button>
+                  <Link href="/main">
+                    ◀ BACK
+                  </Link>
+                  </button>
                  <button 
                    onClick={handleEdit}
                    className="flex-1 bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors"
@@ -293,64 +306,85 @@ export default function PixelProfilePage() {
            ) : (
              // Edit Mode
              <div className="p-8">
-              {/* Avatar and Username - มีปุ่มอัพโหลด */}
-               <div className="flex flex-col items-center mb-8">
-                <div className="relative p-3 bg-gradient-to-br from-[#a8d88e] to-[#8bc273] border-4 border-black" 
-                  style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.2)' }}>
-                  <div className="w-[100px] h-[100px] p-2 bg-white border-2 border-black flex items-center justify-center">
-                    {selectedImage ? (
-                      <Image
-                        src={selectedImage}
-                        alt="User Profile"
-                        width={100}
-                        height={100}
-                        className="object-cover w-full h-full"
+              {/* Avatar and Username - มีปุ่มอัพโหลด และปุ่มลบบัญชี */}
+               <div className="flex justify-between items-start mb-8">
+                {/* Spacer ซ้าย */}
+                <div className="w-24"></div>
+                
+                {/* Avatar and Username - ตรงกลาง */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="relative p-3 bg-gradient-to-br from-[#a8d88e] to-[#8bc273] border-4 border-black" 
+                    style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.2)' }}>
+                    <div className="w-[100px] h-[100px] p-2 bg-white border-2 border-black flex items-center justify-center">
+                      {selectedImage ? (
+                        <Image
+                          src={selectedImage}
+                          alt="User Profile"
+                          width={100}
+                          height={100}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <Image
+                          src="/pic/person.png"
+                          alt="Default Profile"
+                          width={60}
+                          height={60}
+                          className="object-contain"
+                        />
+                      )}
+                    </div>
+                    
+                    {/* ปุ่มอัพโหลดรูป - ติดมุมขวาล่างของกรอบสีเขียว */}
+                    <label className="absolute bottom-0 right-0 w-10 h-10 bg-[#6fa85e] flex items-center justify-center cursor-pointer hover:bg-[#5a8e3d] transition-colors overflow-hidden" 
+                      style={{ 
+                        border: '3px solid black',
+                        borderBottom: 'none',
+                        borderRight: 'none',
+                        boxShadow: '0 0 0 rgba(0,0,0,0.3)' 
+                      }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="absolute inset-0 w-0 h-0 opacity-0 -z-10"
+                        style={{ fontSize: 0 }}
+                        tabIndex={-1}
                       />
-                    ) : (
                       <Image
-                        src="/pic/person.png"
-                        alt="Default Profile"
-                        width={60}
-                        height={60}
-                        className="object-contain"
+                        src="/pic/camera.png"
+                        alt="Upload Photo"
+                        width={24}
+                        height={24}
+                        className="object-contain pointer-events-none relative z-10"
                       />
-                    )}
+                    </label>
                   </div>
                   
-                  {/* ปุ่มอัพโหลดรูป - ติดมุมขวาล่างของกรอบสีเขียว */}
-                  <label className="absolute bottom-0 right-0 w-10 h-10 bg-[#6fa85e] flex items-center justify-center cursor-pointer hover:bg-[#5a8e3d] transition-colors overflow-hidden" 
-                    style={{ 
-                      border: '3px solid black',
-                      borderBottom: 'none',
-                      borderRight: 'none',
-                      boxShadow: '0 0 0 rgba(0,0,0,0.3)' 
-                    }}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="absolute inset-0 w-0 h-0 opacity-0 -z-10"
-                      style={{ fontSize: 0 }}
-                      tabIndex={-1}
-                    />
-                    <Image
-                      src="/pic/camera.png"
-                      alt="Upload Photo"
-                      width={24}
-                      height={24}
-                      className="object-contain pointer-events-none relative z-10"
-                    />
-                  </label>
+                  <h3 className="text-2xl font-bold mt-6 mb-3" style={{ letterSpacing: '2px', color: '#1f2937' }}>
+                    {profileData.username}
+                  </h3>
+                  
+                  <div className="flex gap-2 mb-3">
+                    <div className="w-2 h-2 bg-[#6fa85e] border border-black"></div>
+                    <div className="w-2 h-2 bg-[#8bc273] border border-black"></div>
+                    <div className="w-2 h-2 bg-[#a8d88e] border border-black"></div>
+                  </div>
                 </div>
                 
-                <h3 className="text-2xl font-bold mt-6 mb-3" style={{ letterSpacing: '2px', color: '#1f2937' }}>
-                  {profileData.username}
-                </h3>
-                
-                <div className="flex gap-2 mb-3">
-                  <div className="w-2 h-2 bg-[#6fa85e] border border-black"></div>
-                  <div className="w-2 h-2 bg-[#8bc273] border border-black"></div>
-                  <div className="w-2 h-2 bg-[#a8d88e] border border-black"></div>
+                {/* Delete Account Button */}
+                <div className="w-24 flex justify-end">
+                  <button 
+                    onClick={handleDeleteAccount}
+                    className="w-24 h-12 text-white border-4 border-black font-bold text-lg transition-colors hover:bg-[#B91C1C] flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: '#FF6B6B',
+                      boxShadow: '4px 4px 0 rgba(0,0,0,0.3)',
+                      fontSize: '15px'
+                    }}
+                    title="Delete Account"
+                  >DELETE ACCOUNT
+                  </button>
                 </div>
               </div>
 
@@ -564,6 +598,72 @@ export default function PixelProfilePage() {
                 }}
               >
                 LOGOUT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Popup */}
+      {showDeletePopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
+          <div className="bg-white border-8 border-black w-full max-w-md relative" style={{ boxShadow: '8px 8px 0 rgba(0,0,0,0.5)' }}>
+            {/* Corner Pixels */}
+            <div className="absolute top-0 left-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
+            <div className="absolute top-0 right-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
+            <div className="absolute bottom-0 left-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
+
+            {/* Header */}
+            <div className="border-b-4 border-black p-4" style={{ backgroundColor: '#FF6B6B' }}>
+              <h3 className="text-white text-2xl font-bold text-center tracking-wider" style={{textShadow: '2px 2px 0px rgba(0,0,0,0.5)'}}>
+                ⚠ WARNING ⚠
+              </h3>
+            </div>
+
+            {/* Warning Icon Box */}
+            <div className="flex justify-center mt-4 mb-8">
+              <div className="w-16 h-16 border-4 border-black flex items-center justify-center" 
+                style={{ 
+                  backgroundColor: '#FF6B6B',
+                  boxShadow: '4px 4px 0 rgba(0,0,0,0.2)' 
+                }}>
+                <span className="text-white text-4xl font-bold">!</span>
+              </div>
+            </div>
+
+            {/* Warning Message */}
+            <div className="text-center mb-1">
+              <p className="text-center text-lg font-bold font-monospace text-gray-800" style={{ letterSpacing: '1px' }}>DELETE YOUR ACCOUNT?</p>
+              <p className="text-center text-sm text-gray-600 mt-2">This action cannot be undone!</p>
+            </div>
+
+            {/* Pixel Dots */}
+            <div className="flex gap-2 justify-center mt-2">
+              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#DC2626' }}></div>
+              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#DC2626' }}></div>
+              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#DC2626' }}></div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3 p-8 pt-0">
+              <button 
+                onClick={() => setShowDeletePopup(false)}
+                className="flex-1 bg-gray-800 text-white border-4 border-black p-4 font-bold text-sm hover:bg-gray-700 transition-colors"
+                style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
+              >
+                CANCEL
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 text-white border-4 border-black p-4 font-bold text-sm transition-colors hover:bg-[#B91C1C]"
+                style={{ 
+                  backgroundColor: '#FF6B6B',
+                  boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', 
+                  letterSpacing: '1px'
+                }}
+              >
+                DELETE
               </button>
             </div>
           </div>

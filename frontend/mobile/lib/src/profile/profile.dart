@@ -69,8 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _heightController.text = profile.height?.toString() ?? '';
             _ageController.text = profile.age?.toString() ?? '';
             _selectedGender = profile.gender ?? 'male';
-            _selectedGoal =
-                profile.goal ?? 'lose weight'; // ✅ แก้เป็น 'lose weight'
+            _selectedGoal = profile.goal ?? 'lose weight';
             isLoadingProfile = false;
           });
         } else {
@@ -180,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           Column(
             children: [
-              // Navbar - ไม่ต้องส่ง parameter แล้ว
+              // Navbar
               const NavBarUser(),
 
               // เนื้อหาหน้า Profile
@@ -257,129 +256,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     padding: const EdgeInsets.all(32.0),
                                     child: Column(
                                       children: [
-                                        // Avatar แบบ Pixel Art พร้อมปุ่มเปลี่ยนรูป
-                                        Stack(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(12),
-                                              decoration: BoxDecoration(
-                                                gradient: const LinearGradient(
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                  colors: [
-                                                    Color(0xFFa8d88e),
-                                                    Color(0xFF8bc273),
-                                                  ],
-                                                ),
-                                                border: Border.all(
-                                                  color: Colors.black,
-                                                  width: 4,
-                                                ),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.2),
-                                                    offset: const Offset(4, 4),
-                                                    blurRadius: 0,
-                                                  ),
-                                                ],
-                                              ),
-                                              child: _buildProfileAvatar(),
-                                            ),
-                                            // ✅ ปุ่มแก้ไขรูป - แสดงเฉพาะใน Edit Mode
-                                            if (_isEditing)
-                                              Positioned(
-                                                bottom: 0,
-                                                right: 0,
-                                                child: GestureDetector(
-                                                  onTap: _isLoading
-                                                      ? null
-                                                      : _pickImage,
-                                                  child: Container(
-                                                    width: 40,
-                                                    height: 40,
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(
-                                                        0xFF6fa85e,
-                                                      ),
-                                                      border: Border.all(
-                                                        color: Colors.black,
-                                                        width: 3,
-                                                      ),
-                                                    ),
-                                                    child: _isLoading
-                                                        ? const Center(
-                                                            child: SizedBox(
-                                                              width: 20,
-                                                              height: 20,
-                                                              child:
-                                                                  CircularProgressIndicator(
-                                                                    strokeWidth:
-                                                                        2,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ),
-                                                            ),
-                                                          )
-                                                        : Padding(
-                                                            padding:
-                                                                const EdgeInsets.all(
-                                                                  8,
-                                                                ),
-                                                            // ✅ เปลี่ยนจาก Icon เป็น Image.asset
-                                                            child: Image.asset(
-                                                              'assets/pic/camera.png',
-                                                              width: 30,
-                                                              height: 30,
-                                                            ),
-                                                          ),
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 24),
-
-                                        // Username
-                                        Text(
-                                          (userProfile?.username ?? 'USER')
-                                              .toUpperCase(),
-                                          style: const TextStyle(
-                                            fontFamily: 'TA8bit',
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1f2937),
-                                            letterSpacing: 2,
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 8),
-
-                                        // Pixel Dots
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              color: const Color(0xFF6fa85e),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              color: const Color(0xFF8bc273),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Container(
-                                              width: 8,
-                                              height: 8,
-                                              color: const Color(0xFFa8d88e),
-                                            ),
-                                          ],
-                                        ),
+                                        // Avatar Section - เปลี่ยน layout ตาม Edit Mode
+                                        _isEditing
+                                            ? _buildEditModeAvatar()
+                                            : _buildNormalModeAvatar(),
 
                                         const SizedBox(height: 32),
 
@@ -467,6 +347,239 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // Normal Mode Avatar - แสดงกลางหน้าจอ
+  Widget _buildNormalModeAvatar() {
+    return Column(
+      children: [
+        // Avatar
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFa8d88e),
+                Color(0xFF8bc273),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.black,
+              width: 4,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                offset: const Offset(4, 4),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          child: _buildProfileAvatar(),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Username
+        Text(
+          (userProfile?.username ?? 'USER').toUpperCase(),
+          style: const TextStyle(
+            fontFamily: 'TA8bit',
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1f2937),
+            letterSpacing: 2,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Pixel Dots
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              color: const Color(0xFF6fa85e),
+            ),
+            const SizedBox(width: 4),
+            Container(
+              width: 8,
+              height: 8,
+              color: const Color(0xFF8bc273),
+            ),
+            const SizedBox(width: 4),
+            Container(
+              width: 8,
+              height: 8,
+              color: const Color(0xFFa8d88e),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Edit Mode Avatar - มีปุ่มลบบัญชีทางขวา
+  Widget _buildEditModeAvatar() {
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Spacer ซ้าย
+            const SizedBox(width: 48),
+
+            // Avatar + Username (ตรงกลาง)
+            Expanded(
+              child: Column(
+                children: [
+                  // Avatar พร้อมปุ่มกล้อง
+                  Stack(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFFa8d88e),
+                              Color(0xFF8bc273),
+                            ],
+                          ),
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              offset: const Offset(4, 4),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: _buildProfileAvatar(),
+                      ),
+                      // ปุ่มกล้อง
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: _isLoading ? null : _pickImage,
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6fa85e),
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 3,
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Image.asset(
+                                      'assets/pic/camera.png',
+                                      width: 30,
+                                      height: 30,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Username
+                  Text(
+                    (userProfile?.username ?? 'USER').toUpperCase(),
+                    style: const TextStyle(
+                      fontFamily: 'TA8bit',
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1f2937),
+                      letterSpacing: 2,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Pixel Dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        color: const Color(0xFF6fa85e),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        width: 8,
+                        height: 8,
+                        color: const Color(0xFF8bc273),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        width: 8,
+                        height: 8,
+                        color: const Color(0xFFa8d88e),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // ปุ่มลบบัญชีทางขวา
+            GestureDetector(
+              onTap: _handleDeleteAccount,
+              child: Container(
+                width: 70,
+                height: 45,
+                // padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 249, 135, 135),
+                  border: Border.all(color: Colors.black, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      offset: const Offset(4, 4),
+                      blurRadius: 0,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text(
+                    'DELETE ACCOUNT',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   // Widget แสดงรูปโปรไฟล์
   Widget _buildProfileAvatar() {
     // ถ้ามีรูปที่เลือกจาก gallery
@@ -519,7 +632,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // ✅ ไม่มีรูป - ใช้ person.png
+    // ไม่มีรูป - ใช้ person.png
     return Container(
       width: 100,
       height: 100,
@@ -740,7 +853,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         .map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
-                            child: Text(value.toUpperCase()), // แสดงเป็นตัวใหญ่
+                            child: Text(value.toUpperCase()),
                           );
                         })
                         .toList(),
@@ -914,6 +1027,250 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Handle Delete Account
+  void _handleDeleteAccount() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black, width: 8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  offset: const Offset(8, 8),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Corner Pixels
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFff6b6b),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFff6b6b),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFff6b6b),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    color: const Color(0xFFff6b6b),
+                  ),
+                ),
+
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFff6b6b),
+                        border: Border(
+                          bottom: BorderSide(color: Colors.black, width: 4),
+                        ),
+                      ),
+                      child: const Text(
+                        '⚠ WARNING ⚠',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'TA8bit',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(2, 2),
+                              color: Color(0x80000000),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        children: [
+                          // Danger Icon
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFff6b6b),
+                              border: Border.all(color: Colors.black, width: 4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  offset: const Offset(4, 4),
+                                  blurRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '!',
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Message
+                          const Text(
+                            'DELETE YOUR ACCOUNT?',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'TA8bit',
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1f2937),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          const Text(
+                            'This action cannot be undone!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'TA8bit',
+                              fontSize: 11,
+                              color: Color(0xFF6b7280),
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Pixel decoration
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFff6b6b),
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFff6b6b),
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFff6b6b),
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildPixelButton(
+                                  'CANCEL',
+                                  Colors.grey[800]!,
+                                  Colors.white,
+                                  () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildPixelButton(
+                                  'DELETE',
+                                  const Color(0xFFff6b6b),
+                                  Colors.white,
+                                  () async {
+                                    // TODO: เรียก API ลบบัญชี
+                                    print('Deleting account...');
+                                    Navigator.of(context).pop();
+                                    
+                                    // ตัวอย่างการลบข้อมูลและกลับไปหน้า Login
+                                    // await StorageHelper.clearAll();
+                                    // Navigator.of(context).pushAndRemoveUntil(
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) => const LoginScreen(),
+                                    //   ),
+                                    //   (route) => false,
+                                    // );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // Show Error Dialog
   void _showErrorDialog(String message) {
     showDialog(
@@ -921,7 +1278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context) => _buildMessageDialog(
         title: 'ERROR',
         message: message,
-        color: const Color(0xFFdc2626),
+        color: const Color(0xFFff6b6b),
         icon: '⚠',
       ),
     );
