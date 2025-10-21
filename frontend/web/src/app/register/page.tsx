@@ -31,10 +31,20 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
     
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+      // Validate username real-time
+    if (name === 'username') {
+      // อนุญาตแค่ a-z, A-Z, 0-9
+      const sanitized = value.replace(/[^a-zA-Z0-9]/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: sanitized
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
     
     // Clear error when user types
     if (error) setError('');
@@ -43,13 +53,32 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Validation
+
+    // Username validation
+    const username = formData.username.trim();
+
+    if (!/[a-zA-Z]/.test(username)) {
+      setError('Username ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว');
+      return;
+    }
+
+    if (username.length < 3) {
+      setError('Username ต้องมีอย่างน้อย 3 ตัวอักษร');
+      return;
+    }
+
+    // Phone validation (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
+    if (!/^[0-9]{10}$/.test(formData.phone.trim())) {
+      setError('กรุณากรอกหมายเลขโทรศัพท์ 10 หลัก');
+      return;
+    }
+
+    // Validation password
     if (formData.password !== formData.confirmPassword) {
       setError('Password ไม่ตรงกัน!');
       return;
     }
-    
+
     if (formData.password.length < 6) {
       setError('Password ต้องมีอย่างน้อย 6 ตัวอักษร');
       return;
@@ -61,20 +90,20 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     const weight = parseFloat(formData.weight);
 
     if (isNaN(age) || age < 10 || age > 120) {
-      setError('กรุณากรอกอายุที่ถูกต้อง (10-120 ปี)');
+      setError('กรุณากรอกอายุที่ถูกต้อง');
       return;
     }
 
     if (isNaN(height) || height < 100 || height > 250) {
-      setError('กรุณากรอกส่วนสูงที่ถูกต้อง (100-250 cm)');
+      setError('กรุณากรอกส่วนสูงที่ถูกต้อง');
       return;
     }
 
     if (isNaN(weight) || weight < 30 || weight > 300) {
-      setError('กรุณากรอกน้ำหนักที่ถูกต้อง (30-300 kg)');
+      setError('กรุณากรอกน้ำหนักที่ถูกต้อง');
       return;
     }
-    
+
     if (!formData.agreedToTerms) {
       setError('กรุณายอมรับข้อกำหนดและเงื่อนไข');
       return;
@@ -119,7 +148,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     if (onNavigateToLogin) {
       onNavigateToLogin();
     } else {
-      window.location.href = '/Authen/login';
+      window.location.href = '/pages/login';
     }
   };
 
@@ -178,9 +207,9 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   style={{ boxShadow: '4px 4px 0px rgba(0,0,0,0.2)' }}
                 >
                   <img
-                    src="/pic/logo.png"
+                    src="/pic/logoja.png"
                     alt="Logo"
-                    className="w-24 h-24 object-contain"
+                    className="w-32 h-32 object-contain"
                     style={{ imageRendering: 'pixelated' }}
                   />
                 </div>
