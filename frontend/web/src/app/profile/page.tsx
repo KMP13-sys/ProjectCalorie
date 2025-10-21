@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import NavBarUser from '../pages/componants/NavBarUser';
+import NavBarUser from '../componants/NavBarUser';
 import Link from 'next/link';
 
 // Pixel Grid Background Component
@@ -231,7 +231,7 @@ export default function PixelProfilePage() {
               </div>
  
                {/* Personal Info */}
-               <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-50">
+               <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-100">
                  <h4 className="text-lg font-bold mb-6 flex items-center gap-2" style={{ color: '#1f2937' }}>
                    ▶ PERSONAL INFO
                  </h4>
@@ -388,11 +388,10 @@ export default function PixelProfilePage() {
                 </div>
               </div>
 
-               <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-50">
+               <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-100">
                  <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                    ▶ PERSONAL INFO
                  </h4>
-
                  <div className="space-y-4">
                    {/* Weight Input */}
                    <div>

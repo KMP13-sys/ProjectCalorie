@@ -15,14 +15,13 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
 
-    // validation username
+    // validation username - ต้องมีตัวอักษรอย่างน้อย 1 ตัว
     const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{3,}$/;
     if (!usernameRegex.test(username)) {
       return res.status(400).json({ 
         message: "Username must contain at least one letter and only alphanumeric characters, minimum 3 characters" 
       });
     }
-
     // ตรวจสอบว่าไม่ใช่ตัวเลขอย่างเดียว
     if (/^\d+$/.test(username)) {
       return res.status(400).json({ 
@@ -30,11 +29,30 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // ตรวจสอบหมายเลขโทรศัพท์ (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
+    // validation phone number - ตรวจสอบหมายเลขโทรศัพท์ (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone_number)) {
       return res.status(400).json({ 
         message: "Phone number must be 10 digits (0-9 only)" 
+      });
+    }
+
+    // validation age - ต้องมีอายุอย่างน้อย 13 ปีขึ้นไป
+    if (!age || age < 13) {
+      return res.status(400).json({ 
+        message: "You must be at least 13 years old to register" 
+      });
+    }
+
+    // validation password - ต้องมีอย่างน้อย 8 ตัว, มีตัวอักษร 1 ตัว
+    if (password.length < 8) {
+      return res.status(400).json({ 
+        message: "Password must be at least 8 characters long" 
+      });
+    }
+    if (!/[a-zA-Z]/.test(password)) {
+      return res.status(400).json({ 
+        message: "Password must contain at least one letter" 
       });
     }
 

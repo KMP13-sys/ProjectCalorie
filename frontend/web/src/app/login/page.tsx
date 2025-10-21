@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { authAPI } from '@/app/pages/api';
+import { authAPI } from '@/app/services/auth_service';
 import main from '../main/page';
 
 interface LoginPageProps {

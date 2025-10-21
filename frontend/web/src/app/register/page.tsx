@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { authAPI, RegisterData } from '@/app/pages/api';
+import { authAPI, RegisterData } from '@/app/services/auth_service';
 
 interface RegisterPageProps {
   onNavigateToLogin?: () => void;
@@ -79,8 +79,13 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password ต้องมีอย่างน้อย 6 ตัวอักษร');
+    if (formData.password.length < 8) {
+      setError('Password ต้องมีอย่างน้อย 8 ตัวอักษร');
+      return;
+    }
+
+    if (!/[a-zA-Z]/.test(formData.password)) {
+      setError('Password ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว');
       return;
     }
 
@@ -89,8 +94,8 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     const height = parseFloat(formData.height);
     const weight = parseFloat(formData.weight);
 
-    if (isNaN(age) || age < 10 || age > 120) {
-      setError('กรุณากรอกอายุที่ถูกต้อง');
+    if (isNaN(age) || age < 13 || age > 120) { // ✅ ใหม่ (13 ปี)
+      setError('ต้องมีอายุอย่างน้อย 13 ปีขึ้นไป'); // ✅ ใหม่
       return;
     }
 
@@ -207,7 +212,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                   style={{ boxShadow: '4px 4px 0px rgba(0,0,0,0.2)' }}
                 >
                   <img
-                    src="/pic/logoja.png"
+                    src="/pic/logo.png"
                     alt="Logo"
                     className="w-32 h-32 object-contain"
                     style={{ imageRendering: 'pixelated' }}
@@ -319,11 +324,11 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                       <input
                         type="password"
                         name="password"
-                        placeholder="Min 6 characters..."
+                        placeholder="Min 8 characters..."
                         value={formData.password}
                         onChange={handleChange}
                         required
-                        minLength={6}
+                        minLength={8}
                         className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
                         style={{ fontFamily: 'monospace' }}
                       />
@@ -375,7 +380,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                           value={formData.age}
                           onChange={handleChange}
                           required
-                          min="10"
+                          min="13"
                           max="120"
                           className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
                           style={{ fontFamily: 'monospace' }}
