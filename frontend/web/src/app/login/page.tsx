@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { authAPI } from '@/app/services/auth_service';
-import main from '../main/page';
+import { useRouter } from 'next/navigation';
+import { authAPI } from '../services/auth_service';
+import { useUser } from '../context/user_context';
 
-interface LoginPageProps {
-  onNavigateToRegister?: () => void;
-}
-
-export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
+export default function LoginPage() {
+  const router = useRouter();
+  const { refreshUserProfile } = useUser();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +18,8 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
   useEffect(() => {
     if (showSuccessModal) {
       const timer = setTimeout(() => {
-        window.location.href = '/main'; // เปลี่ยนเป็นหน้าที่ต้องการ
+        // ใช้ window.location.href เพื่อให้ refresh หน้าและ reload UserContext
+        window.location.href = '/main';
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -76,6 +76,10 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleNavigateToRegister = () => {
+    router.push('/register');
   };
 
   return (
@@ -235,7 +239,7 @@ export default function LoginPage({ onNavigateToRegister }: LoginPageProps) {
                     ? Forgot Password
                   </button>
                   <button 
-                    onClick={onNavigateToRegister} 
+                    onClick={handleNavigateToRegister} 
                     className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border-3 border-black text-white text-sm font-bold transition-all"
                     style={{ 
                       fontFamily: 'monospace',

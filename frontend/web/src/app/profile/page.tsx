@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import NavBarUser from '../componants/NavBarUser';
-import Link from 'next/link';
+import { profileService, UserProfile } from '../services/profile_service';
+import { authAPI } from '../services/auth_service';
+import { useRouter } from 'next/navigation';
+import { useUser } from '../context/user_context';
 
 // Pixel Grid Background Component
 const PixelGridBackground = () => (
@@ -108,37 +111,116 @@ const FloatingPixels = () => {
 };
 
 export default function PixelProfilePage() {
+  const router = useRouter();
+  const { userProfile, loading, refreshUserProfile, clearUserProfile } = useUser();
+  
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const [profileData, setProfileData] = useState({
-    username: 'TEST1',
-    weight: '43',
-    height: '156',
-    age: '17',
-    gender: 'FEMALE',
-    goal: 'GAIN WEIGHT'
+  const [editData, setEditData] = useState({
+    weight: '',
+    height: '',
+    age: '',
+    gender: 'female' as 'male' | 'female',
+    goal: 'gain weight' as 'lose weight' | 'maintain weight' | 'gain weight'
   });
   
-  const [editData, setEditData] = useState({ ...profileData });
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
+
+  // ตั้งค่าข้อมูลเมื่อ userProfile เปลี่ยน
+  useEffect(() => {
+    if (userProfile) {
+      setEditData({
+        weight: userProfile.weight?.toString() || '',
+        height: userProfile.height?.toString() || '',
+        age: userProfile.age?.toString() || '',
+        gender: userProfile.gender || 'female',
+        goal: userProfile.goal || 'maintain weight'
+      });
+    }
+  }, [userProfile]);
+
+  // ถ้าไม่มี profile ให้ redirect ไปหน้า login (เฉพาะเมื่อ loading เสร็จแล้ว)
+  useEffect(() => {
+    if (!loading && !userProfile) {
+      // ตรวจสอบว่ามี token หรือไม่
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+      }
+    }
+  }, [loading, userProfile, router]);
 
   const handleEdit = () => {
-    setEditData({ ...profileData });
+    if (userProfile) {
+      setEditData({
+        weight: userProfile.weight?.toString() || '',
+        height: userProfile.height?.toString() || '',
+        age: userProfile.age?.toString() || '',
+        gender: userProfile.gender || 'female',
+        goal: userProfile.goal || 'maintain weight'
+      });
+    }
     setIsEditing(true);
+    setSelectedImageFile(null);
+    setSelectedImagePreview(null);
   };
 
   const handleCancel = () => {
-    setEditData({ ...profileData });
+    setEditData({
+      weight: userProfile?.weight?.toString() || '',
+      height: userProfile?.height?.toString() || '',
+      age: userProfile?.age?.toString() || '',
+      gender: userProfile?.gender || 'female',
+      goal: userProfile?.goal || 'maintain weight'
+    });
     setIsEditing(false);
+    setSelectedImageFile(null);
+    setSelectedImagePreview(null);
+    setError(null);
   };
 
-  const handleSave = () => {
-    setProfileData({ ...editData });
-    setIsEditing(false);
-    setShowSuccessPopup(true);
+  const handleSave = async () => {
+    if (!userProfile) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      // อัปเดทข้อมูลโปรไฟล์
+      const updateData = {
+        age: editData.age ? parseInt(editData.age) : undefined,
+        gender: editData.gender,
+        height: editData.height ? parseFloat(editData.height) : undefined,
+        weight: editData.weight ? parseFloat(editData.weight) : undefined,
+        goal: editData.goal
+      };
+
+      await profileService.updateProfile(userProfile.user_id, updateData);
+
+      // อัปโหลดรูปถ้ามีการเลือกรูปใหม่
+      if (selectedImageFile) {
+        await profileService.updateProfileImage(userProfile.user_id, selectedImageFile);
+      }
+
+      // ⭐ Refresh ข้อมูล user ใน Context เพื่อให้ NavBar อัปเดตด้วย
+      await refreshUserProfile();
+      
+      setIsEditing(false);
+      setSelectedImageFile(null);
+      setSelectedImagePreview(null);
+      setShowSuccessPopup(true);
+    } catch (error: any) {
+      console.error('Error saving profile:', error);
+      setError(error.message || 'ไม่สามารถบันทึกข้อมูลได้');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -146,8 +228,8 @@ export default function PixelProfilePage() {
   };
 
   const confirmLogout = () => {
-    console.log('Logging out...');
-    setShowLogoutPopup(false);
+    authAPI.logout();
+    // authAPI.logout() จะ redirect ไปหน้า login อัตโนมัติ
   };
 
   const handleDeleteAccount = () => {
@@ -155,187 +237,206 @@ export default function PixelProfilePage() {
   };
 
   const confirmDelete = () => {
-    console.log('Deleting account...');
+    // TODO: เพิ่ม API สำหรับลบบัญชีใน backend
+    alert('ฟีเจอร์ลบบัญชียังไม่พร้อมใช้งาน');
     setShowDeletePopup(false);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // ตรวจสอบขนาดไฟล์ (ไม่เกิน 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('ขนาดไฟล์ต้องไม่เกิน 5MB');
+        return;
+      }
+
+      // ตรวจสอบประเภทไฟล์
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        setError('รองรับเฉพาะไฟล์ภาพ (JPEG, PNG, GIF, WebP)');
+        return;
+      }
+
+      setSelectedImageFile(file);
+      
       const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
+        setSelectedImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+      setError(null);
     }
   };
+
+  // แสดง loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ 
+        background: 'linear-gradient(135deg, #6fa85e 0%, #8bc273 50%, #a8d88e 100%)',
+      }}>
+        <div className="text-white text-2xl font-bold" style={{ fontFamily: 'monospace' }}>
+          LOADING...
+        </div>
+      </div>
+    );
+  }
+
+  // ถ้าไม่มี profile
+  if (!userProfile) {
+    return null;
+  }
+
+  // แสดงรูปโปรไฟล์
+  const profileImageSrc = selectedImagePreview || 
+    (userProfile.image_profile_url) || 
+    '/pic/person.png';
 
   return (
     <div className="min-h-screen relative" style={{ 
       background: 'linear-gradient(135deg, #6fa85e 0%, #8bc273 50%, #a8d88e 100%)',
       fontFamily: 'monospace'
     }}>
-      {/* Pixel Grid Background */}
       <PixelGridBackground />
-      
-      {/* Floating Pixels Animation */}
       <FloatingPixels />
 
-      {/* Navigation Bar */}
       <div style={{ position: 'relative', zIndex: 10 }}>
-        <NavBarUser username={profileData.username} />
+        <NavBarUser />
       </div>
 
-      {/* Main Content */}
       <div className="flex justify-center items-start p-4 mt-8" style={{ position: 'relative', zIndex: 1 }}>
         <div className="w-full max-w-2xl bg-white border-8 border-black relative" style={{ boxShadow: '12px 12px 0 rgba(0,0,0,0.3)' }}>
-          {/* Corner Pixels */}
           <CornerPixels />
 
-          {/* Profile Header */}
           <div className="bg-gradient-to-r from-[#6fa85e] to-[#8bc273] border-b-6 border-black p-6 relative">
             <h2 className="text-white text-3xl font-bold text-center tracking-wider" style={{textShadow: '3px 3px 0px rgba(0,0,0,0.5)'}}>
               ◆ PROFILE ◆
             </h2>
           </div>
 
+          {/* แสดง Error */}
+          {error && (
+            <div className="mx-8 mt-6 p-4 bg-red-100 border-4 border-red-500 text-red-700 font-bold text-sm">
+              ⚠ {error}
+            </div>
+          )}
+
           {!isEditing ? (
             // View Mode
             <div className="p-8">
-              {/* Avatar and Username - ไม่มีปุ่มอัพโหลด */}
               <div className="flex flex-col items-center mb-8">
                 <div className="relative">
-                  <div className="p-3 bg-gradient-to-br from-[#a8d88e] to-[#8bc273] border-4 border-black" 
+                  <div className="p-2 bg-gradient-to-br from-[#a8d88e] to-[#8bc273] border-4 border-black" 
                     style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.2)' }}>
-                    <div className="w-[100] h-[100] p-2 bg-white border-2 border-black flex items-center justify-center">
-                      <Image
-                        src="/pic/person.png"
-                        alt="Default Profile"
-                        width={60}
-                        height={60}
-                        className="object-contain"
+                    <div className="bg-white border-2 border-black overflow-hidden" style={{ width: '200px', height: '200px' }}>
+                      <img
+                        src={profileImageSrc}
+                        alt="Profile"
+                        style={{ width: '200px', height: '200px', objectFit: 'cover' }}
                       />
                     </div>
                   </div>
                 </div>
                 
                 <h3 className="text-2xl font-bold mt-6 mb-3" style={{ letterSpacing: '2px', color: '#1f2937' }}>
-                  {profileData.username}
+                  {userProfile.username.toUpperCase()}
                 </h3>
                 
                 <div className="flex gap-2 mb-3">
-                  <div className="w-2 h-2 bg-[#6fa85e] border border-black"></div>
-                  <div className="w-2 h-2 bg-[#8bc273] border border-black"></div>
-                  <div className="w-2 h-2 bg-[#a8d88e] border border-black"></div>
+                  <div className="w-2 h-2 bg-[#6fa85e] "></div>
+                  <div className="w-2 h-2 bg-[#8bc273] "></div>
+                  <div className="w-2 h-2 bg-[#a8d48f] "></div>
                 </div>
               </div>
  
-               {/* Personal Info */}
-               <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-100">
-                 <h4 className="text-lg font-bold mb-6 flex items-center gap-2" style={{ color: '#1f2937' }}>
-                   ▶ PERSONAL INFO
-                 </h4>
+              <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-100">
+                <h4 className="text-lg font-bold mb-6 flex items-center gap-2" style={{ color: '#1f2937' }}>
+                  ▶ PERSONAL INFO
+                </h4>
  
-                 <div className="space-y-4">
-                   <div>
+                <div className="space-y-4">
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>WEIGHT *</label>
                     <div className="border-4 border-gray-800 p-3 bg-white font-bold" style={{ color: '#1f2937' }}>
-                      {profileData.weight} kg
+                      {userProfile.weight || '-'} kg
                     </div>
-                   </div>
+                  </div>
  
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>HEIGHT *</label>
                     <div className="border-4 border-gray-800 p-3 bg-white font-bold" style={{ color: '#1f2937' }}>
-                      {profileData.height} cm
+                      {userProfile.height || '-'} cm
                     </div>
-                   </div>
+                  </div>
  
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>AGE *</label>
                     <div className="border-4 border-gray-800 p-3 bg-white font-bold" style={{ color: '#1f2937' }}>
-                      {profileData.age} years
+                      {userProfile.age || '-'} years
                     </div>
-                   </div>
+                  </div>
  
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>GENDER *</label>
                     <div className="border-4 border-gray-800 p-3 bg-white font-bold" style={{ color: '#1f2937' }}>
-                      {profileData.gender}
+                      {userProfile.gender ? userProfile.gender.toUpperCase() : '-'}
                     </div>
-                   </div>
+                  </div>
  
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>GOAL *</label>
                     <div className="border-4 border-gray-800 p-3 bg-white font-bold" style={{ color: '#1f2937' }}>
-                      {profileData.goal}
+                      {userProfile.goal ? userProfile.goal.toUpperCase() : '-'}
                     </div>
-                   </div>
-                 </div>
-               </div>
+                  </div>
+                </div>
+              </div>
  
-               {/* Buttons */}
-               <div className="flex gap-3">
-                
-                 <button className="flex-1 bg-gray-800 text-white border-4 border-black p-4 font-bold text-sm hover:bg-gray-700 transition-colors" style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}>
-                  <Link href="/main">
-                    ◀ BACK
-                  </Link>
-                  </button>
-                 <button 
-                   onClick={handleEdit}
-                   className="flex-1 bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors"
-                   style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
-                 >
-                   ✎ EDIT
-                 </button>
-                 {/* ปุ่ม Logout */}
-                 <button 
-                   onClick={handleLogout}
-                   className="flex-1 text-white border-4 border-black p-4 font-bold text-sm transition-colors"
-                   style={{ 
-                     backgroundColor: '#FF6B6B',
-                     boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', 
-                     letterSpacing: '1px'
-                   }}
-                 >
-                   LOGOUT ▶
-                 </button>
-               </div>
-             </div>
-           ) : (
-             // Edit Mode
-             <div className="p-8">
-              {/* Avatar and Username - มีปุ่มอัพโหลด และปุ่มลบบัญชี */}
-               <div className="flex justify-between items-start mb-8">
-                {/* Spacer ซ้าย */}
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => router.push('/main')}
+                  className="flex-1 bg-gray-800 text-white border-4 border-black p-4 font-bold text-sm hover:bg-gray-700 transition-colors" 
+                  style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
+                >
+                  ◀ BACK
+                </button>
+                <button 
+                  onClick={handleEdit}
+                  className="flex-1 bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors"
+                  style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
+                >
+                  ✎ EDIT
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="flex-1 text-white border-4 border-black p-4 font-bold text-sm transition-colors hover:bg-[#cc5a5a]"
+                  style={{ 
+                    backgroundColor: '#FF6B6B',
+                    boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', 
+                    letterSpacing: '1px'
+                  }}
+                >
+                  LOGOUT ▶
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Edit Mode
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-8">
                 <div className="w-24"></div>
                 
-                {/* Avatar and Username - ตรงกลาง */}
                 <div className="flex flex-col items-center flex-1">
-                  <div className="relative p-3 bg-gradient-to-br from-[#a8d88e] to-[#8bc273] border-4 border-black" 
+                  <div className="relative p-2 bg-gradient-to-br from-[#a8d88e] to-[#8bc273] border-4 border-black" 
                     style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.2)' }}>
-                    <div className="w-[100px] h-[100px] p-2 bg-white border-2 border-black flex items-center justify-center">
-                      {selectedImage ? (
-                        <Image
-                          src={selectedImage}
-                          alt="User Profile"
-                          width={100}
-                          height={100}
-                          className="object-cover w-full h-full"
-                        />
-                      ) : (
-                        <Image
-                          src="/pic/person.png"
-                          alt="Default Profile"
-                          width={60}
-                          height={60}
-                          className="object-contain"
-                        />
-                      )}
+                    <div className="bg-white border-2 border-black overflow-hidden" style={{ width: '200px', height: '200px' }}>
+                      <img
+                        src={profileImageSrc}
+                        alt="Profile"
+                        style={{ width: '200px', height: '200px', objectFit: 'cover' }}
+                      />
                     </div>
                     
-                    {/* ปุ่มอัพโหลดรูป - ติดมุมขวาล่างของกรอบสีเขียว */}
                     <label className="absolute bottom-0 right-0 w-10 h-10 bg-[#6fa85e] flex items-center justify-center cursor-pointer hover:bg-[#5a8e3d] transition-colors overflow-hidden" 
                       style={{ 
                         border: '3px solid black',
@@ -354,25 +455,24 @@ export default function PixelProfilePage() {
                       <Image
                         src="/pic/camera.png"
                         alt="Upload Photo"
-                        width={24}
-                        height={24}
+                        width={30}
+                        height={30}
                         className="object-contain pointer-events-none relative z-10"
                       />
                     </label>
                   </div>
                   
                   <h3 className="text-2xl font-bold mt-6 mb-3" style={{ letterSpacing: '2px', color: '#1f2937' }}>
-                    {profileData.username}
+                    {userProfile.username.toUpperCase()}
                   </h3>
                   
                   <div className="flex gap-2 mb-3">
-                    <div className="w-2 h-2 bg-[#6fa85e] border border-black"></div>
-                    <div className="w-2 h-2 bg-[#8bc273] border border-black"></div>
-                    <div className="w-2 h-2 bg-[#a8d88e] border border-black"></div>
+                    <div className="w-2 h-2 bg-[#6fa85e] "></div>
+                    <div className="w-2 h-2 bg-[#8bc273] "></div>
+                    <div className="w-2 h-2 bg-[#a8d48f] "></div>
                   </div>
                 </div>
                 
-                {/* Delete Account Button */}
                 <div className="w-24 flex justify-end">
                   <button 
                     onClick={handleDeleteAccount}
@@ -382,19 +482,18 @@ export default function PixelProfilePage() {
                       boxShadow: '4px 4px 0 rgba(0,0,0,0.3)',
                       fontSize: '15px'
                     }}
-                    title="Delete Account"
-                  >DELETE ACCOUNT
+                  >
+                    DELETE ACCOUNT
                   </button>
                 </div>
               </div>
 
-               <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-100">
-                 <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-                   ▶ PERSONAL INFO
-                 </h4>
-                 <div className="space-y-4">
-                   {/* Weight Input */}
-                   <div>
+              <div className="border-4 border-gray-800 p-6 mb-6 bg-gray-100">
+                <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+                  ▶ PERSONAL INFO
+                </h4>
+                <div className="space-y-4">
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>
                       WEIGHT *
                     </label>
@@ -405,11 +504,12 @@ export default function PixelProfilePage() {
                       className="w-full border-4 border-[#6fa85e] p-3 font-bold focus:outline-none focus:border-[#5a8e3d] bg-white"
                       style={{ color: '#1f2937' }}
                       placeholder="kg"
+                      min="20"
+                      max="300"
                     />
-                   </div>
+                  </div>
  
-                   {/* Height Input */}
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>
                       HEIGHT *
                     </label>
@@ -420,11 +520,12 @@ export default function PixelProfilePage() {
                       className="w-full border-4 border-[#6fa85e] p-3 font-bold focus:outline-none focus:border-[#5a8e3d] bg-white"
                       style={{ color: '#1f2937' }}
                       placeholder="cm"
+                      min="50"
+                      max="300"
                     />
-                   </div>
+                  </div>
  
-                   {/* Age Input */}
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>
                       AGE *
                     </label>
@@ -435,126 +536,123 @@ export default function PixelProfilePage() {
                       className="w-full border-4 border-[#6fa85e] p-3 font-bold focus:outline-none focus:border-[#5a8e3d] bg-white"
                       style={{ color: '#1f2937' }}
                       placeholder="years"
+                      min="1"
+                      max="120"
                     />
-                   </div>
+                  </div>
  
-                   {/* Gender Select */}
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>
                       GENDER *
                     </label>
-                     <select
-                       value={editData.gender}
-                       onChange={(e) => setEditData({...editData, gender: e.target.value})}
-                       className="w-full border-4 border-[#6fa85e] p-3 font-bold focus:outline-none focus:border-[#5a8e3d] bg-white"
-                       style={{ color: '#1f2937' }}
-                     >
-                       <option value="FEMALE">FEMALE</option>
-                       <option value="MALE">MALE</option>
-                     </select>
-                   </div>
+                    <select
+                      value={editData.gender}
+                      onChange={(e) => setEditData({...editData, gender: e.target.value as 'male' | 'female'})}
+                      className="w-full border-4 border-[#6fa85e] p-3 font-bold focus:outline-none focus:border-[#5a8e3d] bg-white"
+                      style={{ color: '#1f2937' }}
+                    >
+                      <option value="female">FEMALE</option>
+                      <option value="male">MALE</option>
+                    </select>
+                  </div>
  
-                   {/* Goal Select */}
-                   <div>
+                  <div>
                     <label className="text-xs font-bold mb-2 block" style={{ letterSpacing: '1px', color: '#1f2937' }}>
                       GOAL *
                     </label>
-                     <select
-                       value={editData.goal}
-                       onChange={(e) => setEditData({...editData, goal: e.target.value})}
-                       className="w-full border-4 border-[#6fa85e] p-3 font-bold focus:outline-none focus:border-[#5a8e3d] bg-white"
-                       style={{ color: '#1f2937' }}
-                     >
-                       <option value="GAIN WEIGHT">GAIN WEIGHT</option>
-                       <option value="LOSE WEIGHT">LOSE WEIGHT</option>
-                       <option value="MAINTAIN WEIGHT">MAINTAIN WEIGHT</option>
-                     </select>
-                   </div>
-                 </div>
-               </div>
+                    <select
+                      value={editData.goal}
+                      onChange={(e) => setEditData({...editData, goal: e.target.value as any})}
+                      className="w-full border-4 border-[#6fa85e] p-3 font-bold focus:outline-none focus:border-[#5a8e3d] bg-white"
+                      style={{ color: '#1f2937' }}
+                    >
+                      <option value="gain weight">GAIN WEIGHT</option>
+                      <option value="lose weight">LOSE WEIGHT</option>
+                      <option value="maintain weight">MAINTAIN WEIGHT</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
  
-               {/* Edit Buttons */}
-               <div className="flex gap-3">
-                 <button 
-                   onClick={handleCancel}
-                   className="flex-1 bg-gray-800 text-white border-4 border-black p-4 font-bold text-sm hover:bg-gray-700 transition-colors"
-                   style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
-                 >
-                   ✗ CANCEL
-                 </button>
-                 <button 
-                   onClick={handleSave}
-                   className="flex-1 bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors"
-                   style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
-                 >
-                   ✓ SAVE
-                 </button>
-               </div>
-             </div>
-           )}
-         </div>
-       </div>
- 
-      {/* Success Popup*/}
-       {showSuccessPopup && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
-           <div className="w-full max-w-md relative" style={{
-             background: 'linear-gradient(180deg, #a8d88e 0%, #8bc273 100%)',
-             border: '8px solid black',
-             boxShadow: '8px 8px 0 rgba(0,0,0,0.5)'
-           }}>
-             {/* Corner Pixels */}
-             <div className="absolute top-0 left-0 w-4 h-4 bg-[#10b981]"></div>
-             <div className="absolute top-0 right-0 w-4 h-4 bg-[#10b981]"></div>
-             <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#10b981]"></div>
-             <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#10b981]"></div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={handleCancel}
+                  disabled={saving}
+                  className="flex-1 bg-gray-800 text-white border-4 border-black p-4 font-bold text-sm hover:bg-gray-700 transition-colors disabled:opacity-50"
+                  style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
+                >
+                  ✗ CANCEL
+                </button>
+                <button 
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex-1 bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors disabled:opacity-50"
+                  style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
+                >
+                  {saving ? 'SAVING...' : '✓ SAVE'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
-             <div className="bg-[#10b981] border-b-4 border-black p-4">
-               <h3 className="text-white text-2xl font-bold text-center tracking-wider" style={{textShadow: '2px 2px 0px rgba(0,0,0,0.5)'}}>
-                 ★ SUCCESS! ★
-               </h3>
-             </div>
-             
-             <div className="p-8 flex flex-col items-center">
-               <div className="mb-6">
-                 <PixelHeart />
-               </div>
-               
-               <div className="bg-white border-4 border-black p-6 w-full mb-6">
-                 <p className="text-xl font-bold text-center text-gray-800 mb-2" style={{ letterSpacing: '1px' }}>PROFILE UPDATED!</p>
-                 <p className="text-center text-sm text-gray-800">Changes saved successfully!</p>
-               </div>
-               
-               <button 
-                 onClick={() => setShowSuccessPopup(false)}
-                 className="w-full bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors"
-                 style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
-               >
-                 ▶ CONTINUE
-               </button>
-             </div>
-           </div>
-         </div>
-       )}
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
+          <div className="w-full max-w-md relative" style={{
+            background: 'linear-gradient(180deg, #a8d88e 0%, #8bc273 100%)',
+            border: '8px solid black',
+            boxShadow: '8px 8px 0 rgba(0,0,0,0.5)'
+          }}>
+            <div className="absolute top-0 left-0 w-4 h-4 bg-[#10b981]"></div>
+            <div className="absolute top-0 right-0 w-4 h-4 bg-[#10b981]"></div>
+            <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#10b981]"></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#10b981]"></div>
+
+            <div className="bg-[#10b981] border-b-4 border-black p-4">
+              <h3 className="text-white text-2xl font-bold text-center tracking-wider" style={{textShadow: '2px 2px 0px rgba(0,0,0,0.5)'}}>
+                ★ SUCCESS! ★
+              </h3>
+            </div>
+            
+            <div className="p-8 flex flex-col items-center">
+              <div className="mb-6">
+                <PixelHeart />
+              </div>
+              
+              <div className="bg-white border-4 border-black p-6 w-full mb-6">
+                <p className="text-xl font-bold text-center text-gray-800 mb-2" style={{ letterSpacing: '1px' }}>PROFILE UPDATED!</p>
+                <p className="text-center text-sm text-gray-800">Changes saved successfully!</p>
+              </div>
+              
+              <button 
+                onClick={() => setShowSuccessPopup(false)}
+                className="w-full bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors"
+                style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
+              >
+                ▶ CONTINUE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Logout Popup */}
       {showLogoutPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
           <div className="bg-white border-8 border-black w-full max-w-md relative" style={{ boxShadow: '8px 8px 0 rgba(0,0,0,0.5)' }}>
-            {/* Corner Pixels */}
             <div className="absolute top-0 left-0 w-4 h-4" style={{ backgroundColor: '#FF8787' }}></div>
             <div className="absolute top-0 right-0 w-4 h-4" style={{ backgroundColor: '#FF8787' }}></div>
             <div className="absolute bottom-0 left-0 w-4 h-4" style={{ backgroundColor: '#FF8787' }}></div>
             <div className="absolute bottom-0 right-0 w-4 h-4" style={{ backgroundColor: '#FF8787' }}></div>
 
-            {/* Header */}
             <div className="border-b-4 border-black p-4" style={{ backgroundColor: '#FF6B6B' }}>
               <h3 className="text-white text-2xl font-bold text-center tracking-wider" style={{textShadow: '2px 2px 0px rgba(0,0,0,0.5)'}}>
                 ◆ WARNING ◆
               </h3>
             </div>
 
-            {/* Warning Icon Box */}
             <div className="flex justify-center mt-4 mb-8">
               <div className="w-16 h-16 border-4 border-black flex items-center justify-center" 
                 style={{ 
@@ -565,20 +663,17 @@ export default function PixelProfilePage() {
               </div>
             </div>
 
-            {/* Warning Message */}
             <div className="text-center mb-1">
               <p className="text-center text-lg font-bold font-monospace text-gray-800" style={{ letterSpacing: '1px' }}>DO YOU WANT TO</p>
               <p className="text-center text-lg font-bold font-monospace text-gray-800">LOGOUT?</p>
             </div>
 
-            {/* Pixel Dots */}
             <div className="flex gap-2 justify-center mt-2">
-              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#ff7fbfff' }}></div>
-              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#ff7fbfff' }}></div>
-              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#ff7fbfff' }}></div>
+              <div className="w-2 h-2 " style={{ backgroundColor: '#f66e6eff' }}></div>
+              <div className="w-2 h-2 " style={{ backgroundColor: '#f48080ff' }}></div>
+              <div className="w-2 h-2 " style={{ backgroundColor: '#f49494ff' }}></div>
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-3 p-8 pt-0">
               <button 
                 onClick={() => setShowLogoutPopup(false)}
@@ -589,7 +684,7 @@ export default function PixelProfilePage() {
               </button>
               <button 
                 onClick={confirmLogout}
-                className="flex-1 text-white border-4 border-black p-4 font-bold text-sm transition-colors"
+                className="flex-1 text-white border-4 border-black p-4 font-bold text-sm transition-colors hover:bg-[#cc5a5a]"
                 style={{ 
                   backgroundColor: '#FF6B6B',
                   boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', 
@@ -607,20 +702,17 @@ export default function PixelProfilePage() {
       {showDeletePopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
           <div className="bg-white border-8 border-black w-full max-w-md relative" style={{ boxShadow: '8px 8px 0 rgba(0,0,0,0.5)' }}>
-            {/* Corner Pixels */}
             <div className="absolute top-0 left-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
             <div className="absolute top-0 right-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
             <div className="absolute bottom-0 left-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
             <div className="absolute bottom-0 right-0 w-4 h-4" style={{ backgroundColor: '#FF6B6B' }}></div>
 
-            {/* Header */}
             <div className="border-b-4 border-black p-4" style={{ backgroundColor: '#FF6B6B' }}>
               <h3 className="text-white text-2xl font-bold text-center tracking-wider" style={{textShadow: '2px 2px 0px rgba(0,0,0,0.5)'}}>
                 ⚠ WARNING ⚠
               </h3>
             </div>
 
-            {/* Warning Icon Box */}
             <div className="flex justify-center mt-4 mb-8">
               <div className="w-16 h-16 border-4 border-black flex items-center justify-center" 
                 style={{ 
@@ -631,20 +723,17 @@ export default function PixelProfilePage() {
               </div>
             </div>
 
-            {/* Warning Message */}
             <div className="text-center mb-1">
               <p className="text-center text-lg font-bold font-monospace text-gray-800" style={{ letterSpacing: '1px' }}>DELETE YOUR ACCOUNT?</p>
               <p className="text-center text-sm text-gray-600 mt-2">This action cannot be undone!</p>
             </div>
 
-            {/* Pixel Dots */}
             <div className="flex gap-2 justify-center mt-2">
-              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#DC2626' }}></div>
-              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#DC2626' }}></div>
-              <div className="w-2 h-2 border border-black" style={{ backgroundColor: '#DC2626' }}></div>
+              <div className="w-2 h-2 " style={{ backgroundColor: '#f66e6eff' }}></div>
+              <div className="w-2 h-2 " style={{ backgroundColor: '#f48080ff' }}></div>
+              <div className="w-2 h-2 " style={{ backgroundColor: '#f49494ff' }}></div>
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-3 p-8 pt-0">
               <button 
                 onClick={() => setShowDeletePopup(false)}

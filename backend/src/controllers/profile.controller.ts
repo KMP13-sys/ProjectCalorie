@@ -62,7 +62,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ Function สำหรับลบไฟล์เก่า
+// Function สำหรับลบไฟล์เก่า
 const deleteOldImage = (imageName: string) => {
   const imagePath = path.join(__dirname, "../uploads", imageName);
   
@@ -95,7 +95,7 @@ export const updateProfileImage = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "No image uploaded" });
     }
 
-    // ✅ ดึงข้อมูลผู้ใช้เพื่อเช็ครูปเก่า
+    // ดึงข้อมูลผู้ใช้เพื่อเช็ครูปเก่า
     const user = await getUserById(userId);
     
     if (!user) {
@@ -104,7 +104,7 @@ export const updateProfileImage = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // ✅ ลบรูปเก่าถ้ามี
+    // ลบรูปเก่าถ้ามี
     if (user.image_profile) {
       deleteOldImage(user.image_profile);
     }

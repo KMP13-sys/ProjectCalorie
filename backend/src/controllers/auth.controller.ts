@@ -3,11 +3,10 @@ import { Request, Response } from "express";
 import db from "../config/db";
 import { User } from "../models/userModel";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken"; // สร้างและตรวจสอบ token
+import jwt from "jsonwebtoken";
 
 // สมัครสมาชิก
 export const register = async (req: Request, res: Response) => {
-  // ตรวจสอบ JWT_SECRET
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET environment variable is not set");
   }
@@ -15,7 +14,7 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
 
-    // validation username - ต้องมีตัวอักษรอย่างน้อย 1 ตัว
+    // validation username
     const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{3,}$/;
     if (!usernameRegex.test(username)) {
       return res.status(400).json({ 
@@ -29,7 +28,7 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // validation phone number - ตรวจสอบหมายเลขโทรศัพท์ (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
+    // validation phone number
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone_number)) {
       return res.status(400).json({ 
@@ -37,14 +36,14 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // validation age - ต้องมีอายุอย่างน้อย 13 ปีขึ้นไป
+    // validation age
     if (!age || age < 13) {
       return res.status(400).json({ 
         message: "You must be at least 13 years old to register" 
       });
     }
 
-    // validation password - ต้องมีอย่างน้อย 8 ตัว, มีตัวอักษร 1 ตัว
+    // validation password
     if (password.length < 8) {
       return res.status(400).json({ 
         message: "Password must be at least 8 characters long" 
@@ -56,39 +55,35 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // ตรวจสอบว่า username หรือ email มีอยู่แล้วหรือไม่
+    // ใช้ BINARY เพื่อให้การเปรียบเทียบเป็น case-sensitive
     const [rows]: any = await db.query(
-      "SELECT * FROM users WHERE username = ? OR email = ?",
+      "SELECT * FROM users WHERE BINARY username = ? OR email = ?",
       [username, email]
     );
     if (rows.length > 0) {
       return res.status(400).json({ message: "Username or email already exists" });
     }
     
-    // เข้ารหัสรหัสผ่านก่อนเก็บลง DB
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // INSERT user ใหม่ (เพิ่ม age, gender, height, weight, goal)
+    // INSERT user ใหม่
     const [result]: any = await db.query(
       "INSERT INTO users (username, email, phone_number, password, age, gender, height, weight, goal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [username, email, phone_number, hashedPassword, age, gender, height, weight, goal]
     );
 
-
-    // สร้าง token ให้ user หลังจากสมัครสำเร็จ 
     const token = jwt.sign(
-      { userId: result.insertId, email }, // payload ที่จะเก็บใน token (xxxxx.yyyyy.zzzzz)
-      process.env.JWT_SECRET as string, // กุญแจลับ
-      { expiresIn: "1h" } // อายุของ token
+      { userId: result.insertId, email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "1h" }
     );
+    
     res.status(201).json({ 
       message: "User registered successfully", 
       token 
     });
   } catch (err: any) {
     console.error(err);
-
-    // ดัก Error 1062 กรณี UNIQUE ซ้ำ
     if (err.code === "ER_DUP_ENTRY") {
       return res.status(400).json({ message: "Username or email already exists" });
     }
@@ -101,30 +96,29 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
-    // ค้นหา user ตาม email
-    const [rows]: any = await db.query("SELECT * FROM users WHERE username = ?", [
-      username,
-    ]);
+    // ✅ ใช้ BINARY เพื่อให้การเปรียบเทียบเป็น case-sensitive
+    const [rows]: any = await db.query(
+      "SELECT * FROM users WHERE BINARY username = ?", 
+      [username]
+    );
+    
     if (rows.length === 0) {
       return res.status(400).json({ message: "Invalid username or password" });
     }
 
     const user: User = rows[0];
 
-    // ตรวจสอบรหัสผ่าน
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: "Invalid username or password" });
     }
 
-    // สร้าง token ให้ user
     const token = jwt.sign(
-      { userId: user.user_id, username: user.username }, // payload
-      process.env.JWT_SECRET as string, // กุญแจลับ
-      { expiresIn: "1h" }                          // อายุ token
+      { userId: user.user_id, username: user.username },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "1h" }
     );
 
-    // ส่ง token กลับไปให้ client ใช้เก็บใน localStorage หรือ cookie
     res.json({ 
       message: "Login successful", 
       user: { 
@@ -136,7 +130,8 @@ export const login = async (req: Request, res: Response) => {
         gender: user.gender, 
         height: user.height, 
         weight: user.weight, 
-        goal: user.goal },
+        goal: user.goal 
+      },
       token
     });
 
