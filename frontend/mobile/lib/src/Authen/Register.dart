@@ -292,7 +292,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               _buildLabeledInput(
                                 label: 'PASSWORD *',
                                 controller: _passwordController,
-                                hint: 'Min 6 characters...',
+                                hint: 'Min 8 characters...',
                                 isPassword: true,
                               ),
                               const SizedBox(height: 12),
@@ -996,7 +996,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     String height = _heightController.text.trim();
     String age = _ageController.text.trim();
 
-    // Username validation (เหมือน Web)
+    // Username validation
     if (username.isEmpty) {
       _showPixelError('⚠ Please enter username!');
       return;
@@ -1032,8 +1032,15 @@ class _RegisterScreenState extends State<RegisterScreen>
       return;
     }
 
-    if (password.length < 6) {
-      _showPixelError('⚠ Password ต้องมีอย่างน้อย 6 ตัวอักษร');
+    if (password.length < 8) {
+      _showPixelError('⚠ Password ต้องมีอย่างน้อย 8 ตัวอักษร');
+      return;
+    }
+
+    if (!RegExp(r'[a-zA-Z]').hasMatch(password)) {
+      _showPixelError(
+        '⚠ Password ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว',
+      );
       return;
     }
 
@@ -1044,8 +1051,8 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     // Age validation
     final ageNum = int.tryParse(age);
-    if (ageNum == null || ageNum < 10 || ageNum > 120) {
-      _showPixelError('⚠ กรุณากรอกอายุที่ถูกต้อง');
+    if (ageNum == null || ageNum < 13 || ageNum > 120) {
+      _showPixelError('⚠ ต้องมีอายุอย่างน้อย 13 ปีขึ้นไป');
       return;
     }
 

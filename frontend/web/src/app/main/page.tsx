@@ -1,7 +1,7 @@
 // app/main/page.tsx
 'use client';
 
-import NavBarUser from '../pages/componants/NavBarUser';
+import NavBarUser from '../componants/NavBarUser';
 
 export default function MainPage() {
   return (

@@ -1,6 +1,4 @@
-// ========================================
-// src/api.ts (FRONTEND)
-// ========================================
+// src/app/services/auth_service.ts
 
 import axios from 'axios'
 

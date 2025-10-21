@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen>
     // Validation
     if (username.isEmpty) {
       setState(() {
-        _errorMessage = 'กรุณากรอก Username';
+        _errorMessage = '⚠ Please enter username!';
       });
       return;
     }
@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (password.isEmpty) {
       setState(() {
-        _errorMessage = 'กรุณากรอก Password';
+        _errorMessage = '⚠ Please enter password!';
       });
       return;
     }

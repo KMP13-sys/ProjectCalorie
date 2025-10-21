@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Open from './pages/open'
+import Open from './open/open'
 import Login from './login/page'
 import Register from './register/page'
 
