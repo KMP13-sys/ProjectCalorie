@@ -176,8 +176,8 @@ export default function PixelProfilePage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto p-4 mt-8" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="bg-white border-8 border-black relative" style={{ boxShadow: '12px 12px 0 rgba(0,0,0,0.3)' }}>
+      <div className="flex justify-center items-start p-4 mt-8" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="w-full max-w-2xl bg-white border-8 border-black relative" style={{ boxShadow: '12px 12px 0 rgba(0,0,0,0.3)' }}>
           {/* Corner Pixels */}
           <CornerPixels />
 
