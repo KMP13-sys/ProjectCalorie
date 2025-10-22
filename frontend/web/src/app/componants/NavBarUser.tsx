@@ -3,13 +3,11 @@
 
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useUser } from '../context/user_context';
 
-interface NavBarUserProps {
-  username?: string;
-}
-
-export default function NavBarUser({ username = 'PLAYER' }: NavBarUserProps) {
+export default function NavBarUser() {
   const router = useRouter();
+  const { userProfile, loading } = useUser();
 
   const handleLogoClick = () => {
     router.push('/main');
@@ -18,6 +16,12 @@ export default function NavBarUser({ username = 'PLAYER' }: NavBarUserProps) {
   const handleProfileClick = () => {
     router.push('/profile');
   };
+
+  // แสดง username จาก backend หรือ default
+  const displayUsername = userProfile?.username || 'PLAYER';
+  
+  // แสดงรูปโปรไฟล์จาก backend หรือ default
+  const profileImageSrc = userProfile?.image_profile_url || '/pic/person.png';
 
   return (
     <nav 
@@ -38,8 +42,8 @@ export default function NavBarUser({ username = 'PLAYER' }: NavBarUserProps) {
               onClick={handleLogoClick}
               className="relative"
               style={{
-                width: '60px',
-                height: '60px',
+                width: '80px',
+                height: '80px',
               }}
             >
               <img
@@ -48,7 +52,6 @@ export default function NavBarUser({ username = 'PLAYER' }: NavBarUserProps) {
                 className="w-full h-full object-cover"
                 style={{ imageRendering: 'pixelated' }}
                 onError={(e) => {
-                  // Fallback เป็น emoji ถ้าโหลดรูปไม่ได้
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.parentElement!.innerHTML = '<span style="font-size: 24px">🥗</span>';
                 }}
@@ -87,10 +90,11 @@ export default function NavBarUser({ username = 'PLAYER' }: NavBarUserProps) {
 
               {/* Title */}
               <span
-                className="text-lg font-bold text-white tracking-wider"
+                className="font-bold text-white tracking-wider"
                 style={{
                   fontFamily: 'monospace',
                   textShadow: '2px 2px 0 rgba(0, 0, 0, 0.3)',
+                  fontSize: '30px',
                 }}
               >
                 CAL-DEFICITS
@@ -118,34 +122,36 @@ export default function NavBarUser({ username = 'PLAYER' }: NavBarUserProps) {
                   }}
                 ></div>
 
-                {/* Username */}
+                {/* Username - แสดงจาก backend */}
                 <span
-                  className="text-xs font-bold text-gray-800"
+                  className="text-lg font-bold text-gray-800"
                   style={{
                     fontFamily: 'monospace',
                     letterSpacing: '0.05em',
                   }}
                 >
-                  {username.toUpperCase()}
+                  {loading ? 'LOADING...' : displayUsername.toUpperCase()}
                 </span>
               </div>
             </div>
 
-            {/* Profile Icon */}
+            {/* Profile Icon - แสดงรูปจาก backend */}
             <button
               onClick={handleProfileClick}
-              className="w-11 h-11 bg-white flex items-center justify-center"
+              className="w-18 h-18 bg-white flex items-center justify-center overflow-hidden"
               style={{
                 border: '4px solid black',
                 boxShadow: '3px 3px 0 rgba(0, 0, 0, 0.3)',
               }}
             >
-              <Image
-                src="/pic/person.png"
+              <img
+                src={profileImageSrc}
                 alt="Profile"
-                width={24}
-                height={24}
-                className="object-contain"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback เป็นรูป default ถ้าโหลดไม่ได้
+                  e.currentTarget.src = '/pic/person.png';
+                }}
               />
             </button>
           </div>

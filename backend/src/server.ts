@@ -11,6 +11,7 @@ import userRoutes from "./routes/profile.routes";
 import updateRoutes from "./routes/update.routes";
 import profileRoutes from "./routes/profile.routes";
 import dailyRoutes from "./routes/daily.routes";
+import adminRoutes from "./routes/admin.routes";
 
 const app = express();
 app.use(cors());
@@ -37,6 +38,7 @@ app.use("/api/update", updateRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/daily", dailyRoutes);
 app.use("/daily", dailyRoutes);
+app.use("/api/admin", adminRoutes);
 
 // ====== Root test route ======
 app.get("/", (req, res) => {

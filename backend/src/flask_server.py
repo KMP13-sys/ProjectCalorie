@@ -1,144 +1,130 @@
-from flask import Flask, request, jsonify
+# =====================================================
+# File: backend/src/flask/flask_server.py
+# Purpose: Main Flask entry point for ProjectCalorie backend
+# =====================================================
+
 import os
+import logging
 import sys
-from dotenv import load_dotenv
 from pathlib import Path
+from dotenv import load_dotenv
+from flask import Flask, jsonify
+from flask_cors import CORS
 
-# ที่เก็บไฟล์นี้: .../ProjectCalorie/backend/src
+# -----------------------------------------------------
+# Path setup & environment
+# -----------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent        # backend/src
-PROJECT_ROOT = BASE_DIR.parent                     # backend
-FLASK_MODULE_DIR = PROJECT_ROOT / 'src' / 'flask'  # backend/src/flask
+PROJECT_ROOT = BASE_DIR.parent                   # backend/
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__), "flask"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
 
-# โหลด .env จาก backend root (C:\Users\User\Documents\ProjectCalorie\backend\.env)
+# โหลด .env จาก project root
 load_dotenv(str(PROJECT_ROOT / '.env'))
 
-# เพิ่มโฟลเดอร์ที่มี food_detect.py ลงใน sys.path เพื่อให้ import ทำงานได้
-for p in (str(FLASK_MODULE_DIR), str(BASE_DIR)):
-    if p not in sys.path:
-        sys.path.insert(0, p)
+# -----------------------------------------------------
+# JWT & Security setup
+# -----------------------------------------------------
+JWT_SECRET = os.getenv("JWT_SECRET")
+if not JWT_SECRET:
+    print("🔍 JWT_SECRET from .env =", JWT_SECRET)
+    raise RuntimeError("❌ Missing JWT_SECRET in environment (.env). Application cannot start.")
 
-# import โมดูลจาก backend/src/flask/food_detect.py
-from food_detect import (
-    predict_food_image, 
-    save_meal_to_db,
-    require_auth  # import decorator สำหรับ JWT auth
+# -----------------------------------------------------
+# Logging setup
+# -----------------------------------------------------
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
 )
+logger = logging.getLogger(__name__)
+logger.info("✅ Flask Server starting...")
 
+# -----------------------------------------------------
+# Flask app initialization
+# -----------------------------------------------------
 app = Flask(__name__)
 
-# ============================================
-# API Routes
-# ============================================
+# ตั้งค่า CORS (อนุญาตทุก origin ชั่วคราว, ปรับเป็นเฉพาะโดเมนภายหลัง)
+allowed_origins = os.getenv("CORS_ORIGINS", "*")
+CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
-@app.route('/api/predict-food', methods=['POST'])
-@require_auth  # ป้องกันด้วย JWT token
-def predict_food():
-    """
-    ทำนายอาหารจากรูปภาพ (ต้อง login)
-    
-    Headers:
-        Authorization: Bearer <token>
-    
-    Body (form-data):
-        image: file
-    """
-    try:
-        if 'image' not in request.files:
-            return jsonify({'error': 'No image provided'}), 400
-        
-        file = request.files['image']
-        
-        if file.filename == '':
-            return jsonify({'error': 'Empty filename'}), 400
-        
-        result = predict_food_image(file)
-        return jsonify(result)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+# -----------------------------------------------------
+# Import and register Blueprints
+# -----------------------------------------------------
+try:
+    from food_detect_routes import food_detect_bp
+    from recommendation_routes import recommendation_bp
 
+    app.register_blueprint(food_detect_bp)
+    app.register_blueprint(recommendation_bp)
+    logger.info("✅ Blueprints registered successfully")
+except Exception as e:
+    logger.exception("❌ Error registering blueprints: %s", e)
+    raise
 
-@app.route('/api/save-meal', methods=['POST'])
-@require_auth  # ป้องกันด้วย JWT token
-def save_meal():
-    """
-    บันทึกมื้อาหาร (ต้อง login)
-    
-    Headers:
-        Authorization: Bearer <token>
-        Content-Type: application/json
-    
-    Body:
-        {
-            "food_id": 101,
-            "confidence_score": 0.95,
-            "meal_datetime": "2025-10-14 08:30:00"  // optional
-        }
-    """
-    try:
-        # ดึง user_id จาก JWT token (ที่ decorator ใส่ไว้ใน request)
-        user_id = request.user_id
-        
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({'error': 'No data provided'}), 400
-        
-        # ส่ง user_id จาก token ไปยัง function (ไม่รับจาก body)
-        result = save_meal_to_db(user_id, data)
-        
-        if 'error' in result:
-            return jsonify(result), 400
-        
-        return jsonify(result), 201
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/health', methods=['GET'])
-def health():
-    """
-    Health check (ไม่ต้อง login)
-    """
+# -----------------------------------------------------
+# General routes
+# -----------------------------------------------------
+@app.route("/")
+def home():
+    """Root endpoint for quick API overview"""
     return jsonify({
-        'status': 'ok',
-        'message': 'Flask ML API is running'
+        "message": "Flask ML API",
+        "version": "1.0",
+        "endpoints": {
+            "health": "/api/health",
+            "food_detection": {
+                "predict": "/api/predict-food/<userId>",
+                "save_meal": "/api/save-meal/<userId>"
+            },
+            "food_recommendation": {
+                "recommend": "/api/recommend/<userId>",
+                "history": "/api/user/<userId>/food-history",
+                "calories": "/api/user/<userId>/remaining-calories"
+            }
+        }
     })
 
-# ============================================
-# Error Handlers
-# ============================================
+@app.route("/api/health", methods=["GET"])
+def health():
+    """Health check"""
+    return jsonify({"status": "ok", "message": "Flask ML API is running"})
 
+# -----------------------------------------------------
+# Error Handlers
+# -----------------------------------------------------
 @app.errorhandler(401)
 def unauthorized(error):
-    return jsonify({
-        'error': 'Unauthorized',
-        'message': 'Please login to access this resource'
-    }), 401
+    return jsonify({"error": "Unauthorized", "message": "Please login"}), 401
 
+@app.errorhandler(403)
+def forbidden(error):
+    return jsonify({"error": "Forbidden", "message": "Access denied"}), 403
 
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({
-        'error': 'Not Found',
-        'message': 'The requested resource was not found'
-    }), 404
-
+    return jsonify({"error": "Not Found", "message": "Resource not found"}), 404
 
 @app.errorhandler(500)
 def internal_error(error):
-    return jsonify({
-        'error': 'Internal Server Error',
-        'message': 'An unexpected error occurred'
-    }), 500
+    logger.exception("Internal server error: %s", error)
+    return jsonify({"error": "Internal Server Error", "message": "Unexpected error"}), 500
 
-# ============================================
+@app.errorhandler(Exception)
+def handle_exception(error):
+    """Catch all unhandled exceptions"""
+    logger.exception("Unhandled exception: %s", error)
+    return jsonify({"error": "Server Error", "message": str(error)}), 500
+
+# -----------------------------------------------------
 # Run Server
-# ============================================
+# -----------------------------------------------------
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 4000))
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 
-if __name__ == '__main__':
-    # แนะนำรันจากโฟลเดอร์ backend:
-    #   PS> cd C:\Users\User\Documents\ProjectCalorie\backend
-    #   PS> python src\flask_server.py
-    port = int(os.getenv('PORT', 4000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    logger.info(f"🚀 Running Flask on port {port} (debug={debug_mode})")
+    app.run(host="0.0.0.0", port=port, debug=debug_mode)

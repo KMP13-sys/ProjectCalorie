@@ -2,6 +2,9 @@
 'use client';
 
 import NavBarUser from '../componants/NavBarUser';
+import Kcalbar from '../componants/Kcalbar';
+import Piegraph from '../componants/Piegraph';
+import Activity from '../componants/activityfactor';
 
 export default function MainPage() {
   return (
@@ -14,44 +17,23 @@ export default function MainPage() {
         {/* ↑ สมมติ NavBar สูง ~64px ปรับตามจริงได้ */}
 
         {/* ฝั่งซ้าย */}
-        <div className="w-1/2 flex items-center justify-center border-r-8 border-black bg-[#e5f4de]">
-          <div className="text-center p-10">
-            <h1
-              className="text-3xl font-bold text-gray-800 mb-4"
-              style={{
-                fontFamily: 'monospace',
-                textShadow: '2px 2px 0px rgba(0,0,0,0.2)',
-              }}
-            >
-              ◀ LEFT SIDE
-            </h1>
-            <p
-              className="text-gray-700"
-              style={{ fontFamily: 'monospace' }}
-            >
-              (พื้นที่ฝั่งซ้าย — เช่น เมนู, ข้อมูลผู้ใช้)
-            </p>
+        <div className="w-1/2 flex flex-col items-start justify-center bg-[#e5f4de]">
+          <div className="text-center px-5 py-10 w-full">
+            <Kcalbar />
+
+            <div className="text-center py-10 w-full">
+              <Piegraph carbs={255} fats={14} protein={52} />
+            </div>
+
           </div>
         </div>
 
+
         {/* ฝั่งขวา */}
-        <div className="w-1/2 flex items-center justify-center bg-[#f4ffe5]">
-          <div className="text-center p-10">
-            <h1
-              className="text-3xl font-bold text-gray-800 mb-4"
-              style={{
-                fontFamily: 'monospace',
-                textShadow: '2px 2px 0px rgba(0,0,0,0.2)',
-              }}
-            >
-              RIGHT SIDE ▶
-            </h1>
-            <p
-              className="text-gray-700"
-              style={{ fontFamily: 'monospace' }}
-            >
-              (พื้นที่ฝั่งขวา — เช่น เนื้อหา, ตาราง, หรือกราฟ)
-            </p>
+        <div className="w-1/2 flex flex-col items-start justify-center bg-[#e5f4de]">
+          <div className="text-center px-5 py-10 w-full">
+            <Activity />
+
           </div>
         </div>
       </div>

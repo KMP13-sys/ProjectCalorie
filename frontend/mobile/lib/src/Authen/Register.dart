@@ -130,7 +130,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                   // Registration Form Box
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -150,15 +149,17 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                     child: Column(
                       children: [
-                        // Header Bar
+                        // Header Bar (ไม่มี padding รอบข้าง)
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
                               colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
                             ),
-                            border: Border.all(color: Colors.black, width: 4),
+                            border: Border(
+                              bottom: BorderSide(color: Colors.black, width: 5),
+                            ),
                           ),
                           child: const Text(
                             '◆ CREATE ACCOUNT ◆',
@@ -173,388 +174,419 @@ class _RegisterScreenState extends State<RegisterScreen>
                           ),
                         ),
 
-                        const SizedBox(height: 24),
-
-                        // Logo
-                        Center(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFFa8d88e), Color(0xFF8bc273)],
-                              ),
-                              border: Border.all(color: Colors.black, width: 4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  offset: const Offset(4, 4),
-                                ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: Image.asset(
-                              'assets/pic/logo.png',
-                              width: 128,
-                              height: 128,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        const Text(
-                          'CAL-DEFICITS',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'TA8bit',
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF204130),
-                            letterSpacing: 2,
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // Decorative Dots
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              color: const Color(0xFF6fa85e),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              width: 8,
-                              height: 8,
-                              color: const Color(0xFF8bc273),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              width: 8,
-                              height: 8,
-                              color: const Color(0xFFa8d88e),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // ACCOUNT INFO SECTION
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            border: Border.all(color: Colors.black, width: 4),
-                          ),
+                        // Content with padding
+                        Padding(
+                          padding: const EdgeInsets.all(24),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                '▶ ACCOUNT INFO',
-                                style: TextStyle(
-                                  fontFamily: 'TA8bit',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              _buildLabeledInput(
-                                label: 'USERNAME *',
-                                controller: _usernameController,
-                                hint: 'Enter username...',
-                                allowedChars: ['a-z', 'A-Z', '0-9', '_'],
-                              ),
-                              const SizedBox(height: 12),
-
-                              _buildLabeledInput(
-                                label: 'EMAIL *',
-                                controller: _emailController,
-                                hint: 'Enter email...',
-                                keyboardType: TextInputType.emailAddress,
-                              ),
-                              const SizedBox(height: 12),
-
-                              _buildLabeledInput(
-                                label: 'PHONE *',
-                                controller: _phoneController,
-                                hint: 'Enter phone...',
-                                keyboardType: TextInputType.phone,
-                              ),
-                              const SizedBox(height: 12),
-
-                              _buildLabeledInput(
-                                label: 'PASSWORD *',
-                                controller: _passwordController,
-                                hint: 'Min 8 characters...',
-                                isPassword: true,
-                              ),
-                              const SizedBox(height: 12),
-
-                              _buildLabeledInput(
-                                label: 'CONFIRM PASSWORD *',
-                                controller: _confirmPasswordController,
-                                hint: 'Re-enter password...',
-                                isPassword: true,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // PERSONAL INFO SECTION
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            border: Border.all(color: Colors.black, width: 4),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '▶ PERSONAL INFO',
-                                style: TextStyle(
-                                  fontFamily: 'TA8bit',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildLabeledInput(
-                                      label: 'AGE *',
-                                      controller: _ageController,
-                                      hint: 'Years',
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildLabeledDropdown(
-                                      label: 'GENDER *',
-                                      value: _selectedGender,
-                                      hint: 'Select...',
-                                      items: const ['MALE', 'FEMALE'],
-                                      onChanged: (value) {
-                                        setState(
-                                          () => _selectedGender = value ?? '',
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildLabeledInput(
-                                      label: 'HEIGHT *',
-                                      controller: _heightController,
-                                      hint: '(CM)',
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildLabeledInput(
-                                      label: 'WEIGHT *',
-                                      controller: _weightController,
-                                      hint: '(KG)',
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-
-                              _buildLabeledDropdown(
-                                label: 'GOAL *',
-                                value: _selectedGoal,
-                                hint: 'Select goal...',
-                                items: const [
-                                  'LOSE WEIGHT',
-                                  'MAINTAIN WEIGHT',
-                                  'GAIN WEIGHT',
-                                ],
-                                onChanged: (value) {
-                                  setState(() => _selectedGoal = value ?? '');
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Terms Checkbox
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            border: Border.all(
-                              color: Colors.grey[800]!,
-                              width: 4,
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: Checkbox(
-                                  value: _acceptTerms,
-                                  onChanged: (value) {
-                                    setState(
-                                      () => _acceptTerms = value ?? false,
-                                    );
-                                  },
-                                  activeColor: Colors.black87,
-                                  checkColor: Colors.white,
-                                  side: BorderSide(
-                                    color: Colors.grey[800]!,
-                                    width: 2,
-                                  ),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.zero,
-                                  ),
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: _showPrivacyPolicyDialog,
-                                  child: const Text(
-                                    'I ACCEPT TERMS AND PRIVACY POLICY',
-                                    style: TextStyle(
-                                      fontFamily: 'TA8bit',
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Register Button
-                        GestureDetector(
-                          onTap: _isLoading ? null : _handleRegister,
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
-                              ),
-                              border: Border.all(color: Colors.black, width: 4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  offset: const Offset(6, 6),
-                                ),
-                              ],
-                            ),
-                            child: _isLoading
-                                ? const Center(
-                                    child: SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : const Text(
-                                    '▶ CREATE ACCOUNT',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontFamily: 'TA8bit',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      letterSpacing: 2,
-                                      shadows: [
-                                        Shadow(
-                                          offset: Offset(2, 2),
-                                          color: Colors.black38,
-                                        ),
+                              // Logo
+                              Center(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color(0xFFa8d88e),
+                                        Color(0xFF8bc273),
                                       ],
                                     ),
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 4,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        offset: const Offset(4, 4),
+                                      ),
+                                    ],
                                   ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Back to Login
-                        Center(
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const LoginScreen(),
+                                  padding: const EdgeInsets.all(12),
+                                  child: Image.asset(
+                                    'assets/pic/logo.png',
+                                    width: 128,
+                                    height: 128,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[800],
-                                border: Border.all(
-                                  color: Colors.black,
-                                  width: 3,
+
+                              const SizedBox(height: 16),
+
+                              const Text(
+                                'CAL-DEFICITS',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'TA8bit',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF204130),
+                                  letterSpacing: 2,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    offset: const Offset(3, 3),
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              // Decorative Dots
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    color: const Color(0xFF6fa85e),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    color: const Color(0xFF8bc273),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    color: const Color(0xFFa8d88e),
                                   ),
                                 ],
                               ),
-                              child: const Text(
-                                '← BACK TO LOGIN',
-                                style: TextStyle(
-                                  fontFamily: 'TA8bit',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                      offset: Offset(2, 2),
-                                      color: Colors.black38,
+
+                              const SizedBox(height: 24),
+
+                              // ACCOUNT INFO SECTION
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 4,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      '▶ ACCOUNT INFO',
+                                      style: TextStyle(
+                                        fontFamily: 'TA8bit',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    _buildLabeledInput(
+                                      label: 'USERNAME *',
+                                      controller: _usernameController,
+                                      hint: 'Enter username...',
+                                      allowedChars: ['a-z', 'A-Z', '0-9', '_'],
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    _buildLabeledInput(
+                                      label: 'EMAIL *',
+                                      controller: _emailController,
+                                      hint: 'Enter email...',
+                                      keyboardType: TextInputType.emailAddress,
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    _buildLabeledInput(
+                                      label: 'PHONE *',
+                                      controller: _phoneController,
+                                      hint: 'Enter phone...',
+                                      keyboardType: TextInputType.phone,
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    _buildLabeledInput(
+                                      label: 'PASSWORD *',
+                                      controller: _passwordController,
+                                      hint: 'Min 8 characters...',
+                                      isPassword: true,
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    _buildLabeledInput(
+                                      label: 'CONFIRM PASSWORD *',
+                                      controller: _confirmPasswordController,
+                                      hint: 'Re-enter password...',
+                                      isPassword: true,
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
+
+                              const SizedBox(height: 16),
+
+                              // PERSONAL INFO SECTION
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 4,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      '▶ PERSONAL INFO',
+                                      style: TextStyle(
+                                        fontFamily: 'TA8bit',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildLabeledInput(
+                                            label: 'AGE *',
+                                            controller: _ageController,
+                                            hint: 'Years',
+                                            keyboardType: TextInputType.number,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: _buildLabeledDropdown(
+                                            label: 'GENDER *',
+                                            value: _selectedGender,
+                                            hint: 'Select...',
+                                            items: const ['MALE', 'FEMALE'],
+                                            onChanged: (value) {
+                                              setState(
+                                                () => _selectedGender =
+                                                    value ?? '',
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildLabeledInput(
+                                            label: 'HEIGHT *',
+                                            controller: _heightController,
+                                            hint: '(CM)',
+                                            keyboardType: TextInputType.number,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: _buildLabeledInput(
+                                            label: 'WEIGHT *',
+                                            controller: _weightController,
+                                            hint: '(KG)',
+                                            keyboardType: TextInputType.number,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    _buildLabeledDropdown(
+                                      label: 'GOAL *',
+                                      value: _selectedGoal,
+                                      hint: 'Select goal...',
+                                      items: const [
+                                        'LOSE WEIGHT',
+                                        'MAINTAIN WEIGHT',
+                                        'GAIN WEIGHT',
+                                      ],
+                                      onChanged: (value) {
+                                        setState(
+                                          () => _selectedGoal = value ?? '',
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // Terms Checkbox
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  border: Border.all(
+                                    color: Colors.grey[800]!,
+                                    width: 4,
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: Checkbox(
+                                        value: _acceptTerms,
+                                        onChanged: (value) {
+                                          setState(
+                                            () => _acceptTerms = value ?? false,
+                                          );
+                                        },
+                                        activeColor: Colors.black87,
+                                        checkColor: Colors.white,
+                                        side: BorderSide(
+                                          color: Colors.grey[800]!,
+                                          width: 2,
+                                        ),
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.zero,
+                                        ),
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: _showPrivacyPolicyDialog,
+                                        child: const Text(
+                                          'I ACCEPT TERMS AND PRIVACY POLICY',
+                                          style: TextStyle(
+                                            fontFamily: 'TA8bit',
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              // Register Button
+                              GestureDetector(
+                                onTap: _isLoading ? null : _handleRegister,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF6fa85e),
+                                        Color(0xFF8bc273),
+                                      ],
+                                    ),
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 4,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        offset: const Offset(6, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  child: _isLoading
+                                      ? const Center(
+                                          child: SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        )
+                                      : const Text(
+                                          '▶ CREATE ACCOUNT',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'TA8bit',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 2,
+                                            shadows: [
+                                              Shadow(
+                                                offset: Offset(2, 2),
+                                                color: Colors.black38,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              // Back to Login
+                              Center(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[800],
+                                      border: Border.all(
+                                        color: Colors.black,
+                                        width: 3,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          offset: const Offset(3, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Text(
+                                      '← BACK TO LOGIN',
+                                      style: TextStyle(
+                                        fontFamily: 'TA8bit',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        shadows: [
+                                          Shadow(
+                                            offset: Offset(2, 2),
+                                            color: Colors.black38,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -563,7 +595,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
                   const SizedBox(height: 20),
 
-                  // Hint Text (ปรับใหม่)
+                  // Hint Text
                   const Text(
                     '▼ FILL IN YOUR DATA ▼',
                     textAlign: TextAlign.center,
@@ -846,7 +878,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // Labeled Input Field (ไม่มี emoji)
+  // Labeled Input Field
   Widget _buildLabeledInput({
     required String label,
     required TextEditingController controller,
@@ -917,7 +949,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // Labeled Dropdown (ไม่มี emoji)
+  // Labeled Dropdown
   Widget _buildLabeledDropdown({
     required String label,
     required String value,
@@ -1016,7 +1048,14 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     // Email validation
     if (email.isEmpty || !email.contains('@')) {
-      _showPixelError('⚠ Please enter valid email!');
+      _showPixelError('⚠ Please enter email!');
+      return;
+    }
+
+    if (!RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    ).hasMatch(email)) {
+      _showPixelError('⚠ Please enter valid email format!');
       return;
     }
 
@@ -1154,32 +1193,6 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
     );
   }
-
-  // // Pixel Success Message
-  // void _showPixelSuccess(String message) {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Container(
-  //         padding: const EdgeInsets.all(12),
-  //         decoration: BoxDecoration(
-  //           color: Colors.green[700],
-  //           border: Border.all(color: Colors.black, width: 3),
-  //         ),
-  //         child: Text(
-  //           message,
-  //           style: const TextStyle(
-  //             fontFamily: 'TA8bit',
-  //             fontSize: 14,
-  //             color: Colors.white,
-  //           ),
-  //         ),
-  //       ),
-  //       backgroundColor: Colors.transparent,
-  //       elevation: 0,
-  //       behavior: SnackBarBehavior.floating,
-  //     ),
-  //   );
-  // }
 
   // Privacy Policy Dialog
   void _showPrivacyPolicyDialog() {

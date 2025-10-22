@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { authAPI, RegisterData } from '@/app/services/auth_service';
 
-interface RegisterPageProps {
-  onNavigateToLogin?: () => void;
-}
-
-export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
+export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -31,7 +29,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
     
-      // Validate username real-time
+    // Validate username real-time
     if (name === 'username') {
       // อนุญาตแค่ a-z, A-Z, 0-9
       const sanitized = value.replace(/[^a-zA-Z0-9]/g, '');
@@ -39,7 +37,16 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
         ...prev,
         [name]: sanitized
       }));
-    } else {
+    } 
+    // Validate email real-time (ลบช่องว่าง)
+    else if (name === 'email') {
+      const sanitized = value.replace(/\s/g, ''); // ลบช่องว่างทั้งหมด
+      setFormData(prev => ({
+        ...prev,
+        [name]: sanitized
+      }));
+    } 
+    else {
       setFormData(prev => ({
         ...prev,
         [name]: type === 'checkbox' ? checked : value
@@ -64,6 +71,27 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
 
     if (username.length < 3) {
       setError('Username ต้องมีอย่างน้อย 3 ตัวอักษร');
+      return;
+    }
+
+    // Email validation
+    const email = formData.email.trim();
+    
+    if (!email) {
+      setError('กรุณากรอกอีเมล');
+      return;
+    }
+
+    // ตรวจสอบรูปแบบอีเมลด้วย Regular Expression
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      setError('รูปแบบอีเมลไม่ถูกต้อง (ตัวอย่าง: example@email.com)');
+      return;
+    }
+
+    // ตรวจสอบว่าไม่มีช่องว่างในอีเมล
+    if (email.includes(' ')) {
+      setError('อีเมลต้องไม่มีช่องว่าง');
       return;
     }
 
@@ -94,8 +122,8 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
     const height = parseFloat(formData.height);
     const weight = parseFloat(formData.weight);
 
-    if (isNaN(age) || age < 13 || age > 120) { // ✅ ใหม่ (13 ปี)
-      setError('ต้องมีอายุอย่างน้อย 13 ปีขึ้นไป'); // ✅ ใหม่
+    if (isNaN(age) || age < 13 || age > 120) {
+      setError('ต้องมีอายุอย่างน้อย 13 ปีขึ้นไป');
       return;
     }
 
@@ -148,13 +176,11 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    
-    // Redirect ไปหน้า login
-    if (onNavigateToLogin) {
-      onNavigateToLogin();
-    } else {
-      window.location.href = '/pages/login';
-    }
+    router.push('/login');
+  };
+
+  const handleNavigateToLogin = () => {
+    router.push('/login');
   };
 
   return (
@@ -522,22 +548,20 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                 </button>
               </form>
 
-              {/* Link to Login */}
-              {onNavigateToLogin && (
-                <div className="mt-6 pt-6 border-t-4 border-dashed border-gray-300 text-center">
-                  <button
-                    type="button"
-                    onClick={onNavigateToLogin}
-                    className="px-6 py-2 bg-gray-800 hover:bg-gray-700 border-3 border-black text-white text-sm font-bold transition-all"
-                    style={{ 
-                      fontFamily: 'monospace',
-                      boxShadow: '3px 3px 0px rgba(0,0,0,0.3)'
-                    }}
-                  >
-                    ← BACK TO LOGIN
-                  </button>
-                </div>
-              )}
+              {/* Link to Login - แสดงเสมอ */}
+              <div className="mt-6 pt-6 border-t-4 border-dashed border-gray-300 text-center">
+                <button
+                  type="button"
+                  onClick={handleNavigateToLogin}
+                  className="px-6 py-2 bg-gray-800 hover:bg-gray-700 border-3 border-black text-white text-sm font-bold transition-all"
+                  style={{ 
+                    fontFamily: 'monospace',
+                    boxShadow: '3px 3px 0px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  ← BACK TO LOGIN
+                </button>
+              </div>
             </div>
           </div>
 
@@ -556,7 +580,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
         </div>
       </div>
 
-      {/* Pixel Art Success Modal */}
+      {/* Success Modal - เหมือนเดิม */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
           <div 
@@ -566,21 +590,18 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
             <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
 
             <div className="p-8 text-center relative">
-              {/* Pixel Art Header Bar */}
               <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
                 <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'monospace' }}>
                   ★ ACCOUNT CREATED! ★
                 </h3>
               </div>
 
-              {/* Pixel Star Icon */}
               <div className="flex justify-center mb-4">
                 <div className="relative w-16 h-16">
                   <div className="grid grid-cols-5 gap-0">
@@ -617,7 +638,6 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                 </div>
               </div>
 
-              {/* Message */}
               <div className="bg-white border-4 border-black p-4 mb-6">
                 <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'monospace' }}>
                   ACCOUNT CREATED!
@@ -627,7 +647,6 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
                 </p>
               </div>
 
-              {/* OK Button */}
               <button
                 onClick={handleSuccessModalClose}
                 className="w-full py-3 bg-gradient-to-r from-[#6fa85e] to-[#8bc273] hover:from-[#8bc273] hover:to-[#a8d48f] border-4 border-black text-white font-bold transition-all"
@@ -644,7 +663,7 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
         </div>
       )}
 
-      {/* Privacy Policy Modal */}
+      {/* Privacy Policy Modal - ไม่แก้ไข ยาวมาก ตัดออก */}
       {showPrivacyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
           <div 
@@ -654,13 +673,11 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
             <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
 
-            {/* Modal Header */}
             <div className="bg-gradient-to-r from-[#6fa85e] to-[#8bc273] border-b-6 border-black py-4 px-6 flex items-center justify-between">
               <h2 
                 className="text-2xl font-bold text-white tracking-wider"
@@ -680,7 +697,6 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
               </button>
             </div>
 
-            {/* Modal Content */}
             <div className="p-6 overflow-y-auto flex-1">
               <div className="space-y-4 text-gray-700" style={{ fontFamily: 'monospace', fontSize: '13px' }}>
                 <section>
@@ -763,7 +779,6 @@ export default function RegisterPage({ onNavigateToLogin }: RegisterPageProps) {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="p-6 border-t-6 border-black">
               <button
                 onClick={() => setShowPrivacyModal(false)}
