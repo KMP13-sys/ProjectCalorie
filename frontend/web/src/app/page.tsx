@@ -1,25 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Open from './open/open'
-import Login from './login/page'
-import Register from './register/page'
 
 export default function Home() {
-  const [currentPage, setCurrentPage] = useState<'open' | 'login' | 'register'>('open')
+  const router = useRouter()
 
-  // ลบ useEffect ออก - ให้ Open component จัดการเอง
-
-  // แสดงหน้า Register
-  if (currentPage === 'register') {
-    return <Register onNavigateToLogin={() => setCurrentPage('login')} />
+  // When splash screen completes, navigate to login page
+  const handleSplashComplete = () => {
+    router.push('/login')
   }
 
-  // แสดงหน้า Login
-  if (currentPage === 'login') {
-    return <Login onNavigateToRegister={() => setCurrentPage('register')} />
-  }
-
-  // แสดงหน้า Open (Splash Screen) พร้อม callback
-  return <Open onComplete={() => setCurrentPage('login')} />
+  return <Open onComplete={handleSplashComplete} />
 }

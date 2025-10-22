@@ -13,7 +13,7 @@ export default function Open({ onComplete }: OpenProps) {
       if (onComplete) {
         onComplete()
       }
-    }, 1000) // 10 วินาที
+    }, 2000) // 2 วินาที
 
     return () => clearTimeout(timer)
   }, [onComplete])
@@ -138,7 +138,7 @@ export default function Open({ onComplete }: OpenProps) {
                   <div 
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#6fa85e] to-[#a8d48f]"
                     style={{
-                      animation: 'pixelLoading 2s ease-in-out infinite',
+                      animation: 'pixelLoading 2s ease-in-out',
                       width: '100%'
                     }}
                   >
@@ -159,10 +159,10 @@ export default function Open({ onComplete }: OpenProps) {
 
       <style jsx>{`
         @keyframes pixelLoading {
-          0%, 100% { 
-            width: 10%; 
+          0% { 
+            width: 0%; 
           }
-          50% { 
+          100% { 
             width: 100%; 
           }
         }
