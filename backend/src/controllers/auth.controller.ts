@@ -8,12 +8,12 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
 
-    // ✅ ตรวจสอบ ENV
+    //  ตรวจสอบ ENV
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET environment variable is not set");
     }
 
-    // ✅ Validation ต่าง ๆ
+    //  Validation ต่าง ๆ
     const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{3,}$/;
     if (!usernameRegex.test(username) || /^\d+$/.test(username)) {
       return res.status(400).json({
@@ -42,7 +42,7 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // ✅ ตรวจ username / email ซ้ำ
+    // ตรวจ username / email ซ้ำ
     const [existing]: any = await db.query(
       "SELECT * FROM users WHERE BINARY username = ? OR email = ?",
       [username, email]
@@ -51,7 +51,7 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Username or email already exists" });
     }
 
-    // ✅ Hash Password
+    // Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const [result]: any = await db.query(
@@ -74,7 +74,7 @@ export const login = async (req: Request, res: Response) => {
     let role = "user";
     let user: any;
 
-    // ✅ ตรวจสอบ admin ก่อน
+    // ตรวจ admin ก่อน
     const [adminRows]: any = await db.query("SELECT * FROM admin WHERE BINARY username = ?", [username]);
     if (adminRows.length > 0) {
       user = adminRows[0];
@@ -92,7 +92,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid username or password" });
     }
 
-    // ✅ Generate Access & Refresh Token
+    // เจน Access & Refresh Token
     const accessToken = jwt.sign(
       { id: user.user_id || user.admin_id, role },
       process.env.JWT_SECRET!,
