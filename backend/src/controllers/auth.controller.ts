@@ -160,3 +160,22 @@ export const refreshToken = async (req: Request, res: Response) => {
     res.status(403).json({ message: "Invalid or expired refresh token" });
   }
 };
+
+// === DELETE ACCOUNT (users ลบบัญชีตัวเอง) ===
+export const deleteOwnAccount = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id; // ดึง user id จาก middleware validateToken
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: Missing user ID" });
+    }
+
+    // ลบข้อมูลผู้ใช้
+    await db.query("DELETE FROM users WHERE user_id = ?", [userId]);
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
