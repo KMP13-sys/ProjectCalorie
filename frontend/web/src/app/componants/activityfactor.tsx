@@ -22,7 +22,6 @@ export default function ActivityFactorButton({ onSaved }: ActivityFactorButtonPr
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
   useEffect(() => {
-    // โหลดข้อมูลจาก localStorage
     const storedLevel = localStorage.getItem('activity_level');
     const storedLabel = localStorage.getItem('activity_label');
     const storedTimestamp = localStorage.getItem('activity_timestamp');
@@ -73,21 +72,22 @@ export default function ActivityFactorButton({ onSaved }: ActivityFactorButtonPr
 
   return (
     <>
+      {/* ปุ่มหลัก */}
       <div
         onClick={handleClick}
-        className={`cursor-pointer flex items-center h-20 px-4 border-4 border-black ${
-          savedLevel ? 'bg-yellow-100' : 'bg-gray-100'
-        } shadow-[3px_3px_0_0_black]`}
+        className={`cursor-pointer flex items-center h-20 px-4 border-4 border-black 
+          ${savedLevel ? 'bg-yellow-500' : 'bg-gray-700'} 
+          text-white shadow-[3px_3px_0_0_black]`}
       >
         {/* LV Box */}
-        <div className="w-15 h-15 border-2 border-black bg-white flex items-center justify-center mr-2">
+        <div className="w-15 h-15 border-2 border-black bg-transparent flex items-center justify-center mr-2 text-white">
           {savedLevel ? (
             <div className="text-center">
               <div className="text-[9px] font-bold font-mono">LV</div>
               <div className="text-[17px] font-bold font-mono">{savedLevel}</div>
             </div>
           ) : (
-            <span className="text-black text-xl">🏃</span>
+            <span className="text-xl">🏃</span>
           )}
         </div>
 
@@ -97,14 +97,16 @@ export default function ActivityFactorButton({ onSaved }: ActivityFactorButtonPr
           <span className="text-[14px] font-bold font-mono">{savedLabel ?? 'กดเพื่อเลือก'}</span>
         </div>
 
-        <span className="text-black text-sm ml-2">▶</span>
+        <span className="text-sm ml-2">▶</span>
       </div>
 
       {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
-          <div className="bg-white border-4 border-black max-w-md w-full p-4">
-            <h2 className="font-mono font-bold text-center bg-yellow-100 py-2 mb-4">ACTIVITY LEVEL</h2>
+          <div className="bg-white border-4 border-black max-w-md w-full p-4 text-black">
+            <h2 className="font-mono font-bold text-center bg-yellow-100 py-2 mb-4">
+              ACTIVITY LEVEL
+            </h2>
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {ACTIVITY_LEVELS.map((item) => (
                 <div
