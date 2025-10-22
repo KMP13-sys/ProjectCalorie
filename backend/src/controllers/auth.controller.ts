@@ -28,6 +28,14 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
+    // validation email
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        message: "Please provide a valid email address" 
+      });
+    }
+
     // validation phone number
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone_number)) {
@@ -48,7 +56,7 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ 
         message: "Password must be at least 8 characters long" 
       });
-    }
+    } // ตรวจสอบว่ามีตัวอักษรอย่างน้อยหนึ่งตัว
     if (!/[a-zA-Z]/.test(password)) {
       return res.status(400).json({ 
         message: "Password must contain at least one letter" 
@@ -96,7 +104,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
-    // ✅ ใช้ BINARY เพื่อให้การเปรียบเทียบเป็น case-sensitive
+    // ใช้ BINARY เพื่อให้การเปรียบเทียบเป็น case-sensitive
     const [rows]: any = await db.query(
       "SELECT * FROM users WHERE BINARY username = ?", 
       [username]
