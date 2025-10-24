@@ -75,12 +75,12 @@ export default function ActivityFactorButton({ onSaved }: ActivityFactorButtonPr
       {/* ปุ่มหลัก */}
       <div
         onClick={handleClick}
-        className={`cursor-pointer flex items-center h-20 px-4 border-4 border-black 
+        className={`cursor-pointer flex items-center h-15 px-4 border-4 border-black 
           ${savedLevel ? 'bg-yellow-200' : 'bg-gray-700'} 
           text-black shadow-[3px_3px_0_0_black]`}
       >
         {/* LV Box */}
-        <div className="w-15 h-15 border-2 border-black bg-transparent flex items-center justify-center mr-2 text-white">
+        <div className="w-10 h-10 border-2 border-black bg-transparent flex items-center justify-center mr-2 text-white">
           {savedLevel ? (
             <div className="text-center text-[#000000]">
               <div className="text-[9px] font-bold font-mono">LV</div>
