@@ -30,10 +30,9 @@ export default function MainPage() {
 
 
         {/* ฝั่งขวา */}
-        <div className="w-1/2 flex flex-col items-start justify-center bg-[#e5f4de]">
-          <div className="text-center px-5 py-10 w-full">
+        <div className="w-1/2 flex flex-col items-start justify-start bg-[#e5f4de]">
+          <div className="text-center px-5 py-12 w-full">
             <Activity />
-
           </div>
         </div>
       </div>

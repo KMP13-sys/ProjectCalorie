@@ -76,18 +76,18 @@ export default function ActivityFactorButton({ onSaved }: ActivityFactorButtonPr
       <div
         onClick={handleClick}
         className={`cursor-pointer flex items-center h-20 px-4 border-4 border-black 
-          ${savedLevel ? 'bg-yellow-500' : 'bg-gray-700'} 
-          text-white shadow-[3px_3px_0_0_black]`}
+          ${savedLevel ? 'bg-yellow-200' : 'bg-gray-700'} 
+          text-black shadow-[3px_3px_0_0_black]`}
       >
         {/* LV Box */}
         <div className="w-15 h-15 border-2 border-black bg-transparent flex items-center justify-center mr-2 text-white">
           {savedLevel ? (
-            <div className="text-center">
+            <div className="text-center text-[#000000]">
               <div className="text-[9px] font-bold font-mono">LV</div>
               <div className="text-[17px] font-bold font-mono">{savedLevel}</div>
             </div>
           ) : (
-            <span className="text-xl">🏃</span>
+            <span className="text-xl text-[#000000]">🏃</span>
           )}
         </div>
 
@@ -104,7 +104,7 @@ export default function ActivityFactorButton({ onSaved }: ActivityFactorButtonPr
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
           <div className="bg-white border-4 border-black max-w-md w-full p-4 text-black">
-            <h2 className="font-mono font-bold text-center bg-yellow-100 py-2 mb-4">
+            <h2 className="font-mono font-bold text-center bg-yellow-200 py-2 mb-4">
               ACTIVITY LEVEL
             </h2>
             <div className="space-y-2 max-h-80 overflow-y-auto">
