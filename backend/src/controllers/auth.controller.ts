@@ -92,41 +92,47 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid username or password" });
     }
 
-    // เจน Access & Refresh Token
+    // เจน Access Token
     const accessToken = jwt.sign(
       { id: user.user_id || user.admin_id, role },
       process.env.JWT_SECRET!,
       { expiresIn: "30m" }
     );
 
-    const refreshToken = jwt.sign(
-      { id: user.user_id || user.admin_id, role },
-      process.env.JWT_SECRET!,
-      { expiresIn: "30d" }
-    );
+    // สร้าง response object
+    const response: any = {
+      message: "Login successful",
+      role,
+      accessToken,
+      expiresIn: "30m"
+    };
 
-    const refreshExpires = new Date();
-    refreshExpires.setDate(refreshExpires.getDate() + 30);
-
+    // สร้าง Refresh Token เฉพาะ USER เท่านั้น
     if (role === "user") {
+      const refreshToken = jwt.sign(
+        { id: user.user_id, role: "user" },
+        process.env.JWT_SECRET!,
+        { expiresIn: "30d" }
+      );
+
+      const refreshExpires = new Date();
+      refreshExpires.setDate(refreshExpires.getDate() + 30);
+
       await db.query(
         "UPDATE users SET refresh_token = ?, refresh_token_expires_at = ?, last_login_at = NOW() WHERE user_id = ?",
         [refreshToken, refreshExpires, user.user_id]
       );
+
+      response.refreshToken = refreshToken;
     } else {
+      // Admin แค่อัพเดท last_login_at
       await db.query(
         "UPDATE admin SET last_login_at = NOW() WHERE admin_id = ?",
         [user.admin_id]
       );
     }
 
-    res.json({
-      message: "Login successful",
-      role,
-      accessToken,
-      refreshToken,
-      expiresIn: "30m"
-    });
+    res.json(response);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -137,14 +143,36 @@ export const login = async (req: Request, res: Response) => {
 export const refreshToken = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(401).json({ message: "No refresh token provided" });
+    
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token provided" });
+    }
 
-    const [rows]: any = await db.query("SELECT * FROM users WHERE refresh_token = ?", [refreshToken]);
-    if (rows.length === 0) return res.status(403).json({ message: "Invalid refresh token" });
+    // ตรวจสอบว่ามี refresh token ในฐานข้อมูลและยังไม่หมดอายุ
+    const [rows]: any = await db.query(
+      "SELECT * FROM users WHERE refresh_token = ? AND refresh_token_expires_at > NOW()",
+      [refreshToken]
+    );
+
+    if (rows.length === 0) {
+      return res.status(403).json({ message: "Invalid or expired refresh token" });
+    }
 
     const user = rows[0];
-    jwt.verify(refreshToken, process.env.JWT_SECRET!);
 
+    // Verify JWT signature
+    try {
+      jwt.verify(refreshToken, process.env.JWT_SECRET!);
+    } catch (err) {
+      // ถ้า JWT ไม่ valid ให้ลบ refresh token ออกจาก DB
+      await db.query(
+        "UPDATE users SET refresh_token = NULL, refresh_token_expires_at = NULL WHERE user_id = ?",
+        [user.user_id]
+      );
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    // สร้าง Access Token ใหม่
     const newAccessToken = jwt.sign(
       { id: user.user_id, role: "user" },
       process.env.JWT_SECRET!,
@@ -157,14 +185,39 @@ export const refreshToken = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(403).json({ message: "Invalid or expired refresh token" });
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// === LOGOUT (สำหรับ MOBILE เท่านั้น) ===
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const role = (req as any).user?.role;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: Missing user ID" });
+    }
+
+    // ลบ refresh token เฉพาะ user (mobile เท่านั้นที่มี refresh token)
+    if (role === "user") {
+      await db.query(
+        "UPDATE users SET refresh_token = NULL, refresh_token_expires_at = NULL WHERE user_id = ?",
+        [userId]
+      );
+    }
+
+    res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 // === DELETE ACCOUNT (users ลบบัญชีตัวเอง) ===
 export const deleteOwnAccount = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id; // ดึง user id จาก middleware validateToken
+    const userId = (req as any).user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized: Missing user ID" });
