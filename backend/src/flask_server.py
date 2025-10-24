@@ -10,7 +10,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 # ==============================================
-# 🧭 Path setup & environment
+# Path setup & environment
 # ==============================================
 BASE_DIR = Path(__file__).resolve().parent        # backend/src
 PROJECT_ROOT = BASE_DIR.parent                   # backend/
@@ -25,15 +25,15 @@ sys.path.insert(0, str(PROJECT_ROOT / "models"))
 load_dotenv(str(PROJECT_ROOT / '.env'))
 
 # ==============================================
-# 🔐 JWT & Security setup
+# JWT & Security setup
 # ==============================================
 JWT_SECRET = os.getenv("JWT_SECRET")
 if not JWT_SECRET:
-    print("🔍 JWT_SECRET from .env =", JWT_SECRET)
+    print("JWT_SECRET from .env =", JWT_SECRET)
     raise RuntimeError("❌ Missing JWT_SECRET in environment (.env). Application cannot start.")
 
 # ==============================================
-# 🧾 Logging setup
+# Logging setup
 # ==============================================
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 logger.info("✅ Flask Server starting...")
 
 # ==============================================
-# 🚀 Flask app initialization
+# Flask app initialization
 # ==============================================
 app = Flask(__name__)
 
@@ -53,7 +53,7 @@ allowed_origins = os.getenv("CORS_ORIGINS", "*")
 CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
 # ==============================================
-# 🧩 Import and register Blueprints
+# Import and register Blueprints
 # ==============================================
 try:
     from flask_app.food_detect_routes import food_detect_bp
@@ -68,44 +68,20 @@ except Exception as e:
     raise
 
 # ==============================================
-# 🌐 General routes
+# General routes
 # ==============================================
-@app.route("/")
-def home():
-    """Root endpoint for quick API overview"""
-    return jsonify({
-        "message": "🍽️ ProjectCalorie Backend API",
-        "version": "1.0",
-        "endpoints": {
-            "health": "/api/health",
-            "food_detection": {
-                "predict": "POST /api/predict-food/<userId>",
-                "save_meal": "POST /api/save-meal/<userId>"
-            },
-            "food_recommendation": {
-                "recommend": "GET /api/food-recommend/<userId>?top_n=3",
-                "history": "GET /api/user/<userId>/food-history",
-                "remaining_calories": "GET /api/user/<userId>/remaining-calories"
-            },
-            "sport_recommendation": {
-                "recommend": "GET /api/sport-recommend/<userId>?top_n=3&k_neighbors=5",
-                "history": "GET /api/user/<userId>/sport-history"
-            }
-        }
-    })
-
 @app.route("/api/health", methods=["GET"])
 def health():
     """Health check"""
     from datetime import datetime
     return jsonify({
         "status": "ok",
-        "message": "ProjectCalorie Backend API is running",
+        "message": "ProjectCalorie Backend Flask API is running",
         "timestamp": datetime.now().isoformat()
     }), 200
 
 # ==============================================
-# ⚠️ Error Handlers
+# Error Handlers
 # ==============================================
 @app.errorhandler(400)
 def bad_request(error):
@@ -153,16 +129,12 @@ def handle_exception(error):
     }), 500
 
 # ==============================================
-# ▶️ Run Server
+#  Run Server
 # ==============================================
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 4000))
     debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 
-    logger.info(f"🚀 Running Flask on port {port} (debug={debug_mode})")
-    logger.info("📊 Available endpoints:")
-    logger.info("   🍽️  Food Recommendation: /api/food-recommend/<userId>")
-    logger.info("   🏃 Sport Recommendation: /api/sport-recommend/<userId>")
-    logger.info("   💪 Sport History: /api/user/<userId>/sport-history")
-    
+    logger.info(f" Running Flask on port {port} (debug={debug_mode})")
+
     app.run(host="0.0.0.0", port=port, debug=debug_mode)

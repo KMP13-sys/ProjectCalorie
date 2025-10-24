@@ -80,10 +80,6 @@ def verify_user_access(user_id_from_token, user_id_from_path):
 # ============================================
 # Routes
 # ============================================
-@recommendation_bp.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({"success": True, "service": "recommendation", "status": "running"}), 200
-
 # ---------- Food ----------
 @recommendation_bp.route('/api/food-recommend/<int:userId>', methods=['GET'])
 @require_auth
@@ -105,52 +101,6 @@ def recommend_food(userId):
         current_app.logger.exception(e)
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@recommendation_bp.route('/api/user/<int:userId>/food-history', methods=['GET'])
-@require_auth
-def get_food_history(userId):
-    try:
-        if not verify_user_access(request.user_id, userId):
-            return jsonify({'success': False, 'message': 'Forbidden'}), 403
-
-        history = food_recommender.get_user_food_history(userId)
-        return jsonify({'success': True, 'user_id': userId, 'total_foods': len(history), 'history': history}), 200
-
-    except Exception as e:
-        current_app.logger.exception(e)
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@recommendation_bp.route('/api/user/<int:userId>/remaining-calories', methods=['GET'])
-@require_auth
-def get_remaining_calories(userId):
-    try:
-        if not verify_user_access(request.user_id, userId):
-            return jsonify({'success': False, 'message': 'Forbidden'}), 403
-
-        # ไม่รับ date parameter - ใช้วันปัจจุบันเสมอ
-        from datetime import datetime
-        today = datetime.now().strftime('%Y-%m-%d')
-        
-        remaining_calories = food_recommender.get_remaining_calories(userId, None)
-        
-        if remaining_calories is not None:
-            return jsonify({
-                'success': True, 
-                'user_id': userId, 
-                'date': today,  # ส่งวันปัจจุบันกลับไป
-                'remaining_calories': float(remaining_calories)
-            }), 200
-            
-        return jsonify({
-            'success': False, 
-            'message': 'No calorie data found for today',
-            'user_id': userId,
-            'date': today
-        }), 404
-
-    except Exception as e:
-        current_app.logger.exception(e)
-        return jsonify({'success': False, 'error': str(e)}), 500
-
 # ---------- Sport ----------
 @recommendation_bp.route('/api/sport-recommend/<int:userId>', methods=['GET'])
 @require_auth
@@ -167,20 +117,6 @@ def recommend_sport(userId):
 
         result = sport_recommender.recommend_sports(user_id=userId, top_n=top_n, k_neighbors=k_neighbors)
         return jsonify(result), (200 if result.get('success') else 404)
-
-    except Exception as e:
-        current_app.logger.exception(e)
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@recommendation_bp.route('/api/user/<int:userId>/sport-history', methods=['GET'])
-@require_auth
-def get_sport_history(userId):
-    try:
-        if not verify_user_access(request.user_id, userId):
-            return jsonify({'success': False, 'message': 'Forbidden'}), 403
-
-        sports = sport_recommender.get_user_sport_history(userId)
-        return jsonify({'success': True, 'user_id': userId, 'total_sports': len(sports), 'sports': sports}), 200
 
     except Exception as e:
         current_app.logger.exception(e)
