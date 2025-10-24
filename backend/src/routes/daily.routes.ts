@@ -9,13 +9,16 @@ import {
 } from "../controllers/daily.controller";
 import { getDailyMacros } from "../controllers/daily.controller";
 
+import express from "express";
+
 const router = Router();
 
 // รายการอาหารของวันปัจจุบัน
 router.get("/foods/:userId", validateToken, getTodayMeals);
-
 // รายการกิจกรรมของวันปัจจุบัน
 router.get("/sports/:userId", validateToken, getTodayActivities);
+// ดึงข้อมูลแคลอรี่ 7 วันล่าสุด
+//router.get("/weekly", validateToken, getWeeklyCalories);
 
 // คำนวณหลอด Kcal
 router.post("/calculate-bmr/:userId", validateToken, calculateBMR);

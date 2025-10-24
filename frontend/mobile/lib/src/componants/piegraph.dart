@@ -25,8 +25,8 @@ class NutritionPieChartComponent extends StatelessWidget {
       child: PieChart(
         PieChartData(
           sections: _buildSections(),
-          sectionsSpace: 2,
-          centerSpaceRadius: 40,
+          sectionsSpace: 0,
+          centerSpaceRadius: 0,
         ),
       ),
     );
@@ -45,7 +45,7 @@ class NutritionPieChartComponent extends StatelessWidget {
       value: value,
       color: color,
       title: '$title\n${value.toStringAsFixed(1)}g',
-      radius: 60,
+      radius: 150,
       titleStyle: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,

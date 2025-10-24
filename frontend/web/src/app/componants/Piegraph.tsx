@@ -30,11 +30,12 @@ export default function NutritionPieChart({ carbs, fats, protein }: NutritionPie
       <text
         x={x}
         y={y}
-        fill="white"
+        fill="black"
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={15}
+        fontSize={16}
         fontFamily="monospace"
+        stroke="none"
       >
         {label}
       </text>

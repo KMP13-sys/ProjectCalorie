@@ -67,6 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 current: _currentCalories,
                                 target: _targetCalories,
                               ),
+
+                              const SizedBox(height: 50),
+
                               NutritionPieChartComponent(
                                 carbs: 250,
                                 fats: 70,

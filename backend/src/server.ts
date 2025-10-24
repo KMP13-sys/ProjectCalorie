@@ -10,6 +10,7 @@ import profileRoutes from "./routes/profile.routes";
 import updateRoutes from "./routes/update.routes";
 import dailyRoutes from "./routes/daily.routes";
 import adminRoutes from "./routes/admin.routes";
+import activityRoutes from "./routes/activity.routes";
 
 const app = express();
 
@@ -32,6 +33,8 @@ app.use("/api/profile", profileRoutes);  // ✅ รวม userRoutes กับ p
 app.use("/api/update", updateRoutes);
 app.use("/api/daily", dailyRoutes);      // ✅ ใช้ path เดียว
 app.use("/api/admin", adminRoutes);
+app.use("/api/activity", activityRoutes);
+app.use("/api/dailycalories", dailyRoutes);
 
 // ====== Root test route ======
 app.get("/", (req, res) => {
