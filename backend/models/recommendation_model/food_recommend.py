@@ -129,14 +129,14 @@ class FoodRecommendationSystem:
             return []
 
     def get_remaining_calories(self, user_id, date=None):
-        """ดึงแคลอรีที่เหลือของผู้ใช้ในวันนั้น"""
-        if not date:
-            date = datetime.now().strftime('%Y-%m-%d')
+        """ดึงแคลอรีที่เหลือของผู้ใช้ (วันปัจจุบันเท่านั้น)"""
+        # ใช้วันปัจจุบันเสมอ (เพิกเฉย date parameter)
+        date = datetime.now().strftime('%Y-%m-%d')
 
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor(dictionary=True)
-                logger.info(f"Fetching remaining calories for user_id={user_id}, date={date}")
+                logger.info(f"Fetching remaining calories for user_id={user_id}, date={date} (today)")
                 
                 cursor.execute("""
                     SELECT remaining_calories
@@ -166,9 +166,11 @@ class FoodRecommendationSystem:
             raise RuntimeError("ไม่พบข้อมูลอาหารในฐานข้อมูล")
 
         food_names = [food['food_name'] for food in all_foods]
+        
+        # ✅ ปรับให้เหมาะกับภาษาไทย
         self.vectorizer = TfidfVectorizer(
-            analyzer='char',
-            ngram_range=(1, 3),
+            analyzer='char',          # character-level สำหรับภาษาไทย
+            ngram_range=(1, 3),       # 1-3 character n-grams
             lowercase=True,
             strip_accents='unicode'
         )
