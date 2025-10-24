@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import db from "../config/db";
+import { RowDataPacket } from "mysql2";
 
 // API ดึงรายการอาหารของวันปัจจุบัน
 export const getTodayMeals = async (req: Request, res: Response) => {
@@ -216,5 +217,38 @@ export const getDailyMacros = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching daily macros:", error);
     res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
+export const getWeeklyCalories = async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const userId = user?.user_id || user?.id; // ปรับให้รองรับ JWT ทั้งสองรูปแบบ
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized: user_id missing in token" });
+  }
+
+  try {
+    const [rows] = await db.query<RowDataPacket[]>(
+      `SELECT 
+         DATE_FORMAT(date, '%Y-%m-%d') AS date,
+         consumed_calories,
+         burned_calories,
+         net_calories
+       FROM DailyCalories
+       WHERE user_id = ?
+         AND date >= CURDATE() - INTERVAL 6 DAY
+       ORDER BY date ASC`,
+      [userId]
+    );
+
+    return res.status(200).json({
+      message: "Weekly calories summary fetched successfully",
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching weekly calories:", error);
+    return res.status(500).json({ message: "Error fetching weekly calories" });
   }
 };
