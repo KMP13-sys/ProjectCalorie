@@ -4,9 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../componants/navbaruser.dart';
 import '../authen/login.dart';
-import '../../service/storage_helper.dart';
+//import '../../service/storage_helper.dart';
 import '../../service/profile_service.dart';
 import '../../service/user_models.dart';
+import '../../service/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -57,30 +58,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // โหลดข้อมูล User จาก API
   Future<void> _loadUserProfile() async {
     try {
-      final userId = await StorageHelper.getUserId();
+      final profile = await ProfileService.getMyProfile();
 
-      if (userId != null) {
-        final profile = await ProfileService.getUserProfile(userId);
-
-        if (profile != null && mounted) {
-          setState(() {
-            userProfile = profile;
-            _weightController.text = profile.weight?.toString() ?? '';
-            _heightController.text = profile.height?.toString() ?? '';
-            _ageController.text = profile.age?.toString() ?? '';
-            _selectedGender = profile.gender ?? 'male';
-            _selectedGoal = profile.goal ?? 'lose weight';
-            isLoadingProfile = false;
-          });
-        } else {
-          setState(() => isLoadingProfile = false);
+      if (mounted) {
+        // แปลง URL ตาม platform
+        UserProfile updatedProfile = profile;
+        if (profile.imageProfileUrl != null) {
+          // สำหรับ Physical Device ใช้ IP ของเครื่อน
+          final fixedUrl = profile.imageProfileUrl!
+              .replaceAll('localhost', '192.168.100.67')
+              .replaceAll('127.0.0.1', '192.168.100.67')
+              .replaceAll('10.0.2.2', '192.168.100.67');
+          updatedProfile = profile.copyWith(imageProfileUrl: fixedUrl);
         }
-      } else {
-        setState(() => isLoadingProfile = false);
+
+        setState(() {
+          userProfile = updatedProfile;
+          _weightController.text = profile.weight?.toString() ?? '';
+          _heightController.text = profile.height?.toString() ?? '';
+          _ageController.text = profile.age?.toString() ?? '';
+          _selectedGender = profile.gender ?? 'male';
+          _selectedGoal = profile.goal ?? 'lose weight';
+          isLoadingProfile = false;
+        });
+
+        // Debug: แสดง URL ของรูป
+        // ignore: avoid_print
+        print(
+          '🖼️ Profile loaded. Image URL: ${updatedProfile.imageProfileUrl}',
+        );
       }
     } catch (e) {
-      print('Error loading profile: $e');
-      setState(() => isLoadingProfile = false);
+      // ignore: avoid_print
+      print('❌ Error loading profile: $e');
+      if (mounted) {
+        setState(() => isLoadingProfile = false);
+      }
     }
   }
 
@@ -109,27 +122,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // อัปโหลดรูปโปรไฟล์
   Future<void> _uploadProfileImage() async {
-    if (_selectedImage == null || userProfile == null) return;
+    if (_selectedImage == null) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final result = await ProfileService.updateProfileImage(
-        userId: userProfile!.userId,
-        imageFile: _selectedImage!,
-      );
+      await ProfileService.updateMyProfileImage(imageFile: _selectedImage!);
 
       setState(() => _isLoading = false);
 
-      if (result['success']) {
-        // อัปโหลดสำเร็จ - โหลดข้อมูลใหม่
-        await _loadUserProfile();
+      // อัปโหลดสำเร็จ - โหลดข้อมูลใหม่
+      await _loadUserProfile();
 
-        if (mounted) {
-          _showSuccessDialog('✓ อัปเดทรูปโปรไฟล์เรียบร้อย!');
-        }
-      } else {
-        _showErrorDialog(result['message']);
+      if (mounted) {
+        _showSuccessDialog('✓ อัปเดทรูปโปรไฟล์เรียบร้อย!');
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -358,15 +364,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFFa8d88e),
-                Color(0xFF8bc273),
-              ],
+              colors: [Color(0xFFa8d88e), Color(0xFF8bc273)],
             ),
-            border: Border.all(
-              color: Colors.black,
-              width: 4,
-            ),
+            border: Border.all(color: Colors.black, width: 4),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -398,23 +398,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 8,
-              height: 8,
-              color: const Color(0xFF6fa85e),
-            ),
+            Container(width: 8, height: 8, color: const Color(0xFF6fa85e)),
             const SizedBox(width: 4),
-            Container(
-              width: 8,
-              height: 8,
-              color: const Color(0xFF8bc273),
-            ),
+            Container(width: 8, height: 8, color: const Color(0xFF8bc273)),
             const SizedBox(width: 4),
-            Container(
-              width: 8,
-              height: 8,
-              color: const Color(0xFFa8d88e),
-            ),
+            Container(width: 8, height: 8, color: const Color(0xFFa8d88e)),
           ],
         ),
       ],
@@ -444,15 +432,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFFa8d88e),
-                              Color(0xFF8bc273),
-                            ],
+                            colors: [Color(0xFFa8d88e), Color(0xFF8bc273)],
                           ),
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 4,
-                          ),
+                          border: Border.all(color: Colors.black, width: 4),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
@@ -474,10 +456,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 40,
                             decoration: BoxDecoration(
                               color: const Color(0xFF6fa85e),
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 3,
-                              ),
+                              border: Border.all(color: Colors.black, width: 3),
                             ),
                             child: _isLoading
                                 ? const Center(
@@ -569,7 +548,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Text(
                     'DELETE ACCOUNT',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -997,9 +980,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // เรียก API update profile
-      final result = await ProfileService.updateProfile(
-        userId: userProfile!.userId,
+      await ProfileService.updateMyProfile(
         weight: weight,
         height: height,
         age: age,
@@ -1009,17 +990,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() => _isLoading = false);
 
-      if (result['success']) {
-        // บันทึกสำเร็จ - โหลดข้อมูลใหม่
-        await _loadUserProfile();
+      // บันทึกสำเร็จ - โหลดข้อมูลใหม่
+      await _loadUserProfile();
 
-        setState(() => _isEditing = false);
+      setState(() => _isEditing = false);
 
-        if (mounted) {
-          _showSuccessDialog('✓ บันทึกข้อมูลเรียบร้อย!');
-        }
-      } else {
-        _showErrorDialog(result['message']);
+      if (mounted) {
+        _showSuccessDialog('✓ บันทึกข้อมูลเรียบร้อย!');
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -1241,18 +1218,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const Color(0xFFff6b6b),
                                   Colors.white,
                                   () async {
-                                    // TODO: เรียก API ลบบัญชี
-                                    print('Deleting account...');
                                     Navigator.of(context).pop();
-                                    
-                                    // ตัวอย่างการลบข้อมูลและกลับไปหน้า Login
-                                    // await StorageHelper.clearAll();
-                                    // Navigator.of(context).pushAndRemoveUntil(
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) => const LoginScreen(),
-                                    //   ),
-                                    //   (route) => false,
-                                    // );
+
+                                    // แสดง loading
+                                    if (mounted) {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) => const Center(
+                                          child: CircularProgressIndicator(
+                                            color: Color(0xFF6fa85e),
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    try {
+                                      // เรียก API ลบบัญชี
+                                      await AuthService.deleteAccount();
+
+                                      // ปิด loading dialog
+                                      if (mounted) {
+                                        Navigator.of(context).pop();
+                                      }
+
+                                      // ลบสำเร็จ - กลับไปหน้า Login
+                                      if (mounted) {
+                                        Navigator.of(
+                                          context,
+                                        ).pushAndRemoveUntil(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const LoginScreen(),
+                                          ),
+                                          (route) => false,
+                                        );
+
+                                        // แสดง snackbar แจ้งเตือน
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Account deleted successfully',
+                                            ),
+                                            backgroundColor: Colors.green,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      // ปิด loading dialog
+                                      if (mounted) {
+                                        Navigator.of(context).pop();
+                                      }
+
+                                      // แสดง error dialog
+                                      if (mounted) {
+                                        _showErrorDialog(
+                                          'Failed to delete account: ${e.toString().replaceAll('Exception: ', '')}',
+                                        );
+                                      }
+                                    }
                                   },
                                 ),
                               ),
@@ -1843,8 +1869,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const Color(0xFFfb7185),
                                   Colors.white,
                                   () async {
-                                    // ลบข้อมูล token, user data
-                                    await StorageHelper.clearAll();
+                                    // เรียก API logout และลบข้อมูล
+                                    try {
+                                      await AuthService.logout();
+                                    } catch (e) {
+                                      // ถ้า API logout ล้มเหลว ก็ยังคงล้างข้อมูล local
+                                      // ignore: avoid_print
+                                      print('Logout API error: $e');
+                                    }
 
                                     if (mounted) {
                                       Navigator.of(context).pop();

@@ -47,8 +47,8 @@ export const getUserProfile = async (req: Request, res: Response) => {
     const user = await getUserById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // ไม่ส่ง password กลับไป
-    const { password, ...userData } = user;
+    // ไม่ส่ง password, refresh_token, และ refresh_token_expires_at กลับไป
+    const { password, refresh_token, refresh_token_expires_at, ...userData } = user;
 
     // เพิ่ม URL สำหรับรูปโปรไฟล์ (กรณีมี)
     if (user.image_profile) {

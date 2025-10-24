@@ -1,70 +1,90 @@
 // lib/services/storage_helper.dart
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageHelper {
+  static const _storage = FlutterSecureStorage();
+
   // Keys สำหรับเก็บข้อมูล
-  static const String _keyToken = 'auth_token';
+  static const String _keyAccessToken = 'access_token';
+  static const String _keyRefreshToken = 'refresh_token';
   static const String _keyUserId = 'user_id';
   static const String _keyUsername = 'username';
+  static const String _keyEmail = 'email';
 
-  // บันทึก Token
-  static Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyToken, token);
+  // ========== ACCESS TOKEN ==========
+  static Future<void> saveAccessToken(String token) async {
+    await _storage.write(key: _keyAccessToken, value: token);
   }
 
-  // ดึง Token
-  static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyToken);
+  static Future<String?> getAccessToken() async {
+    return await _storage.read(key: _keyAccessToken);
   }
 
-  // บันทึก User ID
-  static Future<void> saveUserId(int userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_keyUserId, userId);
+  // ========== REFRESH TOKEN ==========
+  static Future<void> saveRefreshToken(String token) async {
+    await _storage.write(key: _keyRefreshToken, value: token);
   }
 
-  // ดึง User ID
-  static Future<int?> getUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_keyUserId);
+  static Future<String?> getRefreshToken() async {
+    return await _storage.read(key: _keyRefreshToken);
   }
 
-  // บันทึก Username (optional - สำหรับใช้งานเบื้องต้น)
+  // ========== USER ID ==========
+  static Future<void> saveUserId(String userId) async {
+    await _storage.write(key: _keyUserId, value: userId);
+  }
+
+  static Future<String?> getUserId() async {
+    return await _storage.read(key: _keyUserId);
+  }
+
+  // ========== USERNAME ==========
   static Future<void> saveUsername(String username) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyUsername, username);
+    await _storage.write(key: _keyUsername, value: username);
   }
 
-  // ดึง Username
   static Future<String?> getUsername() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyUsername);
+    return await _storage.read(key: _keyUsername);
   }
 
-  // บันทึกข้อมูล Login ทั้งหมดพร้อมกัน
+  // ========== EMAIL ==========
+  static Future<void> saveEmail(String email) async {
+    await _storage.write(key: _keyEmail, value: email);
+  }
+
+  static Future<String?> getEmail() async {
+    return await _storage.read(key: _keyEmail);
+  }
+
+  // ========== บันทึกข้อมูล Login ทั้งหมดพร้อมกัน ==========
   static Future<void> saveLoginData({
-    required String token,
-    required int userId,
+    required String accessToken,
+    required String refreshToken,
+    required String userId,
     required String username,
+    String? email,
   }) async {
-    await saveToken(token);
+    await saveAccessToken(accessToken);
+    await saveRefreshToken(refreshToken);
     await saveUserId(userId);
     await saveUsername(username);
+    if (email != null) await saveEmail(email);
   }
 
-  // ลบข้อมูลทั้งหมด (Logout)
+  // ========== ลบข้อมูลทั้งหมด (Logout) ==========
   static Future<void> clearAll() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyToken);
-    await prefs.remove(_keyUserId);
-    await prefs.remove(_keyUsername);
+    await _storage.deleteAll();
   }
 
-  // เช็คว่ามี Token อยู่หรือไม่ (ตรวจสอบว่า Login อยู่หรือเปล่า)
+  // ========== เช็คว่ามี Refresh Token อยู่หรือไม่ ==========
   static Future<bool> isLoggedIn() async {
-    final token = await getToken();
-    return token != null && token.isNotEmpty;
+    final refreshToken = await getRefreshToken();
+    return refreshToken != null && refreshToken.isNotEmpty;
+  }
+
+  // ========== เช็คว่า Access Token ยังใช้งานได้หรือไม่ ==========
+  static Future<bool> hasValidAccessToken() async {
+    final accessToken = await getAccessToken();
+    return accessToken != null && accessToken.isNotEmpty;
   }
 }

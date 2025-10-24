@@ -1,15 +1,21 @@
+// lib/src/open.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'authen/login.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Widget destination; // ✅ เพิ่ม parameter นี้
+
+  const SplashScreen({
+    super.key,
+    required this.destination, // ✅ บอกว่าจะไปหน้าไหนหลังจบ animation
+  });
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _bounceController1;
   late AnimationController _bounceController2;
   late AnimationController _bounceController3;
@@ -19,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    
+
     // Animation controllers สำหรับ floating pixels
     _bounceController1 = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -57,12 +63,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       if (mounted) _bounceController3.forward();
     });
 
-    // Navigate ไปหน้า login หลัง 2 วินาที
+    // ✅ Navigate ไปหน้าที่ส่งมา หลัง 2 วินาที
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(builder: (context) => widget.destination),
         );
       }
     });
@@ -86,20 +92,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6fa85e), // from-[#6fa85e]
-              Color(0xFF8bc273), // via-[#8bc273]
-              Color(0xFFa8d48f), // to-[#a8d48f]
-            ],
+            colors: [Color(0xFF6fa85e), Color(0xFF8bc273), Color(0xFFa8d48f)],
           ),
         ),
         child: Stack(
           children: [
             // Pixel Grid Background Pattern
-            CustomPaint(
-              painter: PixelGridPainter(),
-              size: Size.infinite,
-            ),
+            CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
 
             // Floating Pixel Decorations
             _buildFloatingPixel(
@@ -126,50 +125,29 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo with Pixel Border
                   _buildPixelLogo(),
-                  
                   const SizedBox(height: 24),
-                  
-                  // Title
                   _buildTitle(),
-                  
                   const SizedBox(height: 8),
-                  
-                  // Pixel Dots
                   _buildPixelDots(),
-                  
                   const SizedBox(height: 32),
-                  
-                  // Loading Text
                   _buildLoadingText(),
-                  
                   const SizedBox(height: 24),
-                  
-                  // Pixel Loading Bar
                   _buildLoadingBar(),
-                  
                   const SizedBox(height: 16),
-                  
-                  // // Press to Start Button (optional)
-                  // _buildPressToStart(),
                 ],
               ),
             ),
 
             // Bottom hint text
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: _buildHintText(),
-            ),
+            Positioned(bottom: 40, left: 0, right: 0, child: _buildHintText()),
           ],
         ),
       ),
     );
   }
 
+  // ✅ ส่วนที่เหลือเหมือนเดิมทุกอย่าง
   Widget _buildFloatingPixel({
     required AnimationController controller,
     double? top,
@@ -192,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: const Color(0xFFfde047), // yellow-300
+                color: const Color(0xFFfde047),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.3),
@@ -214,10 +192,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFa8d48f),
-            Color(0xFF8bc273),
-          ],
+          colors: [Color(0xFFa8d48f), Color(0xFF8bc273)],
         ),
         border: Border.all(color: Colors.black, width: 6),
         boxShadow: [
@@ -235,7 +210,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             height: 128,
             fit: BoxFit.contain,
           ),
-          // Sparkle pixels
           Positioned(
             top: -8,
             right: -8,
@@ -282,16 +256,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         'CAL-DEFICITS',
         style: TextStyle(
           fontSize: 40,
-          fontFamily: 'monospace',
+          fontFamily: 'TA8bit',
           fontWeight: FontWeight.bold,
-          color: Color(0xFF1f2937), // gray-800
+          color: Color(0xFF1f2937),
           letterSpacing: 4,
-          shadows: [
-            Shadow(
-              offset: Offset(4, 4),
-              color: Color(0x806fa85e),
-            ),
-          ],
+          shadows: [Shadow(offset: Offset(4, 4), color: Color(0x806fa85e))],
         ),
       ),
     );
@@ -326,7 +295,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               '> LOADING...',
               style: TextStyle(
                 fontSize: 18,
-                fontFamily: 'monospace',
+                fontFamily: 'TA8bit',
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 letterSpacing: 2,
@@ -348,9 +317,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
       child: Container(
         height: 32,
-        decoration: const BoxDecoration(
-          color: Color(0xFF2d2d2d),
-        ),
+        decoration: const BoxDecoration(color: Color(0xFF2d2d2d)),
         child: AnimatedBuilder(
           animation: _progressController,
           builder: (context, child) {
@@ -361,10 +328,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   child: Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF4ecdc4),
-                          Color(0xFF44a3c4),
-                        ],
+                        colors: [Color(0xFF4ecdc4), Color(0xFF44a3c4)],
                       ),
                     ),
                     child: Column(
@@ -390,52 +354,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     );
   }
 
-  // Widget _buildPressToStart() {
-  //   return GestureDetector(
-  //     onTap: () {
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const LoginScreen()),
-  //       );
-  //     },
-  //     child: Container(
-  //       margin: const EdgeInsets.only(top: 16),
-  //       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-  //       decoration: BoxDecoration(
-  //         gradient: const LinearGradient(
-  //           colors: [
-  //             Color(0xFF6fa85e),
-  //             Color(0xFF8bc273),
-  //           ],
-  //         ),
-  //         border: Border.all(color: Colors.black, width: 4),
-  //         boxShadow: [
-  //           BoxShadow(
-  //             color: Colors.black.withOpacity(0.3),
-  //             offset: const Offset(4, 4),
-  //           ),
-  //         ],
-  //       ),
-  //       child: const Text(
-  //         '▶ PRESS TO START',
-  //         style: TextStyle(
-  //           fontFamily: 'monospace',
-  //           fontWeight: FontWeight.bold,
-  //           color: Colors.white,
-  //           fontSize: 16,
-  //           letterSpacing: 1,
-  //           shadows: [
-  //             Shadow(
-  //               offset: Offset(2, 2),
-  //               color: Color(0x80000000),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   Widget _buildHintText() {
     return AnimatedBuilder(
       animation: _pulseController,
@@ -446,16 +364,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             child: Text(
               '▼ LOADING YOUR APP ▼',
               style: TextStyle(
-                fontFamily: 'monospace',
+                fontFamily: 'TA8bit',
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 fontSize: 14,
                 letterSpacing: 1,
                 shadows: [
-                  Shadow(
-                    offset: Offset(2, 2),
-                    color: Color(0x80000000),
-                  ),
+                  Shadow(offset: Offset(2, 2), color: Color(0x80000000)),
                 ],
               ),
             ),
@@ -476,22 +391,12 @@ class PixelGridPainter extends CustomPainter {
 
     const spacing = 50.0;
 
-    // วาดเส้นแนวนอน
     for (double y = 0; y < size.height; y += spacing) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        paint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
 
-    // วาดเส้นแนวตั้ง
     for (double x = 0; x < size.width; x += spacing) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        paint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
   }
 

@@ -1,10 +1,10 @@
 // components/navbaruser.dart
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:mobile/src/profile/profile.dart';
 import '../home/home.dart';
 import '../../service/storage_helper.dart';
 import '../../service/profile_service.dart';
-//import '../../service/user_models.dart';
 
 class NavBarUser extends StatefulWidget {
   const NavBarUser({Key? key}) : super(key: key);
@@ -24,44 +24,84 @@ class _NavBarUserState extends State<NavBarUser> {
     _loadUserProfile();
   }
 
+  // ฟังก์ชันทดสอบว่า URL โหลดได้หรือไม่
+  Future<bool> _testImageUrl(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      // ignore: avoid_print
+      print('🌐 Image URL test result: ${response.statusCode}');
+      return response.statusCode == 200;
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ Image URL test error: $e');
+      return false;
+    }
+  }
+
+  // Widget สำหรับ default profile image
+  Widget _buildDefaultProfileImage() {
+    return Container(
+      width: 50,
+      height: 50,
+      color: Colors.white,
+      child: Center(
+        child: Image.asset(
+          'assets/pic/person.png',
+          width: 30,
+          height: 30,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(
+              Icons.person,
+              size: 30,
+              color: Color(0xFF6fa85e),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   // ฟังก์ชันดึงข้อมูล User จาก API
   Future<void> _loadUserProfile() async {
     try {
-      final userId = await StorageHelper.getUserId();
+      final userProfile = await ProfileService.getMyProfile();
 
-      if (userId != null) {
-        final userProfile = await ProfileService.getUserProfile(userId);
-
-        if (userProfile != null && mounted) {
-          setState(() {
-            username = userProfile.username;
-            profileImageUrl = userProfile.imageProfileUrl;
-            isLoading = false;
-          });
-        } else {
-          // ถ้าดึงข้อมูลไม่สำเร็จ ใช้ username จาก storage แทน
-          final storedUsername = await StorageHelper.getUsername();
-          if (mounted) {
-            setState(() {
-              username = storedUsername ?? 'USER';
-              isLoading = false;
-            });
-          }
-        }
-      } else {
-        // ไม่มี userId ใน storage
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
-        }
-      }
-    } catch (e) {
-      print('Error loading user profile: $e');
       if (mounted) {
         setState(() {
+          username = userProfile.username;
+          // แปลง URL ตาม platform
+          if (userProfile.imageProfileUrl != null) {
+            // สำหรับ Physical Device ใช้ IP ของเครื่อน
+            profileImageUrl = userProfile.imageProfileUrl!
+                .replaceAll('localhost', '192.168.100.67')
+                .replaceAll('127.0.0.1', '192.168.100.67')
+                .replaceAll('10.0.2.2', '192.168.100.67');
+          }
           isLoading = false;
         });
+
+        // Debug: แสดง URL ของรูป
+        print('🖼️ Profile Image URL: $profileImageUrl');
+      }
+    } catch (e) {
+      print('❌ Error loading profile: $e');
+      // ถ้า error ให้ใช้ข้อมูลจาก storage แทน
+      try {
+        final storedUsername = await StorageHelper.getUsername();
+        if (mounted) {
+          setState(() {
+            username = storedUsername ?? 'USER';
+            isLoading = false;
+          });
+        }
+      } catch (storageError) {
+        if (mounted) {
+          setState(() {
+            username = 'USER';
+            isLoading = false;
+          });
+        }
       }
     }
   }
@@ -261,46 +301,54 @@ class _NavBarUserState extends State<NavBarUser> {
 
   // Widget สำหรับแสดงรูปโปรไฟล์
   Widget _buildProfileImage() {
+    // ชั่วคราว: ใช้ default image ก่อน เพื่อ debug
     if (profileImageUrl != null && profileImageUrl!.isNotEmpty) {
-      return ClipRect(
-        child: Image.network(
-          profileImageUrl!,
-          fit: BoxFit.cover,
-          width: 50,
-          height: 50,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return const Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF6fa85e),
-                ),
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            // ✅ เปลี่ยนจาก Icon เป็น Image.asset พร้อมพื้นหลังสีขาว
+      // ignore: avoid_print
+      print('🔍 Attempting to load image from: $profileImageUrl');
+
+      // ลอง test ด้วย http package แทน Image.network
+      return FutureBuilder<bool>(
+        future: _testImageUrl(profileImageUrl!),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return Container(
               width: 50,
               height: 50,
               color: Colors.white,
-              child: Center(
-                child: Image.asset(
-                  'assets/pic/person.png',
-                  width: 30,
-                  height: 30,
-                  fit: BoxFit.contain,
+              child: const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF6fa85e),
+                  ),
                 ),
               ),
             );
-          },
-        ),
+          }
+
+          if (snapshot.hasData && snapshot.data == true) {
+            return ClipRect(
+              child: Image.network(
+                profileImageUrl!,
+                fit: BoxFit.cover,
+                width: 50,
+                height: 50,
+                errorBuilder: (context, error, stackTrace) {
+                  return _buildDefaultProfileImage();
+                },
+              ),
+            );
+          } else {
+            // ignore: avoid_print
+            print('❌ Image URL test failed');
+            return _buildDefaultProfileImage();
+          }
+        },
       );
     } else {
-      // ✅ ไม่มีรูป - ใช้ person.png พร้อมพื้นหลังสีขาว
+      // ไม่มีรูป - ใช้ person.png
       return Container(
         width: 50,
         height: 50,
@@ -311,6 +359,14 @@ class _NavBarUserState extends State<NavBarUser> {
             width: 30,
             height: 30,
             fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // ถ้า asset ก็โหลดไม่ได้ ให้ใช้ Icon
+              return const Icon(
+                Icons.person,
+                size: 30,
+                color: Color(0xFF6fa85e),
+              );
+            },
           ),
         ),
       );

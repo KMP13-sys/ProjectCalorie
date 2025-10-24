@@ -126,42 +126,45 @@ class _LoginScreenState extends State<LoginScreen>
     });
 
     try {
-      final response = await ApiService.login(
-        username: username,
-        password: password,
-      );
+      // ✅ เรียก AuthService.login (จะบันทึก tokens อัตโนมัติ)
+      // ignore: avoid_print
+      print('🔑 Step 1: Logging in...');
+      await AuthService.login(username: username, password: password);
 
+      // ✅ ดึงข้อมูล user และบันทึก user_id
+      // ignore: avoid_print
+      print('👤 Step 2: Getting current user...');
+      final user = await AuthService.getCurrentUser();
+
+      if (user == null) {
+        throw Exception('Failed to get user data after login');
+      }
+
+      // ignore: avoid_print
+      print('✅ Step 3: Login complete! User: ${user.username}, ID: ${user.userId}');
+
+      // ✅ Login สำเร็จ (ถ้าไม่สำเร็จจะ throw exception)
       setState(() {
         _isLoading = false;
+        _showSuccessModal = true;
       });
 
-      if (response.success) {
-        // แสดง Success Modal
-        setState(() {
-          _showSuccessModal = true;
-        });
+      // เริ่ม animation
+      _progressController.forward();
 
-        // เริ่ม animation
-        _progressController.forward();
-
-        // รอ 2 วินาทีแล้ว redirect
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-            );
-          }
-        });
-      } else {
-        setState(() {
-          _errorMessage = response.message;
-        });
-      }
+      // รอ 2 วินาทีแล้ว redirect
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      });
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'เกิดข้อผิดพลาด: ${e.toString()}';
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
       });
     }
   }

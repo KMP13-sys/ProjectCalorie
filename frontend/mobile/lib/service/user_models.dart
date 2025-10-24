@@ -1,11 +1,11 @@
-// lib/models/user_model.dart
+// lib/models/user_models.dart
 
 class UserProfile {
-  final int userId;
+  final String userId;
   final String username;
   final String email;
   final String? imageProfile;
-  final String? imageProfileUrl; // URL เต็มสำหรับแสดงรูป
+  final String? imageProfileUrl;
   final String? phoneNumber;
   final int? age;
   final String? gender;
@@ -33,17 +33,22 @@ class UserProfile {
     this.lastLoginAt,
   });
 
-  // สร้าง UserProfile จาก JSON
+  // ✅ สร้าง UserProfile จาก JSON - รองรับทั้ง snake_case และ camelCase
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      userId: json['user_id'],
-      username: json['username'],
-      email: json['email'],
+      // รองรับ user_id, userId, และ id
+      userId: json['user_id']?.toString() ??
+              json['userId']?.toString() ??
+              json['id']?.toString() ?? '',
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
       imageProfile: json['image_profile'],
       imageProfileUrl: json['image_profile_url'],
       phoneNumber: json['phone_number'],
-      age: json['age'],
+      // รองรับทั้ง int และ null
+      age: json['age'] is int ? json['age'] : (json['age'] != null ? int.tryParse(json['age'].toString()) : null),
       gender: json['gender'],
+      // แปลง height และ weight เป็น double
       height: json['height'] != null
           ? double.tryParse(json['height'].toString())
           : null,
@@ -52,13 +57,13 @@ class UserProfile {
           : null,
       goal: json['goal'],
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+          ? DateTime.tryParse(json['created_at'].toString())
           : null,
       updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'])
+          ? DateTime.tryParse(json['updated_at'].toString())
           : null,
       lastLoginAt: json['last_login_at'] != null
-          ? DateTime.parse(json['last_login_at'])
+          ? DateTime.tryParse(json['last_login_at'].toString())
           : null,
     );
   }
@@ -85,7 +90,7 @@ class UserProfile {
 
   // Copy with method สำหรับอัปเดทข้อมูลบางส่วน
   UserProfile copyWith({
-    int? userId,
+    String? userId,
     String? username,
     String? email,
     String? imageProfile,
@@ -119,18 +124,37 @@ class UserProfile {
   }
 }
 
-// Response Model สำหรับ API
-class ProfileResponse {
-  final bool success;
+// ========== Response Models สำหรับ Profile Service ==========
+
+class UpdateProfileImageResponse {
+  final String message;
+  final String? imageUrl;
+
+  UpdateProfileImageResponse({
+    required this.message,
+    this.imageUrl,
+  });
+
+  factory UpdateProfileImageResponse.fromJson(Map<String, dynamic> json) {
+    return UpdateProfileImageResponse(
+      message: json['message'] ?? 'Profile image updated successfully',
+      imageUrl: json['image_url'],
+    );
+  }
+}
+
+class UpdateProfileResponse {
   final String message;
   final UserProfile? user;
 
-  ProfileResponse({required this.success, required this.message, this.user});
+  UpdateProfileResponse({
+    required this.message,
+    this.user,
+  });
 
-  factory ProfileResponse.fromJson(Map<String, dynamic> json) {
-    return ProfileResponse(
-      success: json['success'] ?? true,
-      message: json['message'] ?? '',
+  factory UpdateProfileResponse.fromJson(Map<String, dynamic> json) {
+    return UpdateProfileResponse(
+      message: json['message'] ?? 'Profile updated successfully',
       user: json['user'] != null ? UserProfile.fromJson(json['user']) : null,
     );
   }

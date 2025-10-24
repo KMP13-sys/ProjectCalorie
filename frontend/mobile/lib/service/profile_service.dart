@@ -2,106 +2,125 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'user_models.dart';
+import '../service/user_models.dart';
 import 'storage_helper.dart';
+import 'auth_service.dart';
 
 class ProfileService {
   // Base URL ของ API
-  static const String baseUrl = 'http://localhost:4000/api/profile';
+  static const String baseUrl = 'http://localhost:4000/api';
 
   // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
-  //static const String baseUrl = 'http://10.0.2.2:4000/api/profile';
+  // static const String baseUrl = 'http://10.0.2.2:4000/api';
 
-  // สำหรับ iOS Simulator ใช้ localhost ได้เลย
-  // static const String baseUrl = 'http://localhost:4000/api/profile';
-
-  // ดึงข้อมูลโปรไฟล์ผู้ใช้
-  static Future<UserProfile?> getUserProfile(int userId) async {
+  // ========== ดึงข้อมูลโปรไฟล์ผู้ใช้ ==========
+  static Future<UserProfile> getUserProfile(String userId) async {
     try {
-      final token = await StorageHelper.getToken();
+      final url = '$baseUrl/profile/$userId';
 
-      if (token == null) {
-        print('Error: No token found');
-        return null;
-      }
-
-      final url = Uri.parse('$baseUrl/$userId');
-
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      final response = await AuthService.authenticatedRequest(
+        method: 'GET',
+        endpoint: url,
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         return UserProfile.fromJson(data);
       } else {
-        print('Error: ${response.statusCode} - ${response.body}');
-        return null;
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to fetch profile');
       }
     } catch (e) {
-      print('Error fetching profile: ${e.toString()}');
-      return null;
+      if (e is Exception) rethrow;
+      throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
     }
   }
 
-  // อัปเดทรูปโปรไฟล์
-  static Future<Map<String, dynamic>> updateProfileImage({
-    required int userId,
+  // ========== ดึงข้อมูลโปรไฟล์ของ User ที่ login อยู่ ==========
+  static Future<UserProfile> getMyProfile() async {
+    try {
+      final userId = await StorageHelper.getUserId();
+
+      if (userId == null || userId.isEmpty) {
+        throw Exception('No user ID found. Please login again.');
+      }
+
+      return await getUserProfile(userId);
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
+    }
+  }
+
+  // ========== อัปเดทรูปโปรไฟล์ ==========
+  static Future<UpdateProfileImageResponse> updateProfileImage({
+    required String userId,
     required File imageFile,
   }) async {
     try {
-      final token = await StorageHelper.getToken();
+      String? accessToken = await StorageHelper.getAccessToken();
 
-      if (token == null) {
-        return {'success': false, 'message': 'No token found'};
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('No access token found. Please login.');
       }
 
-      final url = Uri.parse('$baseUrl/$userId/image');
+      final url = Uri.parse('$baseUrl/profile/$userId/image');
 
       // สร้าง multipart request
       var request = http.MultipartRequest('PUT', url);
-
-      // เพิ่ม headers
-      request.headers['Authorization'] = 'Bearer $token';
-
-      // เพิ่มไฟล์รูปภาพ
+      request.headers['Authorization'] = 'Bearer $accessToken';
       request.files.add(
         await http.MultipartFile.fromPath(
-          'profile_image', // ต้องตรงกับชื่อที่ backend รับ
+          'profile_image',
           imageFile.path,
         ),
       );
 
       // ส่ง request
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      // ถ้า token หมดอายุ ให้ refresh แล้วลองใหม่
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        try {
+          accessToken = await AuthService.refreshAccessToken();
+
+          // ลองอัพโหลดอีกครั้งด้วย token ใหม่
+          request = http.MultipartRequest('PUT', url);
+          request.headers['Authorization'] = 'Bearer $accessToken';
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'profile_image',
+              imageFile.path,
+            ),
+          );
+
+          streamedResponse = await request.send();
+          response = await http.Response.fromStream(streamedResponse);
+        } catch (e) {
+          throw Exception('Session expired. Please login again.');
+        }
+      }
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'message': data['message'],
-          'image_url': data['image_url'],
-        };
+        return UpdateProfileImageResponse(
+          message: data['message'] ?? 'Profile image updated successfully',
+          imageUrl: data['image_url'],
+        );
       } else {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to update profile image',
-        };
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to update profile image');
       }
     } catch (e) {
-      return {'success': false, 'message': 'เกิดข้อผิดพลาด: ${e.toString()}'};
+      if (e is Exception) rethrow;
+      throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
     }
   }
 
-  // อัปเดทข้อมูลโปรไฟล์ (สำหรับใช้ในหน้า Profile)
-  static Future<Map<String, dynamic>> updateProfile({
-    required int userId,
+  // ========== อัปเดทข้อมูลโปรไฟล์ ==========
+  static Future<UpdateProfileResponse> updateProfile({
+    required String userId,
     double? weight,
     double? height,
     int? age,
@@ -109,15 +128,7 @@ class ProfileService {
     String? goal,
   }) async {
     try {
-      final token = await StorageHelper.getToken();
-
-      if (token == null) {
-        return {'success': false, 'message': 'No token found'};
-      }
-
-      final url = Uri.parse('http://localhost:4000/api/update/$userId');
-      // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
-      //final url = Uri.parse('http://10.0.2.2:4000/api/update/$userId');
+      final url = '$baseUrl/update/$userId';
 
       final Map<String, dynamic> body = {};
       if (weight != null) body['weight'] = weight;
@@ -126,30 +137,72 @@ class ProfileService {
       if (gender != null) body['gender'] = gender.toLowerCase();
       if (goal != null) body['goal'] = goal.toLowerCase();
 
-      final response = await http.put(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      final response = await AuthService.authenticatedRequest(
+        method: 'PUT',
+        endpoint: url,
         body: jsonEncode(body),
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'message': data['message'] ?? 'Profile updated successfully',
-        };
+        return UpdateProfileResponse.fromJson(data);
       } else {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to update profile',
-        };
+        final error = jsonDecode(response.body);
+        throw Exception(error['message'] ?? 'Failed to update profile');
       }
     } catch (e) {
-      return {'success': false, 'message': 'เกิดข้อผิดพลาด: ${e.toString()}'};
+      if (e is Exception) rethrow;
+      throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
+    }
+  }
+
+  // ========== อัปเดทโปรไฟล์ของ User ที่ login อยู่ ==========
+  static Future<UpdateProfileResponse> updateMyProfile({
+    double? weight,
+    double? height,
+    int? age,
+    String? gender,
+    String? goal,
+  }) async {
+    try {
+      final userId = await StorageHelper.getUserId();
+
+      if (userId == null || userId.isEmpty) {
+        throw Exception('No user ID found. Please login again.');
+      }
+
+      return await updateProfile(
+        userId: userId,
+        weight: weight,
+        height: height,
+        age: age,
+        gender: gender,
+        goal: goal,
+      );
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
+    }
+  }
+
+  // ========== อัปเดทรูปโปรไฟล์ของ User ที่ login อยู่ ==========
+  static Future<UpdateProfileImageResponse> updateMyProfileImage({
+    required File imageFile,
+  }) async {
+    try {
+      final userId = await StorageHelper.getUserId();
+
+      if (userId == null || userId.isEmpty) {
+        throw Exception('No user ID found. Please login again.');
+      }
+
+      return await updateProfileImage(
+        userId: userId,
+        imageFile: imageFile,
+      );
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
     }
   }
 }

@@ -1131,10 +1131,10 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     try {
       // เรียก API พร้อมส่งข้อมูลครบทุกฟิลด์
-      final response = await ApiService.register(
+       await AuthService.register(
         username: username,
         email: email,
-        phone_number: phone,
+        phoneNumber: phone,
         password: password,
         age: ageNum,
         gender: _selectedGender
@@ -1146,12 +1146,10 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       setState(() => _isLoading = false);
 
-      if (response.success) {
         if (!mounted) return;
 
         setState(() => _showSuccessModal = true);
 
-        // Auto redirect หลัง 2 วินาที
         Future.delayed(const Duration(seconds: 2), () {
           if (!mounted) return;
           Navigator.pushReplacement(
@@ -1159,13 +1157,12 @@ class _RegisterScreenState extends State<RegisterScreen>
             MaterialPageRoute(builder: (context) => const LoginScreen()),
           );
         });
-      } else {
-        _showPixelError('✗ ${response.message}');
+
+      } catch (e) {
+        setState(() => _isLoading = false);
+        String errorMessage = e.toString().replaceAll('Exception: ', '');
+        _showPixelError('✗ $errorMessage');
       }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showPixelError('✗ Error: ${e.toString()}');
-    }
   }
 
   // Pixel Error Message
