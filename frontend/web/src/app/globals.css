@@ -17,16 +17,19 @@
   }
 }
 
+/* TA8bit Font - สำหรับภาษาอังกฤษ (Pixel Art Style) */
 @font-face {
   font-family: 'TA8bit';
   src: url('/fonts/TA8bit.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0020-007F; /* Basic Latin (English) */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'TA8bit', monospace, sans-serif !important;
+  /* TA8bit สำหรับภาษาอังกฤษ, monospace สำหรับภาษาไทยและอื่นๆ */
+  font-family: 'TA8bit', 'Courier New', Courier, monospace, sans-serif !important;
 }

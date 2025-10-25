@@ -107,13 +107,10 @@ export default function RegisterPage() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError('Password ต้องมีอย่างน้อย 8 ตัวอักษร');
-      return;
-    }
-
-    if (!/[a-zA-Z]/.test(formData.password)) {
-      setError('Password ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว');
+    // Password validation (ตรงกับ Backend: ต้องมีตัวอักษร + อักขระพิเศษ + ความยาว 8+)
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setError('Password ต้องมีอย่างน้อย 8 ตัวอักษร และมีทั้งตัวอักษรและอักขระพิเศษ');
       return;
     }
 
@@ -341,16 +338,16 @@ export default function RegisterPage() {
                     </div>
 
                     <div>
-                      <label 
+                      <label
                         className="block text-xs font-bold text-gray-700 mb-1"
                         style={{ fontFamily: 'monospace' }}
                       >
-                        PASSWORD *
+                        PASSWORD * (8+ chars, letter + special)
                       </label>
                       <input
                         type="password"
                         name="password"
-                        placeholder="Min 8 characters..."
+                        placeholder="e.g. Pass@123"
                         value={formData.password}
                         onChange={handleChange}
                         required

@@ -31,6 +31,19 @@ export interface UpdateProfileImageResponse {
   image_url: string;
 }
 
+export interface UpdateProfileData {
+  age?: number;
+  gender?: 'male' | 'female';
+  height?: number;
+  weight?: number;
+  goal?: 'lose weight' | 'maintain weight' | 'gain weight';
+}
+
+export interface UpdateProfileResponse {
+  message: string;
+  user: UserProfile;
+}
+
 // ========================================
 // Axios Instance
 // ========================================
@@ -47,7 +60,7 @@ const profileAPI = axios.create({
 // ========================================
 profileAPI.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken'); // ✅ เปลี่ยนจาก 'token'
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -64,11 +77,18 @@ profileAPI.interceptors.request.use(
 profileAPI.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('[Profile API] Error:', {
+      status: error.response?.status,
+      message: error.response?.data?.message,
+      url: error.config?.url,
+    });
+
     // Token หมดอายุ (401 Unauthorized)
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.log('[Profile API] Token expired or forbidden, redirecting to login...');
+      localStorage.removeItem('accessToken'); // ✅ เปลี่ยนจาก 'token'
       localStorage.removeItem('user');
-      
+
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
@@ -76,28 +96,12 @@ profileAPI.interceptors.response.use(
 
     // Network Error
     if (!error.response) {
-      console.error('Network Error:', error.message);
+      console.error('[Profile API] Network Error:', error.message);
     }
 
     return Promise.reject(error);
   }
 );
-
-// ========================================
-// Update Profile Data Type
-// ========================================
-export interface UpdateProfileData {
-  age?: number;
-  gender?: 'male' | 'female';
-  height?: number;
-  weight?: number;
-  goal?: 'lose weight' | 'maintain weight' | 'gain weight';
-}
-
-export interface UpdateProfileResponse {
-  message: string;
-  user: UserProfile;
-}
 
 // ========================================
 // Profile API Services
@@ -117,19 +121,36 @@ export const profileService = {
   },
 
   /**
-   * ดึงข้อมูลโปรไฟล์ของผู้ใช้ปัจจุบัน (จาก localStorage)
+   * ดึงข้อมูลโปรไฟล์ของผู้ใช้ปัจจุบัน
    */
   getCurrentUserProfile: async (): Promise<UserProfile | null> => {
     try {
-      // ดึง user จาก localStorage
       const userStr = localStorage.getItem('user');
-      if (!userStr) return null;
+      if (!userStr) {
+        console.warn('User not found in localStorage');
+        return null;
+      }
 
       const user = JSON.parse(userStr);
-      if (!user.id) return null;
 
-      // เรียก API เพื่อดึงข้อมูลล่าสุด
-      const profile = await profileService.getUserProfile(user.id);
+      // ตรวจสอบว่ามี id หรือไม่
+      if (!user.id && !user.user_id) {
+        console.warn('User ID not found in localStorage');
+        return null;
+      }
+
+      const userId = user.id || user.user_id;
+      const profile = await profileService.getUserProfile(userId);
+
+      // อัปเดท localStorage ด้วยข้อมูลล่าสุด
+      const updatedUser = {
+        ...user,
+        id: profile.user_id,
+        username: profile.username,
+        email: profile.email,
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
       return profile;
     } catch (error) {
       console.error('Error fetching current user profile:', error);
@@ -147,11 +168,21 @@ export const profileService = {
         data
       );
 
-      // อัปเดท user ใน localStorage ด้วย
+      // ✅ อัปเดท user ใน localStorage ด้วย
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const currentUser = JSON.parse(userStr);
-        const updatedUser = { ...currentUser, ...response.data.user };
+        const updatedUser = {
+          ...currentUser,
+          id: response.data.user.user_id,
+          username: response.data.user.username,
+          email: response.data.user.email,
+          age: response.data.user.age,
+          gender: response.data.user.gender,
+          height: response.data.user.height,
+          weight: response.data.user.weight,
+          goal: response.data.user.goal,
+        };
         localStorage.setItem('user', JSON.stringify(updatedUser));
       }
 

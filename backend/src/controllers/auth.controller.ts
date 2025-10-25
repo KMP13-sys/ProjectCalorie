@@ -3,7 +3,7 @@ import db from "../config/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-// === REGISTER ===
+// === REGISTER USER ===
 export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, phone_number, password, age, gender, height, weight, goal } = req.body;
@@ -66,10 +66,69 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+// === REGISTER ADMIN ===
+export const registerAdmin = async (req: Request, res: Response) => {
+  try {
+    const { username, email, phone_number, password, address } = req.body;
+
+    //  ตรวจสอบ ENV
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET environment variable is not set");
+    }
+
+    //  Validation ต่าง ๆ
+    const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{3,}$/;
+    if (!usernameRegex.test(username) || /^\d+$/.test(username)) {
+      return res.status(400).json({
+        message: "Username must contain at least one letter and only alphanumeric characters, minimum 3 characters"
+      });
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Please provide a valid email address" });
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone_number)) {
+      return res.status(400).json({ message: "Phone number must be 10 digits (0-9 only)" });
+    }
+
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters and include a letter and a special character."
+      });
+    }
+
+    // ตรวจ username / email ซ้ำในตาราง admin
+    const [existingAdmin]: any = await db.query(
+      "SELECT * FROM admin WHERE BINARY username = ? OR email = ?",
+      [username, email]
+    );
+    if (existingAdmin.length > 0) {
+      return res.status(400).json({ message: "Username or email already exists" });
+    }
+
+    // Hash Password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [result]: any = await db.query(
+      "INSERT INTO admin (username, email, phone_number, password, address) VALUES (?, ?, ?, ?, ?)",
+      [username, email, phone_number, hashedPassword, address || null]
+    );
+
+    res.status(201).json({ message: "Admin registered successfully" });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // === LOGIN (Admin/User) ===
 export const login = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, platform } = req.body; // ✅ เพิ่ม platform
 
     let role = "user";
     let user: any;
@@ -92,11 +151,12 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid username or password" });
     }
 
-    // เจน Access Token
+    // เจน Access Token (Web = 24h, Mobile = 30m)
+    const tokenExpiry = platform === "web" ? "24h" : "30m";
     const accessToken = jwt.sign(
       { id: user.user_id || user.admin_id, role },
       process.env.JWT_SECRET!,
-      { expiresIn: "30m" }
+      { expiresIn: tokenExpiry }
     );
 
     // สร้าง response object
@@ -104,11 +164,11 @@ export const login = async (req: Request, res: Response) => {
       message: "Login successful",
       role,
       accessToken,
-      expiresIn: "30m"
+      expiresIn: tokenExpiry
     };
 
-    // สร้าง Refresh Token เฉพาะ USER เท่านั้น
-    if (role === "user") {
+    // ✅ สร้าง Refresh Token เฉพาะ USER + MOBILE เท่านั้น
+    if (role === "user" && platform === "mobile") {
       const refreshToken = jwt.sign(
         { id: user.user_id, role: "user" },
         process.env.JWT_SECRET!,
@@ -125,11 +185,18 @@ export const login = async (req: Request, res: Response) => {
 
       response.refreshToken = refreshToken;
     } else {
-      // Admin แค่อัพเดท last_login_at
-      await db.query(
-        "UPDATE admin SET last_login_at = NOW() WHERE admin_id = ?",
-        [user.admin_id]
-      );
+      // ✅ Web login (user หรือ admin) → แค่อัพเดท last_login_at
+      if (role === "user") {
+        await db.query(
+          "UPDATE users SET last_login_at = NOW() WHERE user_id = ?",
+          [user.user_id]
+        );
+      } else {
+        await db.query(
+          "UPDATE admin SET last_login_at = NOW() WHERE admin_id = ?",
+          [user.admin_id]
+        );
+      }
     }
 
     res.json(response);

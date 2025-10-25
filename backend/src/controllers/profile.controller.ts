@@ -80,10 +80,15 @@ const deleteOldImage = (imageName: string) => {
 export const updateProfileImage = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.params.id);
-    const authenticatedUserId = (req as any).user.userId;
+    const authenticatedUserId = (req as any).user.id; // ✅ เปลี่ยนจาก userId เป็น id
+
+    console.log('[Update Profile Image] userId:', userId);
+    console.log('[Update Profile Image] authenticatedUserId:', authenticatedUserId);
+    console.log('[Update Profile Image] uploaded file:', req.file?.filename);
 
     // ตรวจสอบสิทธิ์
     if (userId !== authenticatedUserId) {
+      console.log('[Update Profile Image] Permission denied: userId mismatch');
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -97,35 +102,41 @@ export const updateProfileImage = async (req: Request, res: Response) => {
 
     // ดึงข้อมูลผู้ใช้เพื่อเช็ครูปเก่า
     const user = await getUserById(userId);
-    
+
     if (!user) {
       // ลบไฟล์ที่อัปโหลดมาใหม่ถ้าไม่เจอ user
       deleteOldImage(req.file.filename);
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log('[Update Profile Image] Old image:', user.image_profile);
+
     // ลบรูปเก่าถ้ามี
     if (user.image_profile) {
+      console.log('[Update Profile Image] Deleting old image:', user.image_profile);
       deleteOldImage(user.image_profile);
     }
 
     const imageName = req.file.filename;
+    console.log('[Update Profile Image] New image:', imageName);
 
     // อัปเดทฐานข้อมูล
     await db.query("UPDATE users SET image_profile = ? WHERE user_id = ?", [imageName, userId]);
+
+    console.log('[Update Profile Image] Success!');
 
     res.json({
       message: "Profile image updated successfully",
       image_url: `${req.protocol}://${req.get("host")}/uploads/${imageName}`,
     });
   } catch (error) {
-    console.error("Error updating profile image:", error);
-    
+    console.error("[Update Profile Image] Error:", error);
+
     // ลบไฟล์ที่อัปโหลดมาใหม่ถ้าเกิด error
     if (req.file) {
       deleteOldImage(req.file.filename);
     }
-    
+
     res.status(500).json({ message: "Server error" });
   }
 };

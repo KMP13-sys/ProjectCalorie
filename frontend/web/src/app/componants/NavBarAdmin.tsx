@@ -1,22 +1,19 @@
-// components/NavBarUser.tsx
+// components/NavBarAdmin.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { useUser } from '../context/user_context';
+import { useAuth } from '../context/auth_context';
 
-export default function NavBarUser() {
+export default function NavBarAdmin() {
   const router = useRouter();
-  const { userProfile, loading } = useUser();
+  const { user, isLoading } = useAuth();
 
   const handleLogoClick = () => {
     router.push('/AdminMain');
   };
-  // แสดง username จาก backend หรือ default
-  const displayUsername = userProfile?.username || 'PLAYER';
-  
-  // แสดงรูปโปรไฟล์จาก backend หรือ default
-  const profileImageSrc = userProfile?.image_profile_url || '/pic/person.png';
+
+  // แสดง username ของผู้ดูแลจาก AuthContext
+  const displayUsername = user?.username || 'ADMIN';
 
   return (
     <nav 
@@ -97,27 +94,30 @@ export default function NavBarUser() {
             </button>
           </div>
 
-          {/* Right Side: Username + Profile */}
+          {/* Right Side: Username Only (Admin) */}
           <div className="flex items-center gap-3">
             {/* Username Box */}
             <div
-              className="px-3 py-2 bg-white"
+              className="px-4 py-2 bg-white"
               style={{
                 border: '3px solid black',
                 boxShadow: '3px 3px 0 rgba(0, 0, 0, 0.3)',
               }}
             >
-              <div className="flex items-center gap-1.5">
-                {/* Pixel Square */}
+              <div className="flex items-center gap-2">
+                {/* Admin Badge */}
                 <div
-                  className="w-2 h-2"
+                  className="px-2 py-0.5 text-xs font-bold text-white"
                   style={{
-                    backgroundColor: '#6fa85e',
-                    border: '1px solid black',
+                    backgroundColor: '#ff6b6b',
+                    border: '2px solid black',
+                    fontFamily: 'monospace',
                   }}
-                ></div>
+                >
+                  ADMIN
+                </div>
 
-                {/* Username - แสดงจาก backend */}
+                {/* Username */}
                 <span
                   className="text-lg font-bold text-gray-800"
                   style={{
@@ -125,7 +125,7 @@ export default function NavBarUser() {
                     letterSpacing: '0.05em',
                   }}
                 >
-                  {loading ? 'LOADING...' : displayUsername.toUpperCase()}
+                  {isLoading ? 'LOADING...' : displayUsername.toUpperCase()}
                 </span>
               </div>
             </div>

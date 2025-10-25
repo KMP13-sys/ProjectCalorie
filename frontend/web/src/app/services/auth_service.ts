@@ -3,6 +3,26 @@
 import axios from 'axios'
 
 // ========================================
+// Helper: Decode JWT
+// ========================================
+function decodeJWT(token: string): any {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (error) {
+    console.error('Error decoding JWT:', error)
+    return null
+  }
+}
+
+// ========================================
 // Configuration
 // ========================================
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
@@ -14,7 +34,8 @@ export interface User {
   id: number
   username: string
   email: string
-  phone_number: string
+  role: 'user' | 'admin' // ✅ เพิ่ม role
+  phone_number?: string
   age?: number
   gender?: string
   height?: number
@@ -22,15 +43,18 @@ export interface User {
   goal?: string
 }
 
+// ✅ ตรงกับ Backend Response
 export interface LoginResponse {
   message: string
-  user: User
-  token: string
+  role: 'user' | 'admin'
+  accessToken: string
+  expiresIn: string
+  // ไม่มี refreshToken สำหรับ web
 }
 
+// ✅ Register ไม่ส่ง token กลับมา
 export interface RegisterResponse {
   message: string
-  token: string
 }
 
 export interface RegisterData {
@@ -38,11 +62,11 @@ export interface RegisterData {
   email: string
   phone_number: string
   password: string
-  age?: number
-  gender?: string
-  height?: number
-  weight?: number
-  goal?: string
+  age: number
+  gender: string
+  height: number
+  weight: number
+  goal: string
 }
 
 // ========================================
@@ -53,7 +77,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 seconds
+  timeout: 10000,
 })
 
 // ========================================
@@ -61,7 +85,7 @@ const api = axios.create({
 // ========================================
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('accessToken') // ✅ เปลี่ยนจาก 'token'
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -79,8 +103,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Token หมดอายุ (401 Unauthorized)
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // ✅ Clear session
+      localStorage.removeItem('accessToken')
       localStorage.removeItem('user')
       
       // Redirect ไป login page
@@ -107,15 +132,28 @@ export const authAPI = {
    */
   login: async (username: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await api.post<LoginResponse>('/auth/login', {
+      const response = await api.post<LoginResponse>('/api/auth/login', {
         username,
         password,
+        platform: 'web', // ✅ เพิ่ม platform
       })
 
-      // บันทึก token และ user ลง localStorage
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+      // ✅ บันทึก accessToken และ user ลง localStorage
+      if (response.data.accessToken) {
+        localStorage.setItem('accessToken', response.data.accessToken)
+
+        // ✅ Decode JWT เพื่อดึง userId
+        const decoded = decodeJWT(response.data.accessToken)
+        const userId = decoded?.id || 0
+
+        // สร้าง user object จาก response
+        const user: User = {
+          id: userId, // ✅ ดึงจาก JWT token
+          username: username,
+          email: '',
+          role: response.data.role,
+        }
+        localStorage.setItem('user', JSON.stringify(user))
       }
 
       return response.data
@@ -130,23 +168,19 @@ export const authAPI = {
    */
   register: async (data: RegisterData): Promise<RegisterResponse> => {
     try {
-      console.log('Calling API:', `${API_BASE_URL}/auth/register`);
-      console.log('Register data:', data);
+      console.log('Calling API:', `${API_BASE_URL}/api/auth/register`)
+      console.log('Register data:', data)
       
-      const response = await api.post<RegisterResponse>('/auth/register', data)
+      const response = await api.post<RegisterResponse>('/api/auth/register', data)
 
-      // บันทึก token ลง localStorage
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token)
-      }
-
+      // ✅ Register ไม่ส่ง token กลับมา ไม่ต้อง save
       return response.data
     } catch (error: any) {
       console.error('Register Error Details:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
-      });
+      })
       
       const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก'
       throw new Error(errorMessage)
@@ -154,10 +188,11 @@ export const authAPI = {
   },
 
   /**
-   * ออกจากระบบ
+   * ออกจากระบบ (Web - แค่ clear localStorage)
    */
   logout: () => {
-    localStorage.removeItem('token')
+    // ✅ Web ไม่ต้องเรียก API logout
+    localStorage.removeItem('accessToken')
     localStorage.removeItem('user')
     
     if (typeof window !== 'undefined') {
@@ -186,7 +221,7 @@ export const authAPI = {
    */
   isAuthenticated: (): boolean => {
     if (typeof window === 'undefined') return false
-    return !!localStorage.getItem('token')
+    return !!localStorage.getItem('accessToken') // ✅ เปลี่ยนจาก 'token'
   },
 
   /**
@@ -194,41 +229,62 @@ export const authAPI = {
    */
   getToken: (): string | null => {
     if (typeof window === 'undefined') return null
-    return localStorage.getItem('token')
+    return localStorage.getItem('accessToken') // ✅ เปลี่ยนจาก 'token'
+  },
+
+  /**
+   * ลบบัญชีผู้ใช้
+   */
+  deleteAccount: async (): Promise<void> => {
+    try {
+      await api.delete('/api/auth/delete-account')
+
+      // ลบข้อมูลออกจาก localStorage
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('user')
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการลบบัญชี'
+      throw new Error(errorMessage)
+    }
+  },
+
+  /**
+   * ดึงข้อมูล user จาก API โดยใช้ userId จาก localStorage
+   */
+  fetchCurrentUser: async (): Promise<User | null> => {
+    try {
+      const currentUser = authAPI.getCurrentUser()
+      if (!currentUser || !currentUser.id) {
+        console.warn('No user ID found in localStorage')
+        return null
+      }
+
+      const userId = currentUser.id
+      const response = await api.get<any>(`/api/profile/${userId}`)
+
+      // แปลงข้อมูลจาก backend format เป็น User type
+      const userData: User = {
+        id: response.data.user_id,
+        username: response.data.username,
+        email: response.data.email,
+        role: response.data.role || 'user',
+        phone_number: response.data.phone_number,
+        age: response.data.age,
+        gender: response.data.gender,
+        height: response.data.height,
+        weight: response.data.weight,
+        goal: response.data.goal,
+      }
+
+      // บันทึกข้อมูล user ใหม่
+      localStorage.setItem('user', JSON.stringify(userData))
+
+      return userData
+    } catch (error) {
+      console.error('Failed to fetch user:', error)
+      return null
+    }
   },
 }
 
 export default api
-
-// // ========================================
-// // Calorie API (เพิ่มเติมตามที่ต้องการ)
-// // ========================================
-// export const calorieAPI = {
-//   /**
-//    * ดึงข้อมูล calories ทั้งหมด
-//    */
-//   getAll: async () => {
-//     try {
-//       const response = await api.get('/calories')
-//       return response.data
-//     } catch (error: any) {
-//       const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาด'
-//       throw new Error(errorMessage)
-//     }
-//   },
-
-//   /**
-//    * เพิ่มข้อมูล calorie
-//    */
-//   add: async (data: any) => {
-//     try {
-//       const response = await api.post('/calories', data)
-//       return response.data
-//     } catch (error: any) {
-//       const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาด'
-//       throw new Error(errorMessage)
-//     }
-//   },
-// }
-
-// export default api

@@ -148,8 +148,8 @@ export default function PixelProfilePage() {
   // ถ้าไม่มี profile ให้ redirect ไปหน้า login (เฉพาะเมื่อ loading เสร็จแล้ว)
   useEffect(() => {
     if (!loading && !userProfile) {
-      // ตรวจสอบว่ามี token หรือไม่
-      const token = localStorage.getItem('token');
+      // ตรวจสอบว่ามี accessToken หรือไม่
+      const token = localStorage.getItem('accessToken');
       if (!token) {
         router.push('/login');
       }
@@ -229,17 +229,29 @@ export default function PixelProfilePage() {
 
   const confirmLogout = () => {
     authAPI.logout();
-    // authAPI.logout() จะ redirect ไปหน้า login อัตโนมัติ
+    clearUserProfile(); // Clear user profile from context
+    router.push('/login'); // Redirect to login page
   };
 
   const handleDeleteAccount = () => {
     setShowDeletePopup(true);
   };
 
-  const confirmDelete = () => {
-    // TODO: เพิ่ม API สำหรับลบบัญชีใน backend
-    alert('ฟีเจอร์ลบบัญชียังไม่พร้อมใช้งาน');
-    setShowDeletePopup(false);
+  const confirmDelete = async () => {
+    try {
+      // เรียก API ลบบัญชี
+      await authAPI.deleteAccount();
+
+      // Clear user profile from context
+      clearUserProfile();
+
+      // Redirect to login page
+      router.push('/login');
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      setError(error.message || 'ไม่สามารถลบบัญชีได้');
+      setShowDeletePopup(false);
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -34,7 +34,7 @@ app.use("/api/update", updateRoutes);
 app.use("/api/daily", dailyRoutes);      // ✅ ใช้ path เดียว
 app.use("/api/admin", adminRoutes);
 app.use("/api/activity", activityRoutes);
-app.use("/api/dailycalories", dailyRoutes);
+app.use("/api/dailycalories", dailyRoutes); // รองรับ path เดิมเพื่อความเข้ากันได้ย้อนหลัง *เดี่ยวมาดู*
 
 // ====== Root test route ======
 app.get("/", (req, res) => {

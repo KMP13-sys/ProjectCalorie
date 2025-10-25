@@ -33,24 +33,29 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
+
       // ตรวจสอบว่ามี token หรือไม่ ถ้าไม่มีก็ไม่ต้องดึงข้อมูล
       if (typeof window === 'undefined') {
         setLoading(false);
         return;
       }
-      
-      const token = localStorage.getItem('token');
+
+      const token = localStorage.getItem('accessToken'); // ✅ เปลี่ยนจาก 'token'
+      console.log('[UserContext] Token exists:', !!token);
+
       if (!token) {
+        console.log('[UserContext] No token found, skipping profile fetch');
         setUserProfile(null);
         setLoading(false);
         return;
       }
-      
+
+      console.log('[UserContext] Fetching user profile...');
       const profile = await profileService.getCurrentUserProfile();
+      console.log('[UserContext] Profile fetched:', profile);
       setUserProfile(profile);
     } catch (err: any) {
-      console.error('Error fetching user profile:', err);
+      console.error('[UserContext] Error fetching user profile:', err);
       // ไม่ต้อง set error เพื่อไม่ให้กระทบกับหน้า login/register
       setUserProfile(null);
     } finally {

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI } from '../services/auth_service';
+import { useAuth } from '../context/auth_context';
 import { useUser } from '../context/user_context';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, user } = useAuth();
   const { refreshUserProfile } = useUser();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -14,16 +15,20 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Auto redirect after 2 seconds
+  // ✅ เมื่อ login สำเร็จและมี user แล้ว ให้แสดง modal แล้ว navigate
   useEffect(() => {
-    if (showSuccessModal) {
+    if (showSuccessModal && user) {
       const timer = setTimeout(() => {
-        // ใช้ window.location.href เพื่อให้ refresh หน้าและ reload UserContext
-        window.location.href = '/main';
+        // Navigate ตาม role
+        if (user.role === 'admin') {
+          router.push('/AdminMain');
+        } else {
+          router.push('/main');
+        }
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [showSuccessModal]);
+  }, [showSuccessModal, user, router]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -36,7 +41,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     // Validation
     if (!username.trim()) {
       setError('กรุณากรอก Username');
@@ -53,7 +58,7 @@ export default function LoginPage() {
       setError('Username ต้องมีอย่างน้อย 3 ตัวอักษร');
       return;
     }
-    
+
     if (!password) {
       setError('กรุณากรอก Password');
       return;
@@ -62,14 +67,17 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // เรียก API Login
-      const response = await authAPI.login(username.trim(), password);
-      
-      console.log('Login success:', response);
-      
+      // ✅ ใช้ login จาก AuthContext
+      await login(username.trim(), password);
+
+      console.log('Login success');
+
+      // ✅ Refresh user profile หลัง login สำเร็จ
+      await refreshUserProfile();
+
       // แสดง Success Modal
       setShowSuccessModal(true);
-      
+
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');

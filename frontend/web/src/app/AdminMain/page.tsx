@@ -1,12 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import NavbarAdmin from '../componants/NavBarAdmin';
-
+import { authAPI } from '../services/auth_service';
 
 export default function AdminMainPage() {
   const router = useRouter();
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   const handleFoodClick = () => {
     router.push('/AboutFood');
@@ -17,10 +19,16 @@ export default function AdminMainPage() {
   };
 
   const handleLogout = () => {
-    if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
-      alert('ออกจากระบบสำเร็จ');
-      router.push('/login');
-    }
+    setShowLogoutPopup(true);
+  };
+
+  const confirmLogout = () => {
+    authAPI.logout();
+    router.push('/login');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutPopup(false);
   };
 
   return (
@@ -267,6 +275,107 @@ export default function AdminMainPage() {
           </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Popup */}
+      {showLogoutPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div
+            className="bg-gradient-to-b from-[#ff8787] to-[#ff6b6b] border-8 border-black w-full max-w-md relative"
+            style={{
+              boxShadow: '12px 12px 0px rgba(0,0,0,0.5)',
+              imageRendering: 'pixelated'
+            }}
+          >
+            {/* Decorative Corner Pixels */}
+            <div className="absolute -top-2 -left-2 w-6 h-6 bg-red-900"></div>
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-900"></div>
+            <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-red-900"></div>
+            <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-red-900"></div>
+
+            <div className="p-8 text-center relative">
+              {/* Pixel Art Header Bar */}
+              <div className="bg-red-900 border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
+                <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'monospace' }}>
+                  ⚠ WARNING ⚠
+                </h3>
+              </div>
+
+              {/* Warning Icon */}
+              <div className="flex justify-center mb-4">
+                <div className="relative w-20 h-20">
+                  <div className="grid grid-cols-5 gap-0">
+                    <div className="w-4 h-4 bg-transparent"></div>
+                    <div className="w-4 h-4 bg-transparent"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-transparent"></div>
+                    <div className="w-4 h-4 bg-transparent"></div>
+
+                    <div className="w-4 h-4 bg-transparent"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-yellow-500"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-transparent"></div>
+
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-yellow-500"></div>
+                    <div className="w-4 h-4 bg-black"></div>
+                    <div className="w-4 h-4 bg-yellow-500"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-yellow-500"></div>
+                    <div className="w-4 h-4 bg-black"></div>
+                    <div className="w-4 h-4 bg-yellow-500"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                    <div className="w-4 h-4 bg-yellow-400"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Message */}
+              <div className="bg-white border-4 border-black p-4 mb-6">
+                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'monospace' }}>
+                  ออกจากระบบ?
+                </p>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'monospace' }}>
+                  คุณต้องการออกจากระบบหรือไม่?
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={cancelLogout}
+                  className="bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 border-4 border-black text-white font-bold py-3 px-8 transition-all hover:translate-x-0.5 hover:translate-y-0.5"
+                  style={{
+                    fontFamily: 'monospace',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
+                    textShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }}
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-4 border-black text-white font-bold py-3 px-8 transition-all hover:translate-x-0.5 hover:translate-y-0.5"
+                  style={{
+                    fontFamily: 'monospace',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
+                    textShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }}
+                >
+                  ออกจากระบบ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
