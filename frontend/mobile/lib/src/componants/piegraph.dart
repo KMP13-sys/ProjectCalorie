@@ -21,7 +21,7 @@ class NutritionPieChartComponent extends StatelessWidget {
 
   Widget _buildPieChart() {
     return SizedBox(
-      height: 250,
+      height: 150,
       child: PieChart(
         PieChartData(
           sections: _buildSections(),
@@ -45,7 +45,7 @@ class NutritionPieChartComponent extends StatelessWidget {
       value: value,
       color: color,
       title: '$title\n${value.toStringAsFixed(1)}g',
-      radius: 150,
+      radius: 100,
       titleStyle: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,

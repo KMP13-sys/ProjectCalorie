@@ -28,10 +28,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("src/uploads"));
 
 // ====== Routes ======
-app.use("/api/auth", authRoutes);        // ✅ เพิ่ม /api prefix
-app.use("/api/profile", profileRoutes);  // ✅ รวม userRoutes กับ profileRoutes
+app.use("/api/auth", authRoutes);        
+app.use("/api/profile", profileRoutes);  
 app.use("/api/update", updateRoutes);
-app.use("/api/daily", dailyRoutes);      // ✅ ใช้ path เดียว
+app.use("/api/daily", dailyRoutes);      
 app.use("/api/admin", adminRoutes);
 app.use("/api/activity", activityRoutes);
 app.use("/api/dailycalories", dailyRoutes); // รองรับ path เดิมเพื่อความเข้ากันได้ย้อนหลัง *เดี่ยวมาดู*

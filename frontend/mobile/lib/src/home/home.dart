@@ -6,7 +6,9 @@ import '../componants/navbaruser.dart';
 import '../componants/Kcalbar.dart';
 import '../componants/camera.dart';
 import '../componants/activityfactor.dart';
-import '../componants/piegraph.dart'; // ← เพิ่มบรรทัดนี้
+import '../componants/piegraph.dart';
+import '../componants/ListMenu.dart';
+import '../componants/ListSport.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -75,6 +77,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 fats: 70,
                                 protein: 150,
                               ),
+
+                              const SizedBox(height: 50),
+
+                              ListSportPage(
+                                sportName: 'sportName', 
+                                time: 5, 
+                                caloriesBurned: 41,
+                              ),
+
                             ],
                           ),
                         ),
@@ -91,7 +102,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               ActivityFactorButton(
                               ),
-                              // เพิ่มเนื้อหาอื่นqๆ ด้านซ้ายได้ที่นี่
+
+                              const SizedBox(height: 20),
+
+                              ListMenuPage(
+                                  name:'pizza' ,
+                                  calories: 254,
+                              ),
                             ],
                           ),
                         ),
