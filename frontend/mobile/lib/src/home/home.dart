@@ -1,7 +1,6 @@
 // lib/src/home/home.dart
-import 'package:flutter/cupertino.dart';
+//import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/src/componants/activityfactor.dart';
 import '../componants/navbaruser.dart';
 import '../componants/Kcalbar.dart';
 import '../componants/camera.dart';
@@ -17,26 +16,53 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   // Key สำหรับ refresh Kcalbar (ใช้ dynamic เพื่อเข้าถึง private state)
   final GlobalKey _kcalbarKey = GlobalKey();
   bool _isLoading = false;
-  bool _hasSelectedActivityLevel = false; // เก็บสถานะว่าเลือกระดับกิจกรรมแล้วหรือยัง
+  bool _hasSelectedActivityLevel =
+      false; // เก็บสถานะว่าเลือกระดับกิจกรรมแล้วหรือยัง
 
   @override
   void initState() {
     super.initState();
-    _checkActivityLevelStatus();
+    WidgetsBinding.instance.addObserver(
+      this,
+    ); // เพิ่ม observer สำหรับเช็คเมื่อ app resume
+    // เช็คครั้งแรกหลังจาก build เสร็จ
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkActivityLevelStatus();
+    });
   }
 
-  // เช็คว่าเลือกระดับกิจกรรมวันนี้แล้วหรือยัง
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // เช็คใหม่เมื่อ app กลับมา active (เช่น หลัง login ใหม่)
+    if (state == AppLifecycleState.resumed) {
+      print('🔄 App resumed, checking activity level status...');
+      _checkActivityLevelStatus();
+    }
+  }
+
+  // เช็คว่าเลือกระดับกิจกรรมวันนี้แล้วหรือยัง (เช็คจาก API)
   Future<void> _checkActivityLevelStatus() async {
+    print('🔍 Checking activity level status...');
     final state = _kcalbarKey.currentState;
     if (state != null) {
       final hasData = await (state as dynamic).hasCalorieData();
-      setState(() {
-        _hasSelectedActivityLevel = hasData;
-      });
+      print('📊 Activity level selected: $hasData');
+      if (mounted) {
+        setState(() {
+          _hasSelectedActivityLevel = hasData;
+        });
+      }
     }
   }
 
@@ -59,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Navbar
           NavBarUser(),
-          
+
           // Content (แบ่งครึ่งซ้าย-ขวา)
           Expanded(
             child: Row(
@@ -89,11 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: 50),
 
-                        ListSportPage(
-                          sportName: 'sportName',
-                          time: 5,
-                          caloriesBurned: 41,
-                        ),
+                        const ListSportPage(),
                       ],
                     ),
                   ),
@@ -116,10 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: 20),
 
-                        ListMenuPage(
-                          name: 'pizza',
-                          calories: 254,
-                        ),
+                        const ListMenuPage(),
                       ],
                     ),
                   ),

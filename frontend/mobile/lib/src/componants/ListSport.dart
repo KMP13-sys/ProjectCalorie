@@ -1,17 +1,47 @@
 // componants/ListSport.dart
 import 'package:flutter/material.dart';
+import '../../service/list_service.dart';
+import '../../service/list_models.dart';
 
-class ListSportPage extends StatelessWidget {
-  final String sportName;
-  final int time; // เวลาที่ออกกำลังกาย (นาที)
-  final int caloriesBurned; // แคลอรี่ที่เผาผลาญ
+class ListSportPage extends StatefulWidget {
+  const ListSportPage({super.key});
 
-  const ListSportPage({
-    super.key,
-    required this.sportName,
-    required this.time,
-    required this.caloriesBurned,
-  });
+  @override
+  State<ListSportPage> createState() => _ListSportPageState();
+}
+
+class _ListSportPageState extends State<ListSportPage> {
+  final ListService _listService = ListService();
+  List<ActivityItem> _activities = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadActivities();
+  }
+
+  /// ดึงข้อมูลกิจกรรมจาก API
+  Future<void> _loadActivities() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final activities = await _listService.getTodayActivities();
+      setState(() {
+        _activities = activities;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error loading activities';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,64 +118,105 @@ class ListSportPage extends StatelessWidget {
           const SizedBox(height: 10),
 
           // ✅ เส้นคั่นใต้หัวข้อ
-          Container(
-            height: 3,
-            color: const Color(0xFF2a2a2a),
-          ),
+          Container(height: 3, color: const Color(0xFF2a2a2a)),
           const SizedBox(height: 10),
 
-          // รายการกีฬา
+          // Content
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: List.generate(10, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF2a2a2a)),
+                  )
+                : _errorMessage != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // ชื่อกีฬา
-                        Expanded(
-                          child: Text(
-                            '$sportName ${index + 1}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2a2a2a),
-                              fontFamily: 'TA8bit',
-                            ),
-                          ),
-                        ),
-
-                        // เวลาที่ออกกำลังกาย
                         Text(
-                          '$time',
+                          _errorMessage!,
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2a2a2a),
+                            fontSize: 14,
+                            color: Colors.red,
                             fontFamily: 'TA8bit',
                           ),
                         ),
-
-                        const SizedBox(width: 30),
-
-                        // แคลอรี่ที่เผาผลาญ
-                        Text(
-                          '-$caloriesBurned',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2a2a2a),
-                            fontFamily: 'TA8bit',
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: _loadActivities,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2a2a2a),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            'Retry',
+                            style: TextStyle(fontFamily: 'TA8bit'),
                           ),
                         ),
                       ],
                     ),
-                  );
-                }),
-              ),
-            ),
+                  )
+                : _activities.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No activities today',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF2a2a2a),
+                        fontFamily: 'TA8bit',
+                      ),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    child: Column(
+                      children: _activities.asMap().entries.map((entry) {
+                        final activity = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // ชื่อกีฬา
+                              Expanded(
+                                child: Text(
+                                  activity.sportName,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2a2a2a),
+                                    fontFamily: 'TA8bit',
+                                  ),
+                                ),
+                              ),
+
+                              // เวลาที่ออกกำลังกาย
+                              Text(
+                                '${activity.time}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2a2a2a),
+                                  fontFamily: 'TA8bit',
+                                ),
+                              ),
+
+                              const SizedBox(width: 30),
+
+                              // แคลอรี่ที่เผาผลาญ
+                              Text(
+                                '-${activity.caloriesBurned}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2a2a2a),
+                                  fontFamily: 'TA8bit',
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
           ),
         ],
       ),

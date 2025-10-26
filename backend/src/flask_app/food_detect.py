@@ -297,7 +297,7 @@ def update_consumed_calories(user_id, date):
         with get_db_connection() as conn:
             cur = conn.cursor(dictionary=True)
 
-            # คำนวณแคลอรี่รวม
+            # คำนวณแคลอรี่รวมจากอาหารที่กินไปในวันนั้น
             cur.execute("""
                 SELECT SUM(f.calories) AS totalCalories
                 FROM Meals m
@@ -307,22 +307,29 @@ def update_consumed_calories(user_id, date):
             """, (user_id, date))
 
             result = cur.fetchone()
-            total = result['totalCalories'] if result and result['totalCalories'] else 0
+            total_consumed = result['totalCalories'] if result and result['totalCalories'] else 0
 
-            # อัปเดตลง DailyCalories
+            # อัปเดต consumed_calories ลง DailyCalories
+            # (ต้องมีข้อมูล DailyCalories ของวันนี้อยู่แล้ว)
             cur.execute("""
-                INSERT INTO DailyCalories (user_id, date, consumed_calories)
-                VALUES (%s, %s, %s)
-                ON DUPLICATE KEY UPDATE consumed_calories = VALUES(consumed_calories)
-            """, (user_id, date, total))
+                UPDATE DailyCalories
+                SET consumed_calories = %s
+                WHERE user_id = %s AND date = %s
+            """, (total_consumed, user_id, date))
 
+            affected_rows = cur.rowcount
             conn.commit()
             cur.close()
-            logger.info(f"✅ Updated consumed_calories for user {user_id} on {date}: {total} kcal")
-            return True
+
+            if affected_rows > 0:
+                logger.info(f"✅ Updated consumed_calories for user {user_id} on {date}: {total_consumed} kcal")
+                return True
+            else:
+                logger.warning(f"⚠️ No DailyCalories record found for user {user_id} on {date}")
+                return False
 
     except Exception as e:
-        logger.error(f"update_consumed_calories failed: %s", e)
+        logger.error(f"❌ update_consumed_calories failed: %s", e)
         return False
 
 # ============================================

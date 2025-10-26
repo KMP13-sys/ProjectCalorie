@@ -12,9 +12,9 @@ import { validateToken } from "../middlewares/validateToken";
 const router = Router();
 
 // รายการอาหารของวันปัจจุบัน
-router.get("/foods/:userId", validateToken, getTodayMeals);
+router.get("/meals/:userId", validateToken, getTodayMeals);
 // รายการกิจกรรมของวันปัจจุบัน
-router.get("/sports/:userId", validateToken, getTodayActivities);
+router.get("/activities/:userId", validateToken, getTodayActivities);
 // กราฟรายสัปดาห์
 router.get("/weekly", validateToken, getWeeklyCalories);
 

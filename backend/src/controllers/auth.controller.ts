@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import db from "../config/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import path from "path";
+import fs from "fs";
 
 // === REGISTER USER ===
 export const register = async (req: Request, res: Response) => {
@@ -281,6 +283,20 @@ export const logout = async (req: Request, res: Response) => {
   }
 };
 
+// Function สำหรับลบไฟล์รูปภาพโปรไฟล์
+const deleteProfileImage = (imageName: string) => {
+  const imagePath = path.join(__dirname, "../uploads", imageName);
+
+  if (fs.existsSync(imagePath)) {
+    try {
+      fs.unlinkSync(imagePath);
+      console.log(`Deleted profile image: ${imageName}`);
+    } catch (error) {
+      console.error(`Error deleting profile image: ${imageName}`, error);
+    }
+  }
+};
+
 // === DELETE ACCOUNT (users ลบบัญชีตัวเอง) ===
 export const deleteOwnAccount = async (req: Request, res: Response) => {
   try {
@@ -288,6 +304,17 @@ export const deleteOwnAccount = async (req: Request, res: Response) => {
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized: Missing user ID" });
+    }
+
+    // ดึงข้อมูลผู้ใช้เพื่อเช็ครูปโปรไฟล์
+    const [users]: any = await db.query(
+      "SELECT image_profile FROM users WHERE user_id = ?",
+      [userId]
+    );
+
+    if (users.length > 0 && users[0].image_profile) {
+      // ลบไฟล์รูปภาพโปรไฟล์ถ้ามี
+      deleteProfileImage(users[0].image_profile);
     }
 
     // ลบข้อมูลผู้ใช้
