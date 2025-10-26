@@ -2,9 +2,7 @@ import { Router } from "express";
 import {
   getTodayMeals,
   getTodayActivities,
-  calculateBMR,
-  calculateTargetCalories,
-  updateConsumedCalories,
+  calculateAndSaveCalories,
   getCalorieStatus,
   getDailyMacros,
   getWeeklyCalories,
@@ -20,10 +18,8 @@ router.get("/sports/:userId", validateToken, getTodayActivities);
 // กราฟรายสัปดาห์
 router.get("/weekly", validateToken, getWeeklyCalories);
 
-// คำนวณหลอด Kcal
-router.post("/calculate-bmr/:userId", validateToken, calculateBMR);
-router.post("/calculate-target/:userId", validateToken, calculateTargetCalories);
-router.post("/update-consumed/:userId", validateToken, updateConsumedCalories);
+// คำนวณและบันทึกแคลอรี่ (BMR + TDEE + Target Calories)
+router.post("/calculate-calories/:userId", validateToken, calculateAndSaveCalories);
 router.get("/status/:userId", validateToken, getCalorieStatus);
 router.get("/macros/:userId", validateToken, getDailyMacros);
 

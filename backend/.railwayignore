@@ -1,0 +1,10 @@
+.env
+node_modules/
+dist/
+src/uploads/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.log
+.DS_Store

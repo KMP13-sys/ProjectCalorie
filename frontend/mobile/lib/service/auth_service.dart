@@ -1,18 +1,14 @@
 // lib/services/auth_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../service/auth_models.dart';
+import '../config/api_config.dart';
 import 'storage_helper.dart';
 
 class AuthService {
-  // Base URL ของ API
-  static const String baseUrl = 'http://localhost:4000/api/auth';
-
-  // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
-  // static const String baseUrl = 'http://10.0.2.2:4000/api/auth';
-
-  // สำหรับ iOS Simulator ใช้ localhost ได้เลย
-  // static const String baseUrl = 'http://localhost:4000/api/auth';
+  // ใช้ ApiConfig แทนการ hardcode URL
+  static String get baseUrl => ApiConfig.authUrl;
 
   // ========== REGISTER ==========
   static Future<RegisterResponse> register({
@@ -237,8 +233,8 @@ class AuthService {
 
       print('✅ Found userId in token: $userId');
 
-      // เรียก API GET /api/profile/:id (ไม่ใช้ baseUrl เพราะมัน point ไป /api/auth)
-      final profileUrl = 'http://localhost:4000/api/profile/$userId';
+      // เรียก API GET /api/profile/:id (ใช้ ApiConfig)
+      final profileUrl = '${ApiConfig.profileUrl}/$userId';
       final url = Uri.parse(profileUrl);
 
       print('🌐 Fetching profile from: $profileUrl');

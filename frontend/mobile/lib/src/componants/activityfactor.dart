@@ -4,10 +4,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../service/kal_service.dart';
 
 class ActivityFactorButton extends StatefulWidget {
   final Function(int, String)? onSaved;
-  const ActivityFactorButton({Key? key, this.onSaved}) : super(key: key);
+  final Function()? onCaloriesUpdated; // Callback เมื่ออัปเดตแคลอรี่สำเร็จ
+  const ActivityFactorButton({Key? key, this.onSaved, this.onCaloriesUpdated}) : super(key: key);
 
   @override
   State<ActivityFactorButton> createState() => _ActivityFactorButtonState();
@@ -24,23 +26,73 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
     _loadSavedData();
   }
 
-  Future<void> _loadSavedData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedLevel = prefs.getInt('activity_level');
-    final savedLabel = prefs.getString('activity_label');
-    final savedTimestamp = prefs.getString('activity_timestamp');
+  // แปลง activity factor (1.2-1.9) เป็น level (1-5) และ label
+  Map<String, dynamic> _getLevelFromActivityFactor(double factor) {
+    if (factor == 1.2) return {'level': 1, 'label': 'น้อยมาก'};
+    if (factor == 1.4) return {'level': 2, 'label': 'น้อย'};
+    if (factor == 1.6) return {'level': 3, 'label': 'ปานกลาง'};
+    if (factor == 1.7) return {'level': 4, 'label': 'มาก'};
+    if (factor == 1.9) return {'level': 5, 'label': 'มากที่สุด'};
+    return {'level': 0, 'label': 'ไม่ทราบ'};
+  }
 
-    if (savedLevel != null && savedLabel != null && savedTimestamp != null) {
-      final savedDate = DateTime.parse(savedTimestamp);
-      final now = DateTime.now();
-      final isSameDay = savedDate.year == now.year &&
-          savedDate.month == now.month &&
-          savedDate.day == now.day;
-      setState(() {
-        _savedLevel = savedLevel;
-        _savedLabel = savedLabel;
-        _isLocked = isSameDay;
-      });
+  Future<void> _loadSavedData() async {
+    try {
+      // เช็คจาก API ว่ามีข้อมูลวันนี้หรือไม่
+      final status = await KalService.getCalorieStatus();
+
+      print('🔍 Activity Level Check:');
+      print('  - API activityLevel: ${status.activityLevel}');
+      print('  - API targetCalories: ${status.targetCalories}');
+
+      if (status.targetCalories > 0 && status.activityLevel > 0) {
+        // มีข้อมูลใน API - ดึง activity level จาก DB
+        final levelData = _getLevelFromActivityFactor(status.activityLevel);
+        final level = levelData['level'] as int;
+        final label = levelData['label'] as String;
+
+        print('✅ Found in API - Level $level: $label (factor: ${status.activityLevel})');
+
+        setState(() {
+          _savedLevel = level;
+          _savedLabel = label;
+          _isLocked = true;
+        });
+
+        // บันทึกลง SharedPreferences สำหรับ fallback
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('activity_level', level);
+        await prefs.setString('activity_label', label);
+        await prefs.setString('activity_timestamp', DateTime.now().toIso8601String());
+      } else {
+        // ยังไม่มีข้อมูล - ปลดล็อค
+        setState(() {
+          _isLocked = false;
+          _savedLevel = null;
+          _savedLabel = null;
+        });
+      }
+    } catch (e) {
+      print('Error loading activity level status: $e');
+      // ถ้า error ให้เช็คจาก SharedPreferences แทน
+      final prefs = await SharedPreferences.getInstance();
+      final savedLevel = prefs.getInt('activity_level');
+      final savedLabel = prefs.getString('activity_label');
+      final savedTimestamp = prefs.getString('activity_timestamp');
+
+      if (savedLevel != null && savedLabel != null && savedTimestamp != null) {
+        final savedDate = DateTime.parse(savedTimestamp);
+        final now = DateTime.now();
+        final isSameDay = savedDate.year == now.year &&
+            savedDate.month == now.month &&
+            savedDate.day == now.day;
+
+        setState(() {
+          _savedLevel = savedLevel;
+          _savedLabel = savedLabel;
+          _isLocked = isSameDay;
+        });
+      }
     }
   }
 
@@ -51,6 +103,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
           content: const Text(
             '⭐ เลือกได้อีกครั้งพรุ่งนี้นะ!',
             style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold),
+            
           ),
           backgroundColor: const Color(0xFFFFF9BD),
           behavior: SnackBarBehavior.floating,
@@ -104,6 +157,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
       }
 
       widget.onSaved?.call(level, label);
+      widget.onCaloriesUpdated?.call(); // เรียก callback เพื่ออัปเดต Kcalbar
     }
   }
 
@@ -219,14 +273,14 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
   int? _selectedLevel;
 
   final List<Map<String, dynamic>> _activityLevels = [
-    {'level': 1, 'label': 'น้อยมาก', 'description': 'นอนเฉยๆ'},
-    {'level': 2, 'label': 'น้อย', 'description': 'ทำงานเบาๆ เดินเล่น'},
-    {'level': 3, 'label': 'ปานกลาง', 'description': 'ยืน เดิน ยกของเล็กน้อย'},
-    {'level': 4, 'label': 'มาก', 'description': 'ออกกำลังกายหนัก'},
-    {'level': 5, 'label': 'มากที่สุด', 'description': 'นักกีฬา'},
+    {'level': 1, 'label': 'น้อยมาก', 'description': 'นอนเฉยๆ', 'factor': 1.2},
+    {'level': 2, 'label': 'น้อย', 'description': 'ทำงานเบาๆ เดินเล่น', 'factor': 1.4},
+    {'level': 3, 'label': 'ปานกลาง', 'description': 'ยืน เดิน ยกของเล็กน้อย', 'factor': 1.6},
+    {'level': 4, 'label': 'มาก', 'description': 'ออกกำลังกายหนัก', 'factor': 1.7},
+    {'level': 5, 'label': 'มากที่สุด', 'description': 'นักกีฬา', 'factor': 1.9},
   ];
 
-  void _saveSelection() {
+  Future<void> _saveSelection() async {
     if (_selectedLevel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -246,7 +300,63 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
     }
 
     final selectedData = _activityLevels.firstWhere((item) => item['level'] == _selectedLevel);
-    Navigator.pop(context, {'level': _selectedLevel, 'label': selectedData['label']});
+    final activityFactor = selectedData['factor'] as double;
+
+    // แสดง loading
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFF9BD)),
+        ),
+      ),
+    );
+
+    try {
+      // คำนวณและบันทึก BMR, TDEE, Target Calories ทีเดียว
+      print('🔢 Calculating and saving calories with factor: $activityFactor');
+      final result = await KalService.calculateAndSaveCalories(
+        activityLevel: activityFactor,
+      );
+      print('✅ Successfully calculated: BMR=${result.bmr}, TDEE=${result.tdee}, Target=${result.targetCalories}');
+
+      // รอสักครู่เพื่อให้ DB commit เสร็จ
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // ปิด loading
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+      // ปิด dialog และส่งค่ากลับ
+      Navigator.pop(context, {
+        'level': _selectedLevel,
+        'label': selectedData['label'],
+        'factor': activityFactor,
+      });
+    } catch (e) {
+      print('❌ Error in calculateCalories: $e');
+      // ปิด loading
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+      // แสดง error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '❌ เกิดข้อผิดพลาด: ${e.toString()}',
+            style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(color: Colors.black, width: 3),
+          ),
+        ),
+      );
+    }
   }
 
   @override

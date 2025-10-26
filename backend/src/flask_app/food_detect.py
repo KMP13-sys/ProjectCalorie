@@ -269,6 +269,9 @@ def save_meal_to_db(user_id, data):
             conn.commit()
             cur.close()
 
+            # อัปเดตแคลอรี่รวมของวัน
+            update_consumed_calories(user_id, dt.date())
+
             result = {
                 'success': True,
                 'meal_id': meal_id,
@@ -284,6 +287,43 @@ def save_meal_to_db(user_id, data):
     except Exception as e:
         logger.exception("save_meal_to_db error: %s", e)
         return {'success': False, 'error': 'Database error'}
+
+# ============================================
+# Update Consumed Calories
+# ============================================
+def update_consumed_calories(user_id, date):
+    """อัปเดตแคลอรี่ที่กินไปในวันนั้นๆ"""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(dictionary=True)
+
+            # คำนวณแคลอรี่รวม
+            cur.execute("""
+                SELECT SUM(f.calories) AS totalCalories
+                FROM Meals m
+                JOIN MealDetails md ON m.meal_id = md.meal_id
+                JOIN Foods f ON md.food_id = f.food_id
+                WHERE m.user_id = %s AND m.date = %s
+            """, (user_id, date))
+
+            result = cur.fetchone()
+            total = result['totalCalories'] if result and result['totalCalories'] else 0
+
+            # อัปเดตลง DailyCalories
+            cur.execute("""
+                INSERT INTO DailyCalories (user_id, date, consumed_calories)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE consumed_calories = VALUES(consumed_calories)
+            """, (user_id, date, total))
+
+            conn.commit()
+            cur.close()
+            logger.info(f"✅ Updated consumed_calories for user {user_id} on {date}: {total} kcal")
+            return True
+
+    except Exception as e:
+        logger.error(f"update_consumed_calories failed: %s", e)
+        return False
 
 # ============================================
 # Prediction

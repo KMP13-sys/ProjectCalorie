@@ -58,113 +58,83 @@ export const getTodayActivities = async (req: Request, res: Response) => {
   }
 };
 
-// คำนวณและบันทึกค่า BMR ลงในตาราง DailyCalories
-export const calculateBMR = async (req: Request, res: Response) => {
+// คำนวณ BMR, TDEE และ Target Calories (รวมทั้งหมดในครั้งเดียว)
+export const calculateAndSaveCalories = async (req: Request, res: Response) => {
   const { userId } = req.params;
+  const { activityLevel } = req.body;
+
   try {
+    // Validate activityLevel
+    if (!activityLevel || activityLevel < 1.2 || activityLevel > 2.0) {
+      return res.status(400).json({
+        message: "Invalid activityLevel. Must be between 1.2 and 2.0"
+      });
+    }
+
+    // ดึงข้อมูลผู้ใช้ (สำหรับคำนวณ BMR และ goal)
     const [user]: any = await db.query(
-      "SELECT age, gender, height, weight FROM Users WHERE user_id = ?",
+      "SELECT age, gender, height, weight, goal FROM Users WHERE user_id = ?",
       [userId]
     );
 
-    if (!user.length) return res.status(404).json({ message: "User not found" });
+    if (!user.length) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    const { age, gender, height, weight } = user[0];
+    const { age, gender, height, weight, goal } = user[0];
 
-    // สูตร BMR (Mifflin-St Jeor)
+    // 1. คำนวณ BMR (Mifflin-St Jeor)
     let bmr = 0;
-    if (gender === "male") bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-    else bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    if (gender === "male") {
+      bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+    } else {
+      bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    }
 
-    // บันทึก BMR ลงตาราง DailyCalories (ของวันนี้)
+    // 2. คำนวณ TDEE
+    const tdee = bmr * activityLevel;
+
+    // 3. ปรับ Target Calories ตาม goal
+    let targetCalories = tdee;
+    if (goal === "lose weight") {
+      targetCalories = tdee - 500;
+    } else if (goal === "gain weight") {
+      targetCalories = tdee + 500;
+    }
+
+    // 4. บันทึกลง DailyCalories (เก็บ activity_level และ target_calories)
     const today = new Date().toISOString().split("T")[0];
     await db.query(
-      `INSERT INTO DailyCalories (user_id, date, bmr)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE bmr = VALUES(bmr)`,
-      [userId, today, bmr]
+      `INSERT INTO DailyCalories (user_id, date, activity_level, target_calories)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         activity_level = VALUES(activity_level),
+         target_calories = VALUES(target_calories)`,
+      [userId, today, activityLevel, targetCalories]
     );
 
-    res.json({ message: "BMR calculated", bmr });
+    console.log(`✅ Calculated and saved: ActivityLevel=${activityLevel}, Target=${targetCalories} for user ${userId}`);
+
+    res.json({
+      message: "Calories calculated and saved successfully",
+      activity_level: activityLevel,
+      bmr: Math.round(bmr * 100) / 100,
+      tdee: Math.round(tdee * 100) / 100,
+      target_calories: Math.round(targetCalories * 100) / 100,
+      goal: goal
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Error calculating calories:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// คำนวณ TDEE และ Target Calories
-export const calculateTargetCalories = async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const { activityLevel } = req.body; // เช่น 1.3, 1.5, 1.7
-
-  try {
-    const [user]: any = await db.query(
-      "SELECT goal FROM Users WHERE user_id = ?",
-      [userId]
-    );
-    if (!user.length) return res.status(404).json({ message: "User not found" });
-
-    const [daily]: any = await db.query(
-      "SELECT bmr FROM DailyCalories WHERE user_id = ? AND date = CURDATE()",
-      [userId]
-    );
-    if (!daily.length) return res.status(404).json({ message: "Please calculate BMR first" });
-
-    let { goal } = user[0];
-    let { bmr } = daily[0];
-
-    const tdee = bmr * activityLevel;
-    let target = tdee;
-
-    // 🔹 ปรับตาม goal
-    if (goal === "lose weight") target = tdee - 500;
-    if (goal === "gain weight") target = tdee + 500;
-
-    await db.query(
-      `UPDATE DailyCalories SET target_calories = ? WHERE user_id = ? AND date = CURDATE()`,
-      [target, userId]
-    );
-
-    res.json({ message: "Target calories calculated", target_calories: target });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// รวมแคลอรี่ที่กินไปในวันปัจจุบัน แล้วบันทึกลง consumed_calories
-export const updateConsumedCalories = async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  try {
-    const [rows]: any = await db.query(
-      `SELECT SUM(f.calories) AS totalCalories
-       FROM Meals m
-       JOIN MealDetails md ON m.meal_id = md.meal_id
-       JOIN Foods f ON md.food_id = f.food_id
-       WHERE m.user_id = ? AND m.date = CURDATE()`,
-      [userId]
-    );
-
-    const total = rows[0].totalCalories || 0;
-
-    await db.query(
-      `UPDATE DailyCalories SET consumed_calories = ? WHERE user_id = ? AND date = CURDATE()`,
-      [total, userId]
-    );
-
-    res.json({ message: "Consumed calories updated", consumed_calories: total });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// ดึงค่าทั้งหมดสำหรับ “หลอด Kcal” (target_calories, net_calories, remaining_calories)
+// ดึงค่าทั้งหมดสำหรับ "หลอด Kcal" (target_calories, net_calories, remaining_calories)
 export const getCalorieStatus = async (req: Request, res: Response) => {
   const { userId } = req.params;
   try {
     const [rows]: any = await db.query(
-      `SELECT bmr, target_calories, consumed_calories, burned_calories, net_calories, remaining_calories
+      `SELECT activity_level, target_calories, consumed_calories, burned_calories, net_calories, remaining_calories
        FROM DailyCalories
        WHERE user_id = ? AND date = CURDATE()`,
       [userId]
@@ -172,9 +142,21 @@ export const getCalorieStatus = async (req: Request, res: Response) => {
 
     if (!rows.length) return res.status(404).json({ message: "No daily data found" });
 
-    res.json(rows[0]);
+    // แปลง DECIMAL เป็น Number เพื่อให้ frontend ไม่ต้อง parse
+    const data = rows[0];
+    const result = {
+      activity_level: parseFloat(data.activity_level) || 0,
+      target_calories: parseFloat(data.target_calories) || 0,
+      consumed_calories: parseFloat(data.consumed_calories) || 0,
+      burned_calories: parseFloat(data.burned_calories) || 0,
+      net_calories: parseFloat(data.net_calories) || 0,
+      remaining_calories: parseFloat(data.remaining_calories) || 0,
+    };
+
+    console.log(`✅ Returning calorie status for user ${userId}:`, result);
+    res.json(result);
   } catch (error) {
-    console.error(error);
+    console.error("Error getting calorie status:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

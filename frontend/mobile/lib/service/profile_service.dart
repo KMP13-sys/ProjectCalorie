@@ -3,20 +3,15 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../service/user_models.dart';
+import '../config/api_config.dart';
 import 'storage_helper.dart';
 import 'auth_service.dart';
 
 class ProfileService {
-  // Base URL ของ API
-  static const String baseUrl = 'http://localhost:4000/api';
-
-  // สำหรับ Android Emulator ใช้ 10.0.2.2 แทน localhost
-  // static const String baseUrl = 'http://10.0.2.2:4000/api';
-
   // ========== ดึงข้อมูลโปรไฟล์ผู้ใช้ ==========
   static Future<UserProfile> getUserProfile(String userId) async {
     try {
-      final url = '$baseUrl/profile/$userId';
+      final url = '${ApiConfig.profileUrl}/$userId';
 
       final response = await AuthService.authenticatedRequest(
         method: 'GET',
@@ -64,7 +59,7 @@ class ProfileService {
         throw Exception('No access token found. Please login.');
       }
 
-      final url = Uri.parse('$baseUrl/profile/$userId/image');
+      final url = Uri.parse('${ApiConfig.profileUrl}/$userId/image');
 
       // สร้าง multipart request
       var request = http.MultipartRequest('PUT', url);
@@ -128,7 +123,7 @@ class ProfileService {
     String? goal,
   }) async {
     try {
-      final url = '$baseUrl/update/$userId';
+      final url = '${ApiConfig.baseUrl}/api/update/$userId';
 
       final Map<String, dynamic> body = {};
       if (weight != null) body['weight'] = weight;

@@ -37,12 +37,19 @@ build/Release
 .tscache/
 
 # Environment variables
-#.env
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.test
+
+# Backend uploaded files (images should not be in git)
+backend/src/uploads/
+**/uploads/*.jpg
+**/uploads/*.jpeg
+**/uploads/*.png
+**/uploads/*.gif
 
 # Logs
 logs

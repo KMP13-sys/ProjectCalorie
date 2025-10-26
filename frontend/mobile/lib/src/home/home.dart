@@ -18,24 +18,37 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // ตัวแปรเก็บข้อมูล
-  double _currentCalories = 2000;
-  double _targetCalories = 2200;
-  bool _isLoading = true;
+  // Key สำหรับ refresh Kcalbar (ใช้ dynamic เพื่อเข้าถึง private state)
+  final GlobalKey _kcalbarKey = GlobalKey();
+  bool _isLoading = false;
+  bool _hasSelectedActivityLevel = false; // เก็บสถานะว่าเลือกระดับกิจกรรมแล้วหรือยัง
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _checkActivityLevelStatus();
   }
 
-  // ดึงข้อมูล
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    
-    // TODO: ดึงข้อมูลจาก API
-    
-    setState(() => _isLoading = false);
+  // เช็คว่าเลือกระดับกิจกรรมวันนี้แล้วหรือยัง
+  Future<void> _checkActivityLevelStatus() async {
+    final state = _kcalbarKey.currentState;
+    if (state != null) {
+      final hasData = await (state as dynamic).hasCalorieData();
+      setState(() {
+        _hasSelectedActivityLevel = hasData;
+      });
+    }
+  }
+
+  // ฟังก์ชันสำหรับ refresh Kcalbar เมื่อมีการเปลี่ยนแปลง
+  void _refreshKcalbar() {
+    final state = _kcalbarKey.currentState;
+    if (state != null) {
+      // เรียก refresh method ผ่าน dynamic
+      (state as dynamic).refresh();
+    }
+    // เช็คสถานะใหม่หลัง refresh
+    _checkActivityLevelStatus();
   }
 
   @override
@@ -49,75 +62,74 @@ class _HomeScreenState extends State<HomeScreen> {
           
           // Content (แบ่งครึ่งซ้าย-ขวา)
           Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF6fa85e),
+            child: Row(
+              children: [
+                // ฝั่งซ้าย - Kcalbar
+                Expanded(
+                  flex: 1, // ครึ่งหนึ่ง
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Kcalbar(
+                          key: _kcalbarKey,
+                          onRefresh: () {
+                            print('✅ Kcalbar refreshed!');
+                          },
+                        ),
+
+                        const SizedBox(height: 50),
+
+                        NutritionPieChartComponent(
+                          carbs: 250,
+                          fats: 70,
+                          protein: 150,
+                        ),
+
+                        const SizedBox(height: 50),
+
+                        ListSportPage(
+                          sportName: 'sportName',
+                          time: 5,
+                          caloriesBurned: 41,
+                        ),
+                      ],
                     ),
-                  )
-                : Row(
-                    children: [
-                      // ฝั่งซ้าย - Kcalbar
-                      Expanded(
-                        flex: 1, // ครึ่งหนึ่ง
-                        child: Container(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Kcalbar(
-                                current: _currentCalories,
-                                target: _targetCalories,
-                              ),
-
-                              const SizedBox(height: 50),
-
-                              NutritionPieChartComponent(
-                                carbs: 250,
-                                fats: 70,
-                                protein: 150,
-                              ),
-
-                              const SizedBox(height: 50),
-
-                              ListSportPage(
-                                sportName: 'sportName', 
-                                time: 5, 
-                                caloriesBurned: 41,
-                              ),
-
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      
-                      // ฝั่งขวา - ว่างไว้สำหรับเนื้อหาอื่น
-                      Expanded(
-                        flex: 1, // อีกครึ่งหนึ่ง
-                        child: Container(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ActivityFactorButton(
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              ListMenuPage(
-                                  name:'pizza' ,
-                                  calories: 254,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
+                ),
+
+                // ฝั่งขวา - Activity Factor & Menu
+                Expanded(
+                  flex: 1, // อีกครึ่งหนึ่ง
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ActivityFactorButton(
+                          onCaloriesUpdated: () {
+                            // Refresh Kcalbar เมื่อเลือกระดับกิจกรรมเสร็จ
+                            _refreshKcalbar();
+                          },
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        ListMenuPage(
+                          name: 'pizza',
+                          calories: 254,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
 
-            CameraIconButton()
+          // แสดง Camera button เฉพาะเมื่อเลือกระดับกิจกรรมแล้ว
+          if (_hasSelectedActivityLevel) CameraIconButton(),
         ],
       ),
     );

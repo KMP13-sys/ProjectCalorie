@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile/src/profile/profile.dart';
 import '../home/home.dart';
+import '../../config/api_config.dart';
 import '../../service/storage_helper.dart';
 import '../../service/profile_service.dart';
 
@@ -70,13 +71,9 @@ class _NavBarUserState extends State<NavBarUser> {
       if (mounted) {
         setState(() {
           username = userProfile.username;
-          // แปลง URL ตาม platform
+          // ใช้ ApiConfig.getImageUrl() เพื่อจัดการ URL อัตโนมัติ
           if (userProfile.imageProfileUrl != null) {
-            // สำหรับ Physical Device ใช้ IP ของเครื่อน
-            profileImageUrl = userProfile.imageProfileUrl!
-                .replaceAll('localhost', '192.168.100.67')
-                .replaceAll('127.0.0.1', '192.168.100.67')
-                .replaceAll('10.0.2.2', '192.168.100.67');
+            profileImageUrl = ApiConfig.getImageUrl(userProfile.imageProfileUrl!);
           }
           isLoading = false;
         });
