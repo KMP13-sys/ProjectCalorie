@@ -1,0 +1,46 @@
+services:
+  # Backend API Service
+  - type: web
+    name: projectcalorie-backend
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DB_HOST
+        fromDatabase:
+          name: projectcalorie-db
+          property: host
+      - key: DB_USER
+        fromDatabase:
+          name: projectcalorie-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: projectcalorie-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: projectcalorie-db
+          property: database
+      - key: DB_PORT
+        fromDatabase:
+          name: projectcalorie-db
+          property: port
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+    healthCheckPath: /
+
+databases:
+  # MySQL Database
+  - name: projectcalorie-db
+    databaseName: calories_app
+    plan: free
+    region: singapore
