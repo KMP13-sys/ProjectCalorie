@@ -1,17 +1,24 @@
 /// API Configuration
 ///
 /// วิธีใช้งาน:
-/// 1. Development (Local): ใช้ localhost
-/// 2. Development (Ngrok): เปลี่ยนเป็น Ngrok URL
-/// 3. Production (Railway): เปลี่ยนเป็น Railway URL
+/// 1. Development (Local): ใช้ localhost หรือ 192.168.100.67
+/// 2. Production (Public IP): ใช้ IP Public ของบ้าน
+/// 3. Cloud Deploy: ใช้ Ngrok/Railway/Render URL
 class ApiConfig {
   // ⚙️ เปลี่ยน URL ตรงนี้เท่านั้น
   static const String _baseUrl = 'http://localhost:4000';
 
-  // 🔹 สำหรับ Android Emulator ใช้: 'http://10.0.2.2:4000'
-  // 🔹 สำหรับ iOS Simulator ใช้: 'http://localhost:4000'
-  // 🔹 สำหรับ Ngrok ใช้: 'https://your-ngrok-url.ngrok-free.app'
-  // 🔹 สำหรับ Railway ใช้: 'https://your-app.up.railway.app'
+  // 🔹 สำหรับ Development (ในบ้าน):
+  //    - Physical Device (มือถือจริง): 'http://192.168.100.67:4000'
+  //    - Android Emulator: 'http://10.0.2.2:4000'
+  //    - iOS Simulator: 'http://localhost:4000'
+  //    - Web Browser: 'http://localhost:4000'
+  //
+  // 🔹 สำหรับ Production (ใช้นอกบ้าน):
+  //    - Public IP: 'http://203.158.130.254:4000' (ต้องเปิด Port Forwarding)
+  //    - Ngrok: 'https://your-ngrok-url.ngrok-free.app'
+  //    - Railway: 'https://your-app.up.railway.app'
+  //    - Render: 'https://your-app.onrender.com'
 
   // API Endpoints
   static String get baseUrl => _baseUrl;

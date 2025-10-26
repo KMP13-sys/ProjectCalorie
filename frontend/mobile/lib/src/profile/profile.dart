@@ -61,19 +61,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final profile = await ProfileService.getMyProfile();
 
       if (mounted) {
-        // แปลง URL ตาม platform
-        UserProfile updatedProfile = profile;
-        if (profile.imageProfileUrl != null) {
-          // สำหรับ Physical Device ใช้ IP ของเครื่อน
-          final fixedUrl = profile.imageProfileUrl!
-              .replaceAll('localhost', '192.168.100.67')
-              .replaceAll('127.0.0.1', '192.168.100.67')
-              .replaceAll('10.0.2.2', '192.168.100.67');
-          updatedProfile = profile.copyWith(imageProfileUrl: fixedUrl);
-        }
-
         setState(() {
-          userProfile = updatedProfile;
+          userProfile = profile;
           _weightController.text = profile.weight?.toString() ?? '';
           _heightController.text = profile.height?.toString() ?? '';
           _ageController.text = profile.age?.toString() ?? '';
@@ -85,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Debug: แสดง URL ของรูป
         // ignore: avoid_print
         print(
-          '🖼️ Profile loaded. Image URL: ${updatedProfile.imageProfileUrl}',
+          '🖼️ Profile loaded. Image URL: ${profile.imageProfileUrl}',
         );
       }
     } catch (e) {
