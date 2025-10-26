@@ -107,11 +107,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                         const SizedBox(height: 50),
 
-                        NutritionPieChartComponent(
-                          carbs: 250,
-                          fats: 70,
-                          protein: 150,
-                        ),
+                        const NutritionPieChartComponent(),
 
                         const SizedBox(height: 50),
 

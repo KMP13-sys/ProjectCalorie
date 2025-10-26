@@ -21,6 +21,8 @@ router.get("/weekly", validateToken, getWeeklyCalories);
 // คำนวณและบันทึกแคลอรี่ (BMR + TDEE + Target Calories)
 router.post("/calculate-calories/:userId", validateToken, calculateAndSaveCalories);
 router.get("/status/:userId", validateToken, getCalorieStatus);
+
+// ดึงสารอาหารรายวัน
 router.get("/macros/:userId", validateToken, getDailyMacros);
 
 export default router;
