@@ -5,7 +5,7 @@
 /// 2. Production (Public IP): ใช้ IP Public ของบ้าน
 /// 3. Cloud Deploy: ใช้ Ngrok/Railway/Render URL
 class ApiConfig {
-  // ⚙️ เปลี่ยน URL ตรงนี้เท่านั้น
+  // ⚙️ เปลี่ยน URL ตรงนี้เท่าน
   static const String _baseUrl = 'http://localhost:4000';
 
   // 🔹 สำหรับ Development (ในบ้าน):

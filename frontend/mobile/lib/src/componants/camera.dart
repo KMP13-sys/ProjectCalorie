@@ -27,7 +27,7 @@ class CameraBottomNavBar extends StatelessWidget {
                 border: Border.all(color: Colors.black, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     offset: const Offset(6, 6),
                     blurRadius: 0,
                   ),
@@ -202,7 +202,7 @@ class CameraBottomNavBar extends StatelessWidget {
         _showErrorDialog(
           context,
           result['low_confidence'] == true
-            ? 'ไม่ใช่ภาพอาหาร'
+            ? 'ไม่ใช่อาหาร'
             : 'เกิดข้อผิดพลาด',
           result['error'] ?? 'ไม่สามารถทำนายภาพได้',
         );
@@ -238,7 +238,7 @@ class CameraBottomNavBar extends StatelessWidget {
                 border: Border.all(color: Colors.black, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     offset: const Offset(6, 6),
                     blurRadius: 0,
                   ),
@@ -344,7 +344,7 @@ class CameraBottomNavBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             offset: const Offset(0, -2),
             blurRadius: 4,
           ),
@@ -361,7 +361,7 @@ class CameraBottomNavBar extends StatelessWidget {
               border: Border.all(color: Colors.black, width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   offset: const Offset(4, 4),
                   blurRadius: 0,
                 ),

@@ -60,6 +60,14 @@ class AuthService {
     try {
       final url = Uri.parse('$baseUrl/login');
 
+      // ✅ Debug: แสดง URL ที่กำลังเรียก
+      print('🌐 Calling login API: $url');
+      print('📦 Request body: ${jsonEncode({
+          'username': username,
+          'password': password,
+          'platform': 'mobile',
+        })}');
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -69,6 +77,10 @@ class AuthService {
           'platform': 'mobile', // ✅ บอกว่ามาจาก mobile
         }),
       );
+
+      // ✅ Debug: แสดง response
+      print('📡 Response status: ${response.statusCode}');
+      print('📡 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

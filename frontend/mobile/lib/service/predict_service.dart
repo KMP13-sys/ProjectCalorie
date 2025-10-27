@@ -10,7 +10,7 @@ class PredictService {
     // ใช้ค่า default ตาม environment
     const String defaultUrl = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'http://10.0.2.2:5000', // สำหรับ Android Emulator
+      defaultValue: 'http://127.0.0.1:5000',
     );
     return defaultUrl;
   }

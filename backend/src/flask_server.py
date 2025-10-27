@@ -132,9 +132,10 @@ def handle_exception(error):
 #  Run Server
 # ==============================================
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 4000))
+    # ใช้ FLASK_PORT แทน PORT เพื่อไม่ให้ทับกับ Node.js server
+    port = int(os.getenv("FLASK_PORT", 5000))
     debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 
-    logger.info(f" Running Flask on port {port} (debug={debug_mode})")
+    logger.info(f"🚀 Running Flask server on port {port} (debug={debug_mode})")
 
     app.run(host="0.0.0.0", port=port, debug=debug_mode)
