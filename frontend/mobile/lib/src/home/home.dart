@@ -144,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
 
           // แสดง Camera button เฉพาะเมื่อเลือกระดับกิจกรรมแล้ว
-          if (_hasSelectedActivityLevel) CameraIconButton(),
+          if (_hasSelectedActivityLevel) SelectImageScreen(),
         ],
       ),
     );
