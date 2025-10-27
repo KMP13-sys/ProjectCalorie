@@ -19,7 +19,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   // Key สำหรับ refresh Kcalbar (ใช้ dynamic เพื่อเข้าถึง private state)
   final GlobalKey _kcalbarKey = GlobalKey();
-  bool _isLoading = false;
   bool _hasSelectedActivityLevel =
       false; // เก็บสถานะว่าเลือกระดับกิจกรรมแล้วหรือยัง
 
@@ -83,70 +82,75 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       backgroundColor: const Color(0xFFDBFFC8),
       body: Column(
         children: [
-          // Navbar
+          // Navbar บน (ติดด้านบนตลอด)
           NavBarUser(),
 
-          // Content (แบ่งครึ่งซ้าย-ขวา)
+          // Content กลาง (scroll ได้)
           Expanded(
-            child: Row(
-              children: [
-                // ฝั่งซ้าย - Kcalbar
-                Expanded(
-                  flex: 1, // ครึ่งหนึ่ง
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Kcalbar(
-                          key: _kcalbarKey,
-                          onRefresh: () {
-                            print('✅ Kcalbar refreshed!');
-                          },
-                        ),
+            child: SingleChildScrollView(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ฝั่งซ้าย - Kcalbar, PieChart, ListSport
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Kcalbar(
+                            key: _kcalbarKey,
+                            onRefresh: () {
+                              print('✅ Kcalbar refreshed!');
+                            },
+                          ),
 
-                        const SizedBox(height: 50),
+                          const SizedBox(height: 50),
 
-                        const NutritionPieChartComponent(),
+                          const NutritionPieChartComponent(),
 
-                        const SizedBox(height: 50),
+                          const SizedBox(height: 50),
 
-                        const ListSportPage(),
-                      ],
+                          const ListSportPage(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // ฝั่งขวา - Activity Factor & Menu
-                Expanded(
-                  flex: 1, // อีกครึ่งหนึ่ง
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ActivityFactorButton(
-                          onCaloriesUpdated: () {
-                            // Refresh Kcalbar เมื่อเลือกระดับกิจกรรมเสร็จ
-                            _refreshKcalbar();
-                          },
-                        ),
+                  // ฝั่งขวา - Activity Factor & Menu
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ActivityFactorButton(
+                            onCaloriesUpdated: () {
+                              // Refresh Kcalbar เมื่อเลือกระดับกิจกรรมเสร็จ
+                              _refreshKcalbar();
+                            },
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        const ListMenuPage(),
-                      ],
+                          const ListMenuPage(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-
-          // แสดง Camera button เฉพาะเมื่อเลือกระดับกิจกรรมแล้ว
-          if (_hasSelectedActivityLevel) SelectImageScreen(),
         ],
       ),
+      // Navbar ล่าง (ปุ่มกล้อง - ติดด้านล่างตลอด)
+      // แสดง Camera button เฉพาะเมื่อเลือกระดับกิจกรรมแล้ว
+      bottomNavigationBar: _hasSelectedActivityLevel
+        ? const CameraBottomNavBar()
+        : null,
     );
   }
 }

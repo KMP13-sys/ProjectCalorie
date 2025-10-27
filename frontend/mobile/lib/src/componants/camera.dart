@@ -2,23 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../FoodDetailScreen/FoodDetailScreen.dart';
+import '../../service/predict_service.dart';
 
-class SelectImageScreen extends StatefulWidget {
-  const SelectImageScreen({super.key});
+class CameraBottomNavBar extends StatelessWidget {
+  const CameraBottomNavBar({super.key});
 
-  @override
-  State<SelectImageScreen> createState() => _SelectImageScreenState();
-}
+  Future<void> _pickImage(BuildContext context) async {
+    final ImagePicker picker = ImagePicker();
 
-class _SelectImageScreenState extends State<SelectImageScreen> {
-  final ImagePicker _picker = ImagePicker();
-
-  // ตำแหน่งเริ่มต้นของปุ่ม
-  double _x = 0;
-  double _y = 0;
-  bool _initialized = false;
-
-  Future<void> _pickImage() async {
     final ImageSource? source = await showDialog<ImageSource>(
       context: context,
       builder: (BuildContext context) {
@@ -108,39 +99,210 @@ class _SelectImageScreenState extends State<SelectImageScreen> {
     );
 
     if (source != null) {
-      final XFile? pickedFile = await _picker.pickImage(source: source);
-      if (pickedFile != null) {
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null && context.mounted) {
         final File imageFile = File(pickedFile.path);
-
-        const String foodName = "คาโบนาร่า";
-        const int carbs = 53;
-        const int fat = 80;
-        const int protein = 23;
-        const int calories = 954;
-
-        if (mounted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FoodDetailScreen(
-                  imageFile: imageFile,
-                  foodName: foodName,
-                  carbs: carbs,
-                  fat: fat,
-                  protein: protein,
-                  calories: calories,
-                ),
-              ),
-            );
-          });
-        }
+        await _processImage(context, imageFile);
       }
     }
   }
 
-  Widget _optionBox({
+  Future<void> _processImage(BuildContext context, File imageFile) async {
+    // แสดง loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.4),
+                  offset: const Offset(6, 6),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                  strokeWidth: 3,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'กำลังวิเคราะห์ภาพอาหาร...',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      // ตรวจสอบความคมชัดของภาพ
+      final isClear = await PredictService.isImageClear(imageFile);
+
+      if (!isClear) {
+        Navigator.pop(context); // ปิด loading dialog
+
+        if (context.mounted) {
+          _showErrorDialog(
+            context,
+            'ภาพไม่ชัดเจน',
+            'กรุณาถ่ายภาพใหม่ให้ชัดเจนกว่านี้',
+          );
+        }
+        return;
+      }
+
+      // ส่งภาพไปทำนาย (ดึง userId จาก SharedPreferences อัตโนมัติ)
+      final result = await PredictService.predictFood(imageFile);
+
+      Navigator.pop(context); // ปิด loading dialog
+
+      if (!context.mounted) return;
+
+      if (result['success'] == true && result['data'] != null) {
+        final data = result['data'];
+
+        // นำทางไปหน้าแสดงผล
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FoodDetailScreen(
+              imageFile: imageFile,
+              foodName: data['predicted_food'] ?? 'ไม่ทราบชื่อ',
+              foodId: data['food_id'] ?? 0,
+              carbs: (data['nutrition']?['carbohydrate_gram'] ?? 0).toInt(),
+              fat: (data['nutrition']?['fat_gram'] ?? 0).toInt(),
+              protein: (data['nutrition']?['protein_gram'] ?? 0).toInt(),
+              calories: (data['nutrition']?['calories'] ?? 0).toInt(),
+              confidence: data['confidence'] ?? 0.0,
+            ),
+          ),
+        );
+      } else {
+        // แสดง error dialog
+        _showErrorDialog(
+          context,
+          result['low_confidence'] == true
+            ? 'ไม่ใช่ภาพอาหาร'
+            : 'เกิดข้อผิดพลาด',
+          result['error'] ?? 'ไม่สามารถทำนายภาพได้',
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // ปิด loading dialog
+
+      if (context.mounted) {
+        _showErrorDialog(
+          context,
+          'เกิดข้อผิดพลาด',
+          'ไม่สามารถประมวลผลภาพได้ กรุณาลองใหม่อีกครั้ง',
+        );
+      }
+    }
+  }
+
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: Dialog(
+            insetPadding: const EdgeInsets.all(24),
+            backgroundColor: const Color(0xFFf8f8f8),
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(color: Colors.black, width: 4),
+              borderRadius: BorderRadius.zero,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFC1C1),
+                border: Border.all(color: Colors.black, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    offset: const Offset(6, 6),
+                    blurRadius: 0,
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    color: const Color(0xFFFF6B6B),
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.black, width: 3),
+                      ),
+                      child: const Text(
+                        'ตกลง',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  static Widget _optionBox({
     required IconData icon,
     required String text,
     required Color color,
@@ -173,63 +335,46 @@ class _SelectImageScreenState extends State<SelectImageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // initialize ตำแหน่งเริ่มต้นให้ตรงกลาง/ติดล่าง
-    if (!_initialized) {
-      _x = MediaQuery.of(context).size.width / 2 - 50;
-      _y = MediaQuery.of(context).size.height - 150;
-      _initialized = true;
-    }
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          // พื้นหลัง
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: const Color(0xFFB0E6A9),
-          ),
-
-          // ปุ่มกล้อง draggable
-          Positioned(
-            left: _x,
-            top: _y,
-            child: GestureDetector(
-              onPanUpdate: (details) {
-                setState(() {
-                  _x += details.delta.dx;
-                  _y += details.delta.dy;
-
-                  // ลบ clamp เพื่อให้ลากออกนอกหน้าจอได้
-                  // _x = _x.clamp(0.0, MediaQuery.of(context).size.width - 100);
-                  // _y = _y.clamp(0.0, MediaQuery.of(context).size.height - 100);
-                });
-              },
-              onTap: _pickImage,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black, width: 4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.4),
-                      offset: const Offset(6, 6),
-                      blurRadius: 0,
-                    ),
-                  ],
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 48,
-                  color: Colors.black,
-                ),
-              ),
-            ),
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        border: const Border(
+          top: BorderSide(color: Colors.black, width: 3),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            offset: const Offset(0, -2),
+            blurRadius: 4,
           ),
         ],
+      ),
+      child: Center(
+        child: GestureDetector(
+          onTap: () => _pickImage(context),
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: const Color(0xFFA3EBA1),
+              border: Border.all(color: Colors.black, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.4),
+                  offset: const Offset(4, 4),
+                  blurRadius: 0,
+                ),
+              ],
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.camera_alt,
+              size: 32,
+              color: Colors.black,
+            ),
+          ),
+        ),
       ),
     );
   }
