@@ -1,6 +1,7 @@
 // app/main/page.tsx
 'use client';
 
+import { useState, useEffect } from 'react';
 import NavBarUser from '../componants/NavBarUser';
 import Kcalbar from '../componants/Kcalbar';
 import Piegraph from '../componants/Piegraph';
@@ -11,39 +12,68 @@ import ListSport from '../componants/ListSport';
 import RacMenu from '../componants/RecMenu';
 import RacSport from '../componants/RecSport';
 import WeeklyGraph from '../componants/WeeklyGraph';
+import { kalService } from '../services/kal_service';
 
 export default function MainPage() {
+  const [hasActivityLevel, setHasActivityLevel] = useState(false);
+  const [kcalbarKey, setKcalbarKey] = useState(0); // key สำหรับ force re-render Kcalbar
+
+  useEffect(() => {
+    checkActivityLevel();
+  }, []);
+
+  // เช็คว่ามีการเลือก activity level แล้วหรือยัง
+  const checkActivityLevel = async () => {
+    try {
+      const status = await kalService.getCalorieStatus();
+      setHasActivityLevel(status.target_calories > 0);
+    } catch (e) {
+      console.error('Error checking activity level:', e);
+      setHasActivityLevel(false);
+    }
+  };
+
+  // Callback เมื่อเลือก activity level เสร็จ
+  const handleActivityUpdated = () => {
+    console.log('🔄 Activity updated, refreshing...');
+    setHasActivityLevel(true);
+    setKcalbarKey(prev => prev + 1); // Force re-render Kcalbar
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
-      
+
       {/* NavBar */}
-      <NavBarUser /> 
+      <NavBarUser />
 
       {/* 🔹 MAIN LAYOUT AREA: จัดการองค์ประกอบทั้งหมด */}
       <div className="p-4 space-y-6">
         <div className="grid grid-cols-12 gap-5 h-[36vh]">
-          
+
           {/* 1. row1 คอลัมม์1: Kcalbar & Pie Graph (col-span-4) */}
           <div className="col-span-4 flex flex-col space-y-4 bg-white rounded-lg shadow-md p-2 h-[70vh]">
             <div className="h-1/3">
-              <Kcalbar /> 
+              <Kcalbar key={kcalbarKey} />
             </div>
             <div className="flex-1 py-0">
-              <Piegraph carbs={255} fats={14} protein={52} /> 
+              <Piegraph carbs={255} fats={14} protein={52} />
             </div>
           </div>
-          
+
           {/* 2. row1 คอลัมม์2: Controls (activityfactor etc.) (col-span-2) */}
           <div className="col-span-2 flex flex-col space-y-8 bg-white rounded-lg shadow-md py-5 px-4">
-              <div className=""> 
-                  <Activity /> 
+              <div className="">
+                  <Activity onCaloriesUpdated={handleActivityUpdated} />
               </div>
 
-              <div className="h-10 bg-gray-200 flex items-center justify-center rounded-md">
-                  <Camera />
-              </div>
+              {/* แสดง Camera เฉพาะเมื่อมีการเลือก activity level แล้ว */}
+              {hasActivityLevel ? (
+                <div className="h-10 bg-gray-200 flex items-center justify-center rounded-md">
+                    <Camera />
+                </div>
+              ) : null}
 
-              <div className="flex-1 border border-gray-300 p-2 rounded-md"> 
+              <div className="flex-1 border border-gray-300 p-2 rounded-md">
                   <p>ตัวนับ/เลือกกีฬาและเวลา</p>
               </div>
           </div>
