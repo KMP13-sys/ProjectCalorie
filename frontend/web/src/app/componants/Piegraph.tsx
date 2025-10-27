@@ -17,12 +17,12 @@ export default function NutritionPieChart({ carbs, fats, protein }: NutritionPie
     { name: 'Protein', value: protein, color: '#F3C767' },
   ];
 
-  // ฟังก์ชันทำให้ label อยู่ตรงกลางของแต่ละ slice
-  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
+  // ฟังก์ชันทำให้ label อยู่ข้างนอกวงกลม
+  const renderLabel = ({ cx, cy, midAngle, outerRadius, percent, index }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) / 2;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const labelRadius = outerRadius + 10; // ลดระยะ label ให้อยู่ใกล้วงมากขึ้น
+    const x = cx + labelRadius * Math.cos(-midAngle * RADIAN);
+    const y = cy + labelRadius * Math.sin(-midAngle * RADIAN);
 
     const label = `${data[index].name} ${(percent * 100).toFixed(0)}%`;
 
@@ -31,11 +31,10 @@ export default function NutritionPieChart({ carbs, fats, protein }: NutritionPie
         x={x}
         y={y}
         fill="black"
-        textAnchor="middle"
+        textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
-        fontSize={16}
+        fontSize={12} // ลดขนาดตัวอักษร
         fontFamily="monospace"
-        stroke="none"
       >
         {label}
       </text>
@@ -43,7 +42,7 @@ export default function NutritionPieChart({ carbs, fats, protein }: NutritionPie
   };
 
   return (
-    <div className="w-full h-100">
+    <div className="w-full h-90"> {/* ลดความสูง container */}
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -52,7 +51,7 @@ export default function NutritionPieChart({ carbs, fats, protein }: NutritionPie
             cx="50%"
             cy="50%"
             innerRadius={0}
-            outerRadius={200}
+            outerRadius={150} // ลดขนาดวงกลม
             label={renderLabel}
           >
             {data.map((entry, index) => (
