@@ -56,7 +56,7 @@ export default function MainPage() {
               <Kcalbar key={kcalbarKey} />
             </div>
             <div className="flex-1 py-0">
-              <Piegraph carbs={255} fats={14} protein={52} />
+              <Piegraph />
             </div>
           </div>
 

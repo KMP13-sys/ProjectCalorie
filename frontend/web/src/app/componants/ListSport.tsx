@@ -1,17 +1,35 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { listAPI, ActivityItem } from '@/app/services/list_service';
 
 interface ListSportProps {
-  sportName?: string;
-  time?: number; // นาที
-  caloriesBurned?: number; // แคลอรี่ที่เผาผลาญ
+  // ไม่ต้องใช้ props แล้ว เพราะดึงข้อมูลจาก API
 }
 
-const ListSport: React.FC<ListSportProps> = ({
-  sportName = 'วิ่ง',
-  time = 30,
-  caloriesBurned = 120,
-}) => {
+const ListSport: React.FC<ListSportProps> = () => {
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // ดึงข้อมูลรายการกิจกรรมของวันนี้
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await listAPI.getTodayActivities();
+        setActivities(data.activities);
+      } catch (err: any) {
+        console.error('Error fetching activities:', err);
+        setError(err.message || 'ไม่สามารถดึงข้อมูลได้');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
   return (
     <div
       className="h-[70vh] bg-[#fcfbc0] border-[5px] border-[#2a2a2a] shadow-[8px_8px_0_rgba(0,0,0,0.3)] p-5 flex flex-col"
@@ -34,24 +52,45 @@ const ListSport: React.FC<ListSportProps> = ({
 
       {/* 🔹 รายการกีฬา */}
       <div className="overflow-y-auto flex-1">
-        {Array.from({ length: 20 }).map((_, index) => (
+        {/* แสดง Loading */}
+        {loading && (
+          <div className="text-center text-[#2a2a2a] font-bold text-[16px] mt-5">
+            Loading...
+          </div>
+        )}
+
+        {/* แสดง Error */}
+        {error && !loading && (
+          <div className="text-center text-red-600 font-bold text-[14px] mt-5">
+            {error}
+          </div>
+        )}
+
+        {/* แสดงรายการกิจกรรม */}
+        {!loading && !error && activities.length === 0 && (
+          <div className="text-center text-[#2a2a2a] font-bold text-[16px] mt-5">
+            ยังไม่มีรายการกีฬาวันนี้
+          </div>
+        )}
+
+        {!loading && !error && activities.length > 0 && activities.map((activity, index) => (
           <div
             key={index}
             className="flex justify-between items-center mb-2 text-[#2a2a2a]"
           >
             {/* ชื่อกีฬา */}
-            <span className="flex-1 font-bold text-[16px] truncate">
-              {sportName} {index + 1}
+            <span className="flex-1 font-bold text-[16px] truncate pr-2">
+              {activity.sport_name}
             </span>
 
             {/* เวลา */}
             <span className="w-[40px] text-center font-bold text-[16px]">
-              {time}
+              {activity.time}
             </span>
 
             {/* แคลอรี่ */}
             <span className="w-[50px] text-right font-bold text-[16px]">
-              -{caloriesBurned}
+              -{activity.calories_burned}
             </span>
           </div>
         ))}
