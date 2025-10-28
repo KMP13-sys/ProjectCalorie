@@ -48,7 +48,7 @@ class _ListSportPageState extends State<ListSportPage> {
     return Container(
       height: 264,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 252, 251, 192),
+        color: const Color.fromARGB(255, 219, 249, 255),
         border: Border.all(color: const Color(0xFF2a2a2a), width: 5),
         borderRadius: BorderRadius.zero, // ✅ ขอบเหลี่ยม
         boxShadow: [

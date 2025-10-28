@@ -48,7 +48,7 @@ class _ListMenuPageState extends State<ListMenuPage> {
     return Container(
       height: 264,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 252, 251, 192),
+        color: const Color.fromARGB(255, 219, 249, 255),
         border: Border.all(color: const Color(0xFF2a2a2a), width: 5),
         boxShadow: [
           BoxShadow(
@@ -72,7 +72,41 @@ class _ListMenuPageState extends State<ListMenuPage> {
               fontFamily: 'TA8bit',
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+
+                    const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'FOOD',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2a2a2a),
+                    fontFamily: 'TA8bit',
+                  ),
+                ),
+              ),
+              SizedBox(width: 40),
+              Text(
+                'KCAL',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2a2a2a),
+                  fontFamily: 'TA8bit',
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // ✅ เส้นคั่นใต้หัวข้อ
+          Container(height: 3, color: const Color(0xFF2a2a2a)),
+          const SizedBox(height: 10),
+
 
           // Content
           Expanded(

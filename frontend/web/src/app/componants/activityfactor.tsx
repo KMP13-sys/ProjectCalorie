@@ -148,7 +148,7 @@ export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: Act
       <div
         onClick={handleClick}
         className={`cursor-pointer flex items-center h-15 px-4 border-4 border-black
-          ${savedLevel ? 'bg-[#FFF9BD]' : 'bg-gray-200'}
+          ${savedLevel ? 'bg-[#FFD6BA]' : 'bg-gray-200'}
           text-black shadow-[3px_3px_0_0_black]`}
       >
         {/* LV Box */}

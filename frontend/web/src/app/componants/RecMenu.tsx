@@ -40,7 +40,7 @@ const RacMenu: React.FC<RacMenuProps> = ({ remainingCalories, refreshTrigger }) 
 
   return (
     <div
-      className="h-full bg-[#fcfbc0] border-[5px] border-[#2a2a2a] shadow-[8px_8px_0_rgba(0,0,0,0.3)] p-5 flex flex-col"
+      className="h-full bg-[#F8F8F8] border-[5px] border-[#2a2a2a] shadow-[8px_8px_0_rgba(0,0,0,0.3)] p-5 flex flex-col"
       style={{ fontFamily: 'TA8bit, monospace' }}
     >
       <div className="text-[24px] font-bold tracking-[4px] text-[#2a2a2a] text-center mb-3">
