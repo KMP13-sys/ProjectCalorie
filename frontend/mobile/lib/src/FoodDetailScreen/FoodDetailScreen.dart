@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../service/predict_service.dart';
+import '../componants/navbaruser.dart';
 
 class FoodDetailScreen extends StatefulWidget {
   final File imageFile;
@@ -129,7 +130,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        // ปิด dialog อัตโนมัติหลัง 2 วินาที
+        // Close dialog automatically after 2 seconds
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
             Navigator.of(context).pop();
@@ -138,67 +139,216 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
         return Center(
           child: Dialog(
-            insetPadding: const EdgeInsets.all(24),
-            backgroundColor: const Color(0xFFf8f8f8),
-            shape: RoundedRectangleBorder(
-              side: const BorderSide(color: Colors.black, width: 4),
-              borderRadius: BorderRadius.zero,
-            ),
+            insetPadding: const EdgeInsets.all(16),
+            backgroundColor: Colors.transparent,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFD4F2C1),
-                border: Border.all(color: Colors.black, width: 4),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFa8d48f), Color(0xFF8bc273)],
+                ),
+                border: Border.all(color: Colors.black, width: 8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    offset: const Offset(6, 6),
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(8, 8),
                     blurRadius: 0,
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    color: const Color(0xFFA3EBA1),
-                    child: const Text(
-                      'สำเร็จ',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
+                  // Main content
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6fa85e),
+                            border: Border.all(color: Colors.black, width: 4),
+                          ),
+                          child: const Text(
+                            '★ MEAL SAVED! ★',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  offset: Offset(3, 3),
+                                  color: Colors.black26,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Pixel Star Icon (5x5 grid)
+                        SizedBox(
+                          width: 64,
+                          height: 64,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Row 1
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                ],
+                              ),
+                              // Row 2
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFD54F)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                ],
+                              ),
+                              // Row 3 (middle)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFD54F)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFE082)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFD54F)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                ],
+                              ),
+                              // Row 4
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFD54F)),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                ],
+                              ),
+                              // Row 5
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                  Container(width: 12, height: 12, color: Colors.transparent),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Message Box
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.black, width: 4),
+                          ),
+                          child: const Column(
+                            children: [
+                              Text(
+                                'MEAL SAVED!',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1f2937),
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Your meal has been recorded successfully!',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 12,
+                                  color: Color(0xFF4b5563),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Returning message
+                        const Text(
+                          'Returning to main page...',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 11,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(2, 2),
+                                color: Colors.black38,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Icon(
-                    Icons.check_circle_outline,
-                    size: 48,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'บันทึกข้อมูลสำเร็จ',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+
+                  // Decorative Corner Pixels
+                  Positioned(
+                    top: -4,
+                    left: -4,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: const Color(0xFF6fa85e),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'กำลังกลับสู่หน้าหลัก...',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                      color: Colors.black54,
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: const Color(0xFF6fa85e),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -4,
+                    left: -4,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: const Color(0xFF6fa85e),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -4,
+                    right: -4,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: const Color(0xFF6fa85e),
                     ),
                   ),
                 ],
@@ -295,88 +445,320 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-          child: Column(
-            children: [
-              // ปุ่มย้อนกลับ
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, size: 32, color: Colors.black),
-                  onPressed: () => Navigator.pop(context),
+      backgroundColor: const Color(0xFFf0f4f0),
+      body: Column(
+        children: [
+          // NavBar
+          const NavBarUser(),
+
+          // Content
+          Expanded(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFf0f4f0), Color(0xFFe8ede8)],
                 ),
               ),
-              const SizedBox(height: 10),
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                    child: Column(
+                      children: [
+                        // Back Button with pixel art style
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: InkWell(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: Colors.black, width: 4),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    offset: const Offset(4, 4),
+                                    blurRadius: 0,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                size: 24,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
 
-              // รูปอาหาร
-              Container(
-                width: 260,
-                height: 220,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 3),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Image.file(widget.imageFile, fit: BoxFit.cover),
-              ),
-              const SizedBox(height: 20),
+                        // Main Content Container with pixel art border
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.black, width: 8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                offset: const Offset(12, 12),
+                                blurRadius: 0,
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              // Corner Pixels Decoration
+                              Stack(
+                                children: [
+                                  Column(
+                                    children: [
+                                      // Food Image with pixel frame
+                                      Container(
+                                        width: double.infinity,
+                                        height: 280,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.black, width: 6),
+                                          color: Colors.grey[100],
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            // Pixel frame corners
+                                            Positioned(
+                                              top: -1,
+                                              left: -1,
+                                              child: Container(width: 12, height: 12, color: Colors.grey[800]),
+                                            ),
+                                            Positioned(
+                                              top: -1,
+                                              right: -1,
+                                              child: Container(width: 12, height: 12, color: Colors.grey[800]),
+                                            ),
+                                            Positioned(
+                                              bottom: -1,
+                                              left: -1,
+                                              child: Container(width: 12, height: 12, color: Colors.grey[800]),
+                                            ),
+                                            Positioned(
+                                              bottom: -1,
+                                              right: -1,
+                                              child: Container(width: 12, height: 12, color: Colors.grey[800]),
+                                            ),
+                                            // Image
+                                            Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: Image.file(
+                                                widget.imageFile,
+                                                fit: BoxFit.cover,
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
 
-              // กล่องข้อมูลอาหาร
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 3),
-                  color: const Color(0xFFE0E0E0),
-                ),
-                padding: const EdgeInsets.all(8),
-                width: 240,
-                child: Column(
-                  children: [
-                    const Text(
-                      'What food is this',
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.bold,
-                      ),
+                                      // Header Box
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [Color(0xFFA3EBA1), Color(0xFF8bc273)],
+                                          ),
+                                          border: Border.all(color: Colors.black, width: 4),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.2),
+                                              offset: const Offset(6, 6),
+                                              blurRadius: 0,
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Text(
+                                          '★ What food is this ★',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'monospace',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                            color: Color(0xFF1f2937),
+                                            shadows: [
+                                              Shadow(
+                                                offset: Offset(2, 2),
+                                                color: Colors.white38,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      // Info Container
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [Color(0xFFFFFFCC), Color(0xFFFFFFAA)],
+                                          ),
+                                          border: Border.all(color: Colors.black, width: 6),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.2),
+                                              offset: const Offset(6, 6),
+                                              blurRadius: 0,
+                                            ),
+                                          ],
+                                        ),
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          children: [
+                                            _infoBox('Menu: ${widget.foodName}'),
+                                            _infoBox('Carbs: ${widget.carbs} g'),
+                                            _infoBox('Fat: ${widget.fat} g'),
+                                            _infoBox('Protein: ${widget.protein} g'),
+                                            _infoBox('Calories: ${widget.calories} kcal'),
+                                            _infoBox('Confidence: ${(widget.confidence * 100).toStringAsFixed(1)}%'),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+
+                                      // Save Button
+                                      InkWell(
+                                        onTap: _isSaving ? null : _saveMeal,
+                                        child: Container(
+                                          width: double.infinity,
+                                          height: 55,
+                                          decoration: BoxDecoration(
+                                            gradient: _isSaving
+                                                ? null
+                                                : const LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [Color(0xFFA3EBA1), Color(0xFF8bc273)],
+                                                  ),
+                                            color: _isSaving ? const Color(0xFFCCCCCC) : null,
+                                            border: Border.all(color: Colors.black, width: 6),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.3),
+                                                offset: _isSaving ? const Offset(3, 3) : const Offset(8, 8),
+                                                blurRadius: 0,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              // Corner pixels for button
+                                              if (!_isSaving) ...[
+                                                Positioned(
+                                                  top: -1,
+                                                  left: -1,
+                                                  child: Container(width: 8, height: 8, color: Colors.white),
+                                                ),
+                                                Positioned(
+                                                  top: -1,
+                                                  right: -1,
+                                                  child: Container(width: 8, height: 8, color: Colors.white),
+                                                ),
+                                              ],
+                                              Center(
+                                                child: Text(
+                                                  _isSaving ? 'SAVING...' : 'SAVE',
+                                                  style: const TextStyle(
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20,
+                                                    color: Colors.black,
+                                                    shadows: [
+                                                      Shadow(
+                                                        offset: Offset(2, 2),
+                                                        color: Colors.black26,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Pixel decoration at bottom
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          _buildPixelSquare(const Color(0xFFA3EBA1)),
+                                          const SizedBox(width: 4),
+                                          _buildPixelSquare(const Color(0xFF8bc273)),
+                                          const SizedBox(width: 4),
+                                          _buildPixelSquare(const Color(0xFFA3EBA1)),
+                                          const SizedBox(width: 4),
+                                          _buildPixelSquare(const Color(0xFF8bc273)),
+                                          const SizedBox(width: 4),
+                                          _buildPixelSquare(const Color(0xFFA3EBA1)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  // Corner pixels for main container
+                                  Positioned(
+                                    top: -8,
+                                    left: -8,
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFA3EBA1),
+                                        border: Border.all(color: Colors.black, width: 2),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: -8,
+                                    right: -8,
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFA3EBA1),
+                                        border: Border.all(color: Colors.black, width: 2),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                     ),
-                    const SizedBox(height: 6),
-                    _infoBox('เมนู : ${widget.foodName}'),
-                    _infoBox('คาร์บ : ${widget.carbs} g'),
-                    _infoBox('ไขมัน : ${widget.fat} g'),
-                    _infoBox('โปรตีน : ${widget.protein} g'),
-                    _infoBox('แคลอรี่ : ${widget.calories} kcal'),
-                    _infoBox('ความแม่นยำ : ${(widget.confidence * 100).toStringAsFixed(1)}%'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // ปุ่ม SAVE
-              InkWell(
-                onTap: _isSaving ? null : _saveMeal,
-                child: Container(
-                  width: 120,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: _isSaving ? const Color(0xFFCCCCCC) : const Color(0xFFA3EBA1),
-                    border: Border.all(color: Colors.black, width: 4),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _isSaving ? 'SAVING...' : 'SAVE',
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPixelSquare(Color color) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.black, width: 1),
       ),
     );
   }
@@ -384,16 +766,29 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
   Widget _infoBox(String text) {
     return Container(
       width: double.infinity,
-      color: const Color(0xFFFFFFB3),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      margin: const EdgeInsets.symmetric(vertical: 2),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFFFDD), Color(0xFFFFFFB3)],
+        ),
+        border: Border.all(color: const Color(0xFFFFD700), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            offset: const Offset(2, 2),
+            blurRadius: 0,
+          ),
+        ],
+      ),
       child: Text(
         text,
-        textAlign: TextAlign.center,
+        textAlign: TextAlign.left,
         style: const TextStyle(
           fontFamily: 'monospace',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.bold,
+          color: Color(0xFF333333),
         ),
       ),
     );

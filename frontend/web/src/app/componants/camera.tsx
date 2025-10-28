@@ -2,30 +2,36 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { predictFood } from '../services/predict_service';
 
 interface ImageUploadButtonProps {
   onImageSelect?: (file: File | null) => void;
   buttonText?: string;
   maxSize?: number; // MB
   showPreview?: boolean;
+  autoPredictOnSelect?: boolean; // New prop to enable auto prediction
 }
 
-export default function ImageUploadButton({ 
+export default function ImageUploadButton({
   onImageSelect,
   buttonText = 'แนบรูปอาหาร',
   maxSize = 5,
-  showPreview = false
+  showPreview = false,
+  autoPredictOnSelect = false
 }: ImageUploadButtonProps) {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setError('');
 
@@ -48,16 +54,108 @@ export default function ImageUploadButton({
     }
 
     // Create preview URL
-    if (showPreview) {
+    const imageDataUrl = await new Promise<string>((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
+        resolve(reader.result as string);
       };
       reader.readAsDataURL(file);
-    }
+    });
 
-    setSelectedImage(file);
-    onImageSelect?.(file);
+    // Auto predict if enabled - don't show file info or preview
+    if (autoPredictOnSelect) {
+      // Don't set selectedImage to prevent showing file info
+      await handlePredict(file, imageDataUrl);
+      // Reset file input after prediction attempt
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } else {
+      // Only show preview and file info if not auto predicting
+      if (showPreview) {
+        setPreviewUrl(imageDataUrl);
+      }
+      setSelectedImage(file);
+      onImageSelect?.(file);
+    }
+  };
+
+  const handlePredict = async (file: File, imageDataUrl: string) => {
+    setIsProcessing(true);
+    setError('');
+
+    // Clear any selected image display
+    setSelectedImage(null);
+    setPreviewUrl(null);
+
+    try {
+      // Get userId from localStorage (stored in user object by auth_service)
+      const userStr = localStorage.getItem('user');
+      let userId = 0;
+
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          userId = user.id || 0;
+        } catch (e) {
+          console.error('Error parsing user from localStorage:', e);
+        }
+      }
+
+      if (!userId) {
+        setError('Please login first to use this feature!');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Call predict API
+      const result = await predictFood(userId, file);
+
+      if (!result.success || !result.data) {
+        setError(result.message || 'Failed to predict food. Please try again.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Check for low confidence or warnings
+      if (result.data.warning) {
+        setError(result.data.warning + ' Please upload a clearer image!');
+        setIsProcessing(false);
+        return;
+      }
+
+      if (result.data.confidence < 0.5) {
+        setError('Image is unclear or not food. Please upload a clearer food image!');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Navigate to FoodDetailScreen with data
+      if (result.data.food_id && result.data.nutrition) {
+        // Store image in sessionStorage to avoid URL size limit (HTTP 431)
+        sessionStorage.setItem('foodImage', imageDataUrl);
+
+        // Send only metadata via URL params
+        const params = new URLSearchParams({
+          foodName: encodeURIComponent(result.data.predicted_food),
+          foodId: result.data.food_id.toString(),
+          carbs: result.data.nutrition.carbohydrate_gram.toString(),
+          fat: result.data.nutrition.fat_gram.toString(),
+          protein: result.data.nutrition.protein_gram.toString(),
+          calories: result.data.nutrition.calories.toString(),
+          confidence: result.data.confidence.toString()
+        });
+
+        router.push(`/FoodDetailScreen?${params.toString()}`);
+      } else {
+        setError('No nutrition data available for this food!');
+        setIsProcessing(false);
+      }
+    } catch (error: any) {
+      console.error('Prediction error:', error);
+      setError(error.message || 'Failed to predict food. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   const handleRemoveImage = () => {
@@ -76,8 +174,11 @@ export default function ImageUploadButton({
       <button
         type="button"
         onClick={handleButtonClick}
-        className="bg-gradient-to-r from-[#c8e6c9] to-[#a5d6a7] hover:from-[#a5d6a7] hover:to-[#81c784] border-6 border-black px-6 py-3 transition-all hover:translate-x-1 hover:translate-y-1 relative inline-flex items-center gap-3"
-        style={{ 
+        disabled={isProcessing}
+        className={`bg-gradient-to-r from-[#c8e6c9] to-[#a5d6a7] hover:from-[#a5d6a7] hover:to-[#81c784] border-6 border-black px-6 py-3 transition-all hover:translate-x-1 hover:translate-y-1 relative inline-flex items-center gap-3 ${
+          isProcessing ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+        style={{
           fontFamily: 'monospace',
           boxShadow: '6px 6px 0px rgba(0,0,0,0.3)',
           imageRendering: 'pixelated'
@@ -99,11 +200,11 @@ export default function ImageUploadButton({
         </div>
         
         {/* Button Text */}
-        <span 
+        <span
           className="font-bold text-gray-900"
           style={{ textShadow: '2px 2px 0px rgba(0,0,0,0.1)' }}
         >
-          {buttonText}
+          {isProcessing ? 'Processing...' : buttonText}
         </span>
 
         {/* Hidden Input */}
@@ -116,11 +217,11 @@ export default function ImageUploadButton({
         />
       </button>
 
-      {/* Selected File Info */}
-      {selectedImage && (
-        <div 
+      {/* Selected File Info - only show when not auto predicting */}
+      {selectedImage && !autoPredictOnSelect && (
+        <div
           className="bg-white border-4 border-black p-3 relative inline-block"
-          style={{ 
+          style={{
             boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
             fontFamily: 'monospace'
           }}
@@ -157,9 +258,9 @@ export default function ImageUploadButton({
 
       {/* Preview (Optional) */}
       {showPreview && previewUrl && (
-        <div 
+        <div
           className="bg-white border-6 border-black p-4 relative"
-          style={{ 
+          style={{
             boxShadow: '8px 8px 0px rgba(0,0,0,0.3)',
             imageRendering: 'pixelated'
           }}
@@ -174,6 +275,77 @@ export default function ImageUploadButton({
           </div>
         </div>
       )}
+
+      {/* Loading Popup - Pixel Art Style */}
+      {isProcessing && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div
+            className="bg-gradient-to-b from-[#a8d48f] to-[#8bc273] border-8 border-black w-full max-w-md relative"
+            style={{
+              boxShadow: '8px 8px 0px rgba(0,0,0,0.3)',
+              imageRendering: 'pixelated'
+            }}
+          >
+            {/* Decorative Corner Pixels */}
+            <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
+            <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
+            <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
+
+            <div className="p-8 text-center relative">
+              {/* Pixel Art Header Bar */}
+              <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
+                <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)' }}>
+                  ★ PROCESSING ★
+                </h3>
+              </div>
+
+              {/* Pixel Food Icon */}
+              <div className="flex justify-center mb-4">
+                <div className="text-6xl animate-bounce">🍔</div>
+              </div>
+
+              {/* Message */}
+              <div className="bg-white border-4 border-black p-4 mb-6">
+                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'monospace' }}>
+                  ANALYZING FOOD...
+                </p>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'monospace' }}>
+                  Please wait while we identify your meal
+                </p>
+              </div>
+
+              {/* Pixel Loading Bar */}
+              <div className="bg-black border-4 border-[#6fa85e] p-2">
+                <div className="bg-[#2d2d2d] h-6 relative overflow-hidden">
+                  <div
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#4ecdc4] to-[#44a3c4]"
+                    style={{
+                      animation: 'loadingBar 2s ease-in-out infinite',
+                      width: '100%'
+                    }}
+                  >
+                    {/* Pixel shine effect */}
+                    <div className="absolute top-0 left-0 w-full h-2 bg-white opacity-30"></div>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-white mt-3" style={{ fontFamily: 'monospace', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+                Predicting...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes loadingBar {
+          0% { width: 0%; }
+          50% { width: 100%; }
+          100% { width: 0%; }
+        }
+      `}</style>
     </div>
   );
 }

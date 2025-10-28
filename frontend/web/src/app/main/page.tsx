@@ -69,7 +69,7 @@ export default function MainPage() {
               {/* แสดง Camera เฉพาะเมื่อมีการเลือก activity level แล้ว */}
               {hasActivityLevel ? (
                 <div className="h-10 bg-gray-200 flex items-center justify-center rounded-md">
-                    <Camera />
+                    <Camera autoPredictOnSelect={true} />
                 </div>
               ) : null}
 
