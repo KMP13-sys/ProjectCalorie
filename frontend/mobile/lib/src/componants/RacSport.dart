@@ -1,14 +1,33 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../../service/recommend_service.dart'; // ✅ import service
+
+class SportItem {
+  final int id;
+  final String name;
+  final int calories;
+
+  SportItem({required this.id, required this.name, required this.calories});
+
+  factory SportItem.fromJson(Map<String, dynamic> json) {
+    return SportItem(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? 'ไม่ทราบชื่อ',
+      calories: (json['calories'] ?? 0).toInt(),
+    );
+  }
+}
 
 class RacSport extends StatefulWidget {
   final int remainingCalories;
   final int refreshTrigger; // จะเปลี่ยนเมื่อแนบรูปใหม่
+  final int userId; // ✅ เพิ่ม userId
 
   const RacSport({
     Key? key,
     required this.remainingCalories,
     required this.refreshTrigger,
+    required this.userId,
   }) : super(key: key);
 
   @override
@@ -17,33 +36,36 @@ class RacSport extends StatefulWidget {
 
 class _RacSportState extends State<RacSport> {
   bool loading = true;
-  List<Map<String, dynamic>> sportList = [];
+  List<SportItem> sportList = [];
 
   Future<void> fetchRecommend() async {
     setState(() => loading = true);
 
-    // จำลองดีเลย์โหลด 0.8 วิ
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      // ✅ เรียกใช้ static method โดยตรง
+      final recommendations = await RecommendationService.getSportRecommendations(
+        userId: widget.userId,
+        topN: 5,
+      );
 
-    final mockMenu = [
-      {'id': 1, 'name': 'วิ่ง', 'calories': -450},
-      {'id': 2, 'name': 'เต้น', 'calories': -250},
-      {'id': 3, 'name': 'นอน', 'calories': -300},
-    ];
+      // ✅ แปลงข้อมูลจาก API เป็น SportItem และกรองตาม remainingCalories
+      final items = recommendations
+          .map((rec) => SportItem.fromJson(rec))
+          .where((item) => item.calories.abs() <= widget.remainingCalories)
+          .toList();
 
-    // กรองข้อมูลตาม remainingCalories
-        // ...existing code...
-        final filtered = mockMenu
-            .where((m) => (m['calories'] as int).abs() <= widget.remainingCalories)
-            .take(3)
-            .toList();
-        // ...existing code...
-
-
-    setState(() {
-      sportList = filtered;
-      loading = false;
-    });
+      setState(() {
+        sportList = items.take(3).toList();
+        loading = false;
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print("❌ Error: $e");
+      setState(() {
+        sportList = [];
+        loading = false;
+      });
+    }
   }
 
   @override
@@ -114,8 +136,21 @@ class _RacSportState extends State<RacSport> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Expanded(
+                      child: Text(
+                        "🏃‍♂️ ${item.name}",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2a2a2a),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
-                      item['name'],
+                      "${item.calories} kcal",
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

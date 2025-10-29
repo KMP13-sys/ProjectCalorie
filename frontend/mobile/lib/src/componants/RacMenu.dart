@@ -21,15 +21,13 @@ class MenuItem {
 class RacMenu extends StatefulWidget {
   final int remainingCalories;
   final int refreshTrigger;
-  final int userId; // ✅ เพิ่ม userId เพื่อดึงข้อมูลแนะนำ
-  final String token; // ✅ เพิ่ม token เพื่อส่ง header Authorization
+  final int userId; // ✅ userId เพื่อดึงข้อมูลแนะนำ
 
   const RacMenu({
     super.key,
     required this.remainingCalories,
     required this.refreshTrigger,
     required this.userId,
-    required this.token,
   });
 
   @override
@@ -40,12 +38,9 @@ class _RacMenuState extends State<RacMenu> {
   bool loading = true;
   List<MenuItem> menuList = [];
 
-  late RecommendationService recService;
-
   @override
   void initState() {
     super.initState();
-    recService = RecommendationService(token: widget.token);
     fetchRecommend();
   }
 
@@ -62,7 +57,8 @@ class _RacMenuState extends State<RacMenu> {
     setState(() => loading = true);
 
     try {
-      final recommendations = await recService.getFoodRecommendations(
+      // ✅ เรียกใช้ static method โดยตรง ไม่ต้องสร้าง instance
+      final recommendations = await RecommendationService.getFoodRecommendations(
         userId: widget.userId,
         topN: 5,
       );
@@ -80,6 +76,7 @@ class _RacMenuState extends State<RacMenu> {
         loading = false;
       });
     } catch (e) {
+      // ignore: avoid_print
       print("❌ Error: $e");
       setState(() {
         menuList = [];
@@ -139,14 +136,19 @@ class _RacMenuState extends State<RacMenu> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "🍽️ ${item.name}",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2A2A2A),
-                        fontSize: 16,
+                    Expanded(
+                      child: Text(
+                        "${item.name}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2A2A2A),
+                          fontSize: 16,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       "${item.calories} kcal",
                       style: const TextStyle(

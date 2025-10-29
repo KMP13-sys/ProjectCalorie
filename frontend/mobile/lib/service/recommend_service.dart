@@ -1,31 +1,36 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
-
-/// 🌐 ตั้งค่า base URL อัตโนมัติ
-/// - Android Emulator ใช้ 10.0.2.2
-/// - อื่น ๆ ใช้ localhost
-String getBaseUrl() {
-  if (Platform.isAndroid) {
-    return "http://10.0.2.2:5000"; // สำหรับ Android Emulator
-  } else {
-    return "http://127.0.0.1:5000"; // สำหรับ iOS / Web / Desktop
-  }
-}
+import 'storage_helper.dart';
+import 'auth_service.dart';
 
 class RecommendationService {
-  final String token; // JWT Token จากการล็อกอิน
-  final String baseUrl = getBaseUrl();
-
-  RecommendationService({required this.token});
+  // ✅ Recommendation APIs อยู่ใน Flask server (port 5000) ไม่ใช่ Node.js (port 4000)
+  static String get baseUrl {
+    if (kIsWeb) {
+      // Web: ใช้ localhost
+      return "http://localhost:5000";
+    } else {
+      // Mobile/Desktop: ใช้ localhost (iOS/Desktop) หรือ 10.0.2.2 (Android Emulator)
+      // สำหรับ Android Emulator ให้เปลี่ยนเป็น 10.0.2.2 ด้วยตัวเอง
+      return "http://localhost:5000";
+    }
+  }
 
   /// 🍱 ฟังก์ชันดึงข้อมูลแนะนำอาหาร
-  Future<List<Map<String, dynamic>>> getFoodRecommendations({
+  static Future<List<Map<String, dynamic>>> getFoodRecommendations({
     required int userId,
     String? date,
     int topN = 3,
   }) async {
     try {
+      // ดึง access token จาก storage
+      String? accessToken = await StorageHelper.getAccessToken();
+
+      if (accessToken == null) {
+        throw Exception('No access token found. Please login.');
+      }
+
       final uri = Uri.parse('$baseUrl/api/food-recommend/$userId').replace(
         queryParameters: {
           if (date != null) 'date': date,
@@ -33,13 +38,25 @@ class RecommendationService {
         },
       );
 
-      final response = await http.get(
+      var response = await http.get(
         uri,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization': 'Bearer $accessToken',
         },
       );
+
+      // ถ้า token หมดอายุ ให้ refresh แล้วลองใหม่
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        accessToken = await AuthService.refreshAccessToken();
+        response = await http.get(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken',
+          },
+        );
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -62,18 +79,26 @@ class RecommendationService {
         throw Exception(_parseError(response));
       }
     } catch (e) {
+      // ignore: avoid_print
       print("❌ Error fetching food recommendations: $e");
       rethrow;
     }
   }
 
   /// 🏃‍♂️ ฟังก์ชันดึงข้อมูลแนะนำกีฬา
-  Future<List<Map<String, dynamic>>> getSportRecommendations({
+  static Future<List<Map<String, dynamic>>> getSportRecommendations({
     required int userId,
     int topN = 3,
     int kNeighbors = 5,
   }) async {
     try {
+      // ดึง access token จาก storage
+      String? accessToken = await StorageHelper.getAccessToken();
+
+      if (accessToken == null) {
+        throw Exception('No access token found. Please login.');
+      }
+
       final uri = Uri.parse('$baseUrl/api/sport-recommend/$userId').replace(
         queryParameters: {
           'top_n': topN.toString(),
@@ -81,13 +106,25 @@ class RecommendationService {
         },
       );
 
-      final response = await http.get(
+      var response = await http.get(
         uri,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization': 'Bearer $accessToken',
         },
       );
+
+      // ถ้า token หมดอายุ ให้ refresh แล้วลองใหม่
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        accessToken = await AuthService.refreshAccessToken();
+        response = await http.get(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken',
+          },
+        );
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -108,13 +145,14 @@ class RecommendationService {
         throw Exception(_parseError(response));
       }
     } catch (e) {
+      // ignore: avoid_print
       print("❌ Error fetching sport recommendations: $e");
       rethrow;
     }
   }
 
   /// 🧰 Helper แปลงข้อความ error
-  String _parseError(http.Response response) {
+  static String _parseError(http.Response response) {
     try {
       final body = json.decode(response.body);
       return body['message'] ?? body['error'] ?? 'Unknown error';

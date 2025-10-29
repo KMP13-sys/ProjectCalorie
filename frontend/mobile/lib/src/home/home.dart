@@ -1,6 +1,6 @@
 // lib/src/home/home.dart
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../service/storage_helper.dart'; // ✅ ใช้ StorageHelper แทน SharedPreferences
 
 import '../componants/navbaruser.dart';
 import '../componants/Kcalbar.dart';
@@ -25,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final GlobalKey _kcalbarKey = GlobalKey();
   bool _hasSelectedActivityLevel = false;
 
-  String? _token;
   int? _userId;
 
   @override
@@ -39,10 +38,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
+    // ✅ ใช้ StorageHelper ดึง userId จาก secure storage
+    final userIdStr = await StorageHelper.getUserId();
     setState(() {
-      _token = prefs.getString('token');
-      _userId = prefs.getInt('user_id');
+      _userId = userIdStr != null ? int.tryParse(userIdStr) : null;
     });
   }
 
@@ -112,10 +111,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               const SizedBox(height: 50),
                               const ListSportPage(),
                               const SizedBox(height: 10),
-                              const RacSport(
-                                remainingCalories: 500,
-                                refreshTrigger: 5,
-                              ),
+                              if (_userId != null)
+                                RacSport(
+                                  remainingCalories: 500,
+                                  refreshTrigger: 5,
+                                  userId: _userId!,
+                                )
+                              else
+                                const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "กำลังโหลดข้อมูลผู้ใช้...",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -137,12 +148,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               const SizedBox(height: 10),
 
                               // ✅ เชื่อม RacMenu เข้ากับ RecommendationService
-                              if (_userId != null && _token != null)
+                              if (_userId != null)
                                 RacMenu(
                                   remainingCalories: 500,
                                   refreshTrigger: 3,
                                   userId: _userId!,
-                                  token: _token!,
                                 )
                               else
                                 const Center(
