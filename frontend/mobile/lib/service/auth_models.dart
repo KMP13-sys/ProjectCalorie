@@ -17,6 +17,7 @@ class RegisterResponse {
 class LoginResponse {
   final String message;
   final String role;          // เก็บไว้เพื่อ parse JSON จาก Backend
+  final String? userId;       // ✅ เพิ่ม userId
   final String accessToken;
   final String? refreshToken; // มีเฉพาะ user (mobile)
   final String expiresIn;
@@ -24,6 +25,7 @@ class LoginResponse {
   LoginResponse({
     required this.message,
     required this.role,
+    this.userId,
     required this.accessToken,
     this.refreshToken,
     required this.expiresIn,
@@ -33,6 +35,7 @@ class LoginResponse {
     return LoginResponse(
       message: json['message'] ?? 'Login successful',
       role: json['role'] ?? 'user',
+      userId: json['userId']?.toString(), // ✅ เพิ่ม userId
       accessToken: json['accessToken'] ?? '',
       refreshToken: json['refreshToken'], // อาจเป็น null ถ้าเป็น admin
       expiresIn: json['expiresIn'] ?? '30m',
@@ -43,6 +46,7 @@ class LoginResponse {
     return {
       'message': message,
       'role': role,
+      'userId': userId,
       'accessToken': accessToken,
       'refreshToken': refreshToken,
       'expiresIn': expiresIn,

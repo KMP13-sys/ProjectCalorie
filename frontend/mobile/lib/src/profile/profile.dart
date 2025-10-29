@@ -118,16 +118,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await ProfileService.updateMyProfileImage(imageFile: _selectedImage!);
 
-      setState(() => _isLoading = false);
-
       // อัปโหลดสำเร็จ - โหลดข้อมูลใหม่
       await _loadUserProfile();
+
+      setState(() {
+        _isLoading = false;
+        _selectedImage = null; // Clear cache image after successful upload
+      });
 
       if (mounted) {
         _showSuccessDialog('✓ อัปเดทรูปโปรไฟล์เรียบร้อย!');
       }
     } catch (e) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _selectedImage = null; // Clear cache image on error
+      });
       _showErrorDialog('เกิดข้อผิดพลาด: ${e.toString()}');
     }
   }
@@ -938,6 +944,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _selectedGender = userProfile!.gender ?? 'male';
         _selectedGoal = userProfile!.goal ?? 'lose weight';
       }
+      _selectedImage = null; // Clear any cached image
       _isEditing = false;
     });
   }

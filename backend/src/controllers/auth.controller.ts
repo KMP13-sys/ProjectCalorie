@@ -165,6 +165,7 @@ export const login = async (req: Request, res: Response) => {
     const response: any = {
       message: "Login successful",
       role,
+      userId: user.user_id || user.admin_id, // ✅ เพิ่ม userId
       accessToken,
       expiresIn: tokenExpiry
     };

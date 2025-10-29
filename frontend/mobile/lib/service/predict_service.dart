@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image/image.dart' as img;
+import 'storage_helper.dart';
 
 class PredictService {
   // ใช้ environment variable หรือค่า default
@@ -68,12 +68,12 @@ class PredictService {
   /// ส่งภาพไปทำนายที่ ML model
   static Future<Map<String, dynamic>> predictFood(File imageFile) async {
     try {
-      // ดึง token และ userId จาก SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      final userId = prefs.getInt('user_id');
+      // ดึง token และ userId จาก StorageHelper
+      final token = await StorageHelper.getAccessToken();
+      final userIdStr = await StorageHelper.getUserId();
+      final userId = userIdStr != null ? int.tryParse(userIdStr) : null;
 
-      if (token == null) {
+      if (token == null || token.isEmpty) {
         return {
           'success': false,
           'error': 'No authentication token found',
@@ -159,12 +159,12 @@ class PredictService {
     String? mealDatetime,
   }) async {
     try {
-      // ดึง token และ userId จาก SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      final userId = prefs.getInt('user_id');
+      // ดึง token และ userId จาก StorageHelper
+      final token = await StorageHelper.getAccessToken();
+      final userIdStr = await StorageHelper.getUserId();
+      final userId = userIdStr != null ? int.tryParse(userIdStr) : null;
 
-      if (token == null) {
+      if (token == null || token.isEmpty) {
         return {
           'success': false,
           'error': 'No authentication token found',

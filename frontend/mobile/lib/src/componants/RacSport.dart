@@ -77,6 +77,7 @@ class _RacSportState extends State<RacSport> {
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             "RECOMMEND SPORT",
@@ -107,30 +108,24 @@ class _RacSportState extends State<RacSport> {
               ),
             )
           else
-            Expanded(
-              child: ListView.builder(
-                itemCount: sportList.length,
-                itemBuilder: (context, index) {
-                  final item = sportList[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          item['name'],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2a2a2a),
-                          ),
-                        ),
-                      ],
+            ...sportList.map((item) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      item['name'],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2a2a2a),
+                      ),
                     ),
-                  );
-                },
-              ),
-            ),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );

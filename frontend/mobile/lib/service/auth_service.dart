@@ -91,7 +91,7 @@ class AuthService {
           await StorageHelper.saveLoginData(
             accessToken: loginResponse.accessToken,
             refreshToken: loginResponse.refreshToken!,
-            userId: '', // จะได้จาก getCurrentUser() ภายหลัง
+            userId: loginResponse.userId ?? '', // ✅ บันทึก userId จาก response
             username: username,
           );
         }

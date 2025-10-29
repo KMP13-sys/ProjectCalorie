@@ -56,7 +56,6 @@ class _KcalbarState extends State<Kcalbar> {
   // ฟังก์ชันสำหรับ refresh จากภายนอก
   void refresh() {
     _loadCalorieStatus();
-    widget.onRefresh?.call();
   }
 
   // เช็คว่ามีข้อมูลแคลอรี่วันนี้หรือไม่

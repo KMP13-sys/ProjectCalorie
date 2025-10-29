@@ -82,6 +82,7 @@ class _RacMenuState extends State<RacMenu> {
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             "RECOMMEND MENU",
@@ -113,38 +114,32 @@ class _RacMenuState extends State<RacMenu> {
               ),
             )
           else
-            Expanded(
-              child: ListView.builder(
-                itemCount: menuList.length,
-                itemBuilder: (context, index) {
-                  final item = menuList[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "🍽️ ${item.name}",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2A2A2A),
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          "${item.calories} kcal",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2A2A2A),
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+            ...menuList.map((item) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "🍽️ ${item.name}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2A2A2A),
+                        fontSize: 16,
+                      ),
                     ),
-                  );
-                },
-              ),
-            ),
+                    Text(
+                      "${item.calories} kcal",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2A2A2A),
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );

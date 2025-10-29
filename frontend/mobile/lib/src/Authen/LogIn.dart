@@ -126,22 +126,8 @@ class _LoginScreenState extends State<LoginScreen>
     });
 
     try {
-      // ✅ เรียก AuthService.login (จะบันทึก tokens อัตโนมัติ)
-      // ignore: avoid_print
-      print('🔑 Step 1: Logging in...');
+      // ✅ เรียก AuthService.login (จะบันทึก tokens + userId อัตโนมัติ)
       await AuthService.login(username: username, password: password);
-
-      // ✅ ดึงข้อมูล user และบันทึก user_id
-      // ignore: avoid_print
-      print('👤 Step 2: Getting current user...');
-      final user = await AuthService.getCurrentUser();
-
-      if (user == null) {
-        throw Exception('Failed to get user data after login');
-      }
-
-      // ignore: avoid_print
-      print('✅ Step 3: Login complete! User: ${user.username}, ID: ${user.userId}');
 
       // ✅ Login สำเร็จ (ถ้าไม่สำเร็จจะ throw exception)
       setState(() {
