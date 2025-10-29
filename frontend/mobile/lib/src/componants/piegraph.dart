@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../service/kal_service.dart';
-import '../../service/kal_models.dart';
+import '../../models/kal_models.dart';
 
 class NutritionPieChartComponent extends StatefulWidget {
   const NutritionPieChartComponent({super.key});

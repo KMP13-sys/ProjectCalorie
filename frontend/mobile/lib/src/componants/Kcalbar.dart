@@ -1,18 +1,16 @@
 // components/calorie_progress_bar.dart
 import 'package:flutter/material.dart';
 import '../../service/kal_service.dart';
-import '../../service/kal_models.dart';
+import '../../models/kal_models.dart';
 
 class Kcalbar extends StatefulWidget {
   final Color progressColor;   // สีของแถบความคืบหน้า
   final Color backgroundColor; // สีพื้นหลัง
-  final VoidCallback? onRefresh; // Callback สำหรับ refresh ข้อมูล
 
   const Kcalbar({
     super.key,
     this.progressColor = const Color(0xFF8bc273),
     this.backgroundColor = const Color(0xFFE5E7EB),
-    this.onRefresh,
   });
 
   @override

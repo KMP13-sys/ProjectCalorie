@@ -132,32 +132,38 @@ export const authAPI = {
    */
   login: async (username: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await api.post<LoginResponse>('/api/auth/login', {
+      const response = await api.post<any>('/api/auth/login', {
         username,
         password,
         platform: 'web', // ✅ เพิ่ม platform
       })
 
+      console.log('🔐 Login response:', response.data);
+
       // ✅ บันทึก accessToken และ user ลง localStorage
       if (response.data.accessToken) {
         localStorage.setItem('accessToken', response.data.accessToken)
 
-        // ✅ Decode JWT เพื่อดึง userId
-        const decoded = decodeJWT(response.data.accessToken)
-        const userId = decoded?.id || 0
+        // ✅ ใช้ userId จาก response โดยตรง (backend ส่งมาให้แล้ว)
+        const userId = response.data.userId || 0;
+
+        console.log('🔐 Saving user with ID:', userId);
 
         // สร้าง user object จาก response
         const user: User = {
-          id: userId, // ✅ ดึงจาก JWT token
+          id: userId, // ✅ ดึงจาก response.data.userId
           username: username,
           email: '',
           role: response.data.role,
         }
         localStorage.setItem('user', JSON.stringify(user))
+
+        console.log('✅ User saved to localStorage:', user);
       }
 
       return response.data
     } catch (error: any) {
+      console.error('❌ Login error:', error);
       const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
       throw new Error(errorMessage)
     }

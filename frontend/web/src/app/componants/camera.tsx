@@ -196,6 +196,7 @@ export default function ImageUploadButton({
             src="/pic/addphoto.png"
             alt="Upload"
             fill
+            sizes="40px"
         />
         </div>
         

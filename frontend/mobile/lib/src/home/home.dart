@@ -1,6 +1,7 @@
 // lib/src/home/home.dart
-//import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../componants/navbaruser.dart';
 import '../componants/Kcalbar.dart';
 import '../componants/camera.dart';
@@ -23,7 +24,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final GlobalKey _kcalbarKey = GlobalKey();
   bool _hasSelectedActivityLevel = false;
-  int _kcalbarStat = 2000;
+
+  String? _token;
+  int? _userId;
 
   @override
   void initState() {
@@ -31,6 +34,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkActivityLevelStatus();
+    });
+    _loadUserInfo(); // ✅ โหลด token / userId
+  }
+
+  Future<void> _loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _token = prefs.getString('token');
+      _userId = prefs.getInt('user_id');
     });
   }
 
@@ -77,12 +89,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           // Navbar บน
           NavBarUser(),
 
-          // Content scrollable
+          // เนื้อหา Scroll ได้
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Row ฝั่งซ้าย/ขวา
+                  // แบ่งฝั่งซ้าย/ขวา
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -94,17 +106,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Kcalbar(
-                                key: _kcalbarKey,
-                                onRefresh: _refreshKcalbar,
-                              ),
+                              Kcalbar(key: _kcalbarKey),
                               const SizedBox(height: 50),
                               const NutritionPieChartComponent(),
                               const SizedBox(height: 50),
                               const ListSportPage(),
                               const SizedBox(height: 10),
                               const RacSport(
-                                  remainingCalories: 500, refreshTrigger: 5),
+                                remainingCalories: 500,
+                                refreshTrigger: 5,
+                              ),
                             ],
                           ),
                         ),
@@ -119,19 +130,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ActivityFactorButton(
-                                  onCaloriesUpdated: _refreshKcalbar),
+                                onCaloriesUpdated: _refreshKcalbar,
+                              ),
                               const SizedBox(height: 20),
                               const ListMenuPage(),
                               const SizedBox(height: 10),
-                              const RacMenu(
-                                  remainingCalories: 500, refreshTrigger: 3),
+
+                              // ✅ เชื่อม RacMenu เข้ากับ RecommendationService
+                              if (_userId != null && _token != null)
+                                RacMenu(
+                                  remainingCalories: 500,
+                                  refreshTrigger: 3,
+                                  userId: _userId!,
+                                  token: _token!,
+                                )
+                              else
+                                const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "กำลังโหลดข้อมูลผู้ใช้...",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
+
                               const SizedBox(height: 10),
-                              Activity(onSave: (burned) {
-                                setState(() {
-                                  _kcalbarStat -= burned;
-                                });
-                                _refreshKcalbar();
-                              }),
+                              Activity(
+                                onSave: (burned) {
+                                  _refreshKcalbar();
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -141,18 +170,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                   const SizedBox(height: 5),
 
-                  // WeeklyGraph อยู่กลางและ scroll ได้
+                  // Weekly Graph
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10.0), // เว้นขอบซ้าย-ขวา, บน-ล่าง
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 10.0,
+                    ),
                     child: SizedBox(
-                      width: double.infinity, // ให้เต็มความกว้างภายใน Padding
-                      height: 200, // กำหนดความสูง
+                      width: double.infinity,
+                      height: 200,
                       child: WeeklyGraph(),
                     ),
                   ),
 
-
-                  const SizedBox(height: 10), // เว้นด้านล่าง
+                  const SizedBox(height: 10),
                 ],
               ),
             ),

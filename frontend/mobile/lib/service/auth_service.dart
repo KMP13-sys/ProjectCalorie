@@ -1,7 +1,7 @@
 // lib/services/auth_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../service/auth_models.dart';
+import '../models/auth_models.dart';
 import '../config/api_config.dart';
 import 'storage_helper.dart';
 

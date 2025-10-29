@@ -1,7 +1,7 @@
 // componants/ListMenu.dart
 import 'package:flutter/material.dart';
 import '../../service/list_service.dart';
-import '../../service/list_models.dart';
+import '../../models/list_models.dart';
 
 class ListMenuPage extends StatefulWidget {
   const ListMenuPage({super.key});

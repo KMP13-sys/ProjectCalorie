@@ -6,7 +6,7 @@ import '../componants/navbaruser.dart';
 import '../authen/login.dart';
 //import '../../service/storage_helper.dart';
 import '../../service/profile_service.dart';
-import '../../service/user_models.dart';
+import '../../models/profile_models.dart';
 import '../../service/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {

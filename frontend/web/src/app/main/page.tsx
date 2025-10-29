@@ -17,13 +17,39 @@ import { kalService } from '../services/kal_service';
 export default function MainPage() {
   const [hasActivityLevel, setHasActivityLevel] = useState(false);
   const [kcalbarKey, setKcalbarKey] = useState(0);// key สำหรับ force re-render Kcalbar
-  const [pieKey, setPieKey] = useState(0); 
+  const [pieKey, setPieKey] = useState(0);
   const [remainingCalories, setRemainingCalories] = useState<number>(0);
-
-
 
   useEffect(() => {
     checkActivityLevel();
+  }, []);
+
+  // Refresh data when page becomes visible (e.g., after adding food)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page visible, refreshing data...');
+        setKcalbarKey(prev => prev + 1);
+        setPieKey(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Also refresh when component mounts (for navigation back)
+    const refreshOnMount = () => {
+      console.log('🔄 Component mounted, refreshing...');
+      setKcalbarKey(prev => prev + 1);
+      setPieKey(prev => prev + 1);
+    };
+
+    // Small delay to ensure navigation is complete
+    const timer = setTimeout(refreshOnMount, 100);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(timer);
+    };
   }, []);
 
   // เช็คว่ามีการเลือก activity level แล้วหรือยัง
@@ -56,12 +82,12 @@ export default function MainPage() {
         <div className="grid grid-cols-12 gap-5 h-[36vh]">
 
           {/* 1. row1 คอลัมม์1: Kcalbar & Pie Graph (col-span-4) */}
-          <div className="col-span-4 flex flex-col space-y-4 bg-white rounded-lg shadow-md p-2 h-[70vh]">
-            <div className="h-1/3">
+          <div className="col-span-4 flex flex-col bg-white rounded-lg shadow-md p-2 h-[70vh]">
+            <div className="h-[120px]">
               <Kcalbar key={kcalbarKey} />
             </div>
-            <div className="flex-1 py-0">
-              <Piegraph />
+            <div className="flex-1 overflow-hidden">
+              <Piegraph key={pieKey} />
             </div>
           </div>
 
@@ -114,13 +140,12 @@ export default function MainPage() {
           <div className="w-1/2 flex space-x-6">
             {/* 6. row2 คอลัมม์ 2: Recommend MENU (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
             <div className="flex-1 bg-white rounded-lg shadow-md ">
-              <RacMenu remainingCalories={remainingCalories} />
-
+              {/* <RacMenu /> */}
             </div>
             
             {/* 7. row2 คอลัมม์ 3: Recommend sport (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
             <div className="flex-1 bg-white rounded-lg shadow-md ">
-              <RacSport/>
+              {/* <RacSport/> */}
             </div>
             
           </div>

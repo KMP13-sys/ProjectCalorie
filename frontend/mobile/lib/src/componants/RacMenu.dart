@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../../service/recommend_service.dart'; // ✅ import service
 
 class MenuItem {
   final int id;
@@ -7,16 +8,28 @@ class MenuItem {
   final int calories;
 
   MenuItem({required this.id, required this.name, required this.calories});
+
+  factory MenuItem.fromJson(Map<String, dynamic> json) {
+    return MenuItem(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? 'ไม่ทราบชื่อ',
+      calories: (json['calories'] ?? 0).toInt(),
+    );
+  }
 }
 
 class RacMenu extends StatefulWidget {
   final int remainingCalories;
-  final int refreshTrigger; // ใช้เพื่อ refresh เมื่อแนบรูปใหม่
+  final int refreshTrigger;
+  final int userId; // ✅ เพิ่ม userId เพื่อดึงข้อมูลแนะนำ
+  final String token; // ✅ เพิ่ม token เพื่อส่ง header Authorization
 
   const RacMenu({
     super.key,
     required this.remainingCalories,
     required this.refreshTrigger,
+    required this.userId,
+    required this.token,
   });
 
   @override
@@ -27,9 +40,12 @@ class _RacMenuState extends State<RacMenu> {
   bool loading = true;
   List<MenuItem> menuList = [];
 
+  late RecommendationService recService;
+
   @override
   void initState() {
     super.initState();
+    recService = RecommendationService(token: widget.token);
     fetchRecommend();
   }
 
@@ -45,25 +61,31 @@ class _RacMenuState extends State<RacMenu> {
   Future<void> fetchRecommend() async {
     setState(() => loading = true);
 
-    // จำลองดีเลย์โหลด 0.8 วิ
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      final recommendations = await recService.getFoodRecommendations(
+        userId: widget.userId,
+        topN: 5,
+      );
 
-    // เมนูจำลอง
-    final mockMenu = [
-      MenuItem(id: 1, name: 'ข้าวผัดกุ้ง', calories: 450),
-      MenuItem(id: 2, name: 'สลัดไก่ย่าง', calories: 250),
-      MenuItem(id: 3, name: 'เกาเหลาหมูตุ๋น', calories: 300),
-    ];
+      // ✅ แปลงข้อมูลจาก API เป็น MenuItem
+      final items = recommendations
+          .map((rec) {
+            return MenuItem.fromJson(rec);
+          })
+          .where((item) => item.calories <= widget.remainingCalories)
+          .toList();
 
-    // เลือกเมนูที่แคลอรี่ไม่เกินแคลที่เหลือ
-    final filtered = mockMenu
-        .where((m) => m.calories <= widget.remainingCalories)
-        .toList();
-
-    setState(() {
-      menuList = filtered.take(3).toList();
-      loading = false;
-    });
+      setState(() {
+        menuList = items.take(3).toList();
+        loading = false;
+      });
+    } catch (e) {
+      print("❌ Error: $e");
+      setState(() {
+        menuList = [];
+        loading = false;
+      });
+    }
   }
 
   @override
@@ -101,10 +123,7 @@ class _RacMenuState extends State<RacMenu> {
 
           if (loading)
             const Center(
-              child: Text(
-                "กำลังโหลด...",
-                style: TextStyle(color: Colors.grey),
-              ),
+              child: Text("กำลังโหลด...", style: TextStyle(color: Colors.grey)),
             )
           else if (menuList.isEmpty)
             const Center(

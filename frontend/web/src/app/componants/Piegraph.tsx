@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell } from 'recharts';
 import { kalService } from '@/app/services/kal_service';
 
-interface NutritionPieChartProps {
-  // ไม่ต้องรับ props แล้ว เพราะดึงข้อมูลจาก API
+interface MacrosData {
+  carbs: number;
+  fats: number;
+  protein: number;
 }
 
-export default function NutritionPieChart({}: NutritionPieChartProps = {}) {
-  const [macros, setMacros] = useState({ carbs: 0, fats: 0, protein: 0 });
+export default function NutritionPieChart() {
+  const [macros, setMacros] = useState<MacrosData>({ carbs: 0, fats: 0, protein: 0 });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,18 +19,32 @@ export default function NutritionPieChart({}: NutritionPieChartProps = {}) {
   useEffect(() => {
     const fetchMacros = async () => {
       try {
+        console.log('🥧 [Piegraph] Fetching macros data...');
         setLoading(true);
         setError(null);
         const data = await kalService.getDailyMacros();
 
-        // API ส่งกลับมาเป็น protein, fat, carbohydrate
+        console.log('🥧 [Piegraph] Received data:', data);
+
+        // API ส่งกลับมาเป็น protein, fat, carbohydrate (อาจเป็น string หรือ number)
+        // ต้อง convert เป็น number เพื่อความปลอดภัย
+        const carbs = typeof data.carbohydrate === 'string' ? parseFloat(data.carbohydrate) : data.carbohydrate;
+        const fats = typeof data.fat === 'string' ? parseFloat(data.fat) : data.fat;
+        const protein = typeof data.protein === 'string' ? parseFloat(data.protein) : data.protein;
+
         setMacros({
-          carbs: data.carbohydrate || 0,
-          fats: data.fat || 0,
-          protein: data.protein || 0,
+          carbs: carbs || 0,
+          fats: fats || 0,
+          protein: protein || 0,
+        });
+
+        console.log('🥧 [Piegraph] Macros set:', {
+          carbs: carbs || 0,
+          fats: fats || 0,
+          protein: protein || 0,
         });
       } catch (err: any) {
-        console.error('Error fetching macros:', err);
+        console.error('❌ [Piegraph] Error fetching macros:', err);
         setError(err.message || 'ไม่สามารถดึงข้อมูลได้');
         // ตั้งค่าเริ่มต้นเมื่อเกิด error
         setMacros({ carbs: 0, fats: 0, protein: 0 });
@@ -48,32 +64,12 @@ export default function NutritionPieChart({}: NutritionPieChartProps = {}) {
     { name: 'Protein', value: macros.protein, color: '#F3C767' },
   ];
 
-  // ฟังก์ชันทำให้ label อยู่ข้างนอกวงกลม
-  const renderLabel = ({ cx, cy, midAngle, outerRadius, percent, index }: any) => {
-    const RADIAN = Math.PI / 180;
-    const labelRadius = outerRadius + 10; // ลดระยะ label ให้อยู่ใกล้วงมากขึ้น
-    const x = cx + labelRadius * Math.cos(-midAngle * RADIAN);
-    const y = cy + labelRadius * Math.sin(-midAngle * RADIAN);
-
-    const label = `${data[index].name} ${(percent * 100).toFixed(0)}%`;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="black"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        fontSize={12} // ลดขนาดตัวอักษร
-        fontFamily="monospace"
-      >
-        {label}
-      </text>
-    );
-  };
+  console.log('🥧 [Piegraph] Render state:', { loading, error, total, macros });
 
   // แสดง Loading
   if (loading) {
+    console.log('🥧 [Piegraph] Showing loading state');
+
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-black font-mono text-sm">Loading...</p>
@@ -83,6 +79,7 @@ export default function NutritionPieChart({}: NutritionPieChartProps = {}) {
 
   // แสดง Error
   if (error) {
+    console.log('🥧 [Piegraph] Showing error state:', error);
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-red-600 font-mono text-sm text-center">{error}</p>
@@ -92,6 +89,7 @@ export default function NutritionPieChart({}: NutritionPieChartProps = {}) {
 
   // แสดงข้อความเมื่อไม่มีข้อมูล
   if (total === 0) {
+    console.log('🥧 [Piegraph] Showing no data state (total = 0)');
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-black font-mono text-sm text-center">ยังไม่มีข้อมูลโภชนาการวันนี้</p>
@@ -99,25 +97,32 @@ export default function NutritionPieChart({}: NutritionPieChartProps = {}) {
     );
   }
 
+  console.log('🥧 [Piegraph] Rendering chart with data:', data);
+
   return (
-    <div className="w-full h-full"> {/* แก้ไขเป็น h-full เพื่อเติมเต็มพื้นที่ของ parent */}
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
+    <div className="w-full h-full flex items-center justify-center">
+      {/* Pie Chart */}
+      <div style={{ width: 450, height: 450 }}>
+        <PieChart width={450} height={450}>
           <Pie
             data={data}
+            cx={225}
+            cy={225}
+            labelLine={false}
+            label={(entry: any) => {
+              const percent = ((entry.value / total) * 100).toFixed(0);
+              return `${entry.name} ${percent}%`;
+            }}
+            outerRadius={150}
+            fill="#8884d8"
             dataKey="value"
-            cx="50%"
-            cy="50%"
-            innerRadius={0}
-            outerRadius={150} // ลดขนาดวงกลม
-            label={renderLabel}
           >
             {data.map((entry, index) => (
-              <Cell key={index} fill={entry.color} />
+              <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
         </PieChart>
-      </ResponsiveContainer>
+      </div>
     </div>
   );
 }

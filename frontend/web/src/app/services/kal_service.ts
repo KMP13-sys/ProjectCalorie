@@ -52,15 +52,30 @@ export interface WeeklyCaloriesResponse {
 // Helper: Get User ID from localStorage
 // ========================================
 function getUserId(): string | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined') {
+    console.log('⚠️ [getUserId] Window is undefined (SSR)');
+    return null;
+  }
 
   const userStr = localStorage.getItem('user')
-  if (!userStr) return null
+  if (!userStr) {
+    console.error('❌ [getUserId] No user found in localStorage');
+    return null;
+  }
 
   try {
     const user = JSON.parse(userStr)
+    console.log('👤 [getUserId] User from localStorage:', user);
+
+    if (!user.id) {
+      console.error('❌ [getUserId] user.id is missing or 0:', user.id);
+      return null;
+    }
+
+    console.log('✅ [getUserId] Returning user ID:', user.id);
     return user.id?.toString() || null
-  } catch {
+  } catch (error) {
+    console.error('❌ [getUserId] Error parsing user from localStorage:', error);
     return null
   }
 }

@@ -123,7 +123,7 @@ const KcalBar: React.FC<KcalBarProps> = ({
 
       {/* Progress Bar */}
       <div className="relative w-full">
-        <div 
+        <div
           className="h-12 rounded-full relative overflow-hidden"
           style={{ border: '4px solid black' }}
         >

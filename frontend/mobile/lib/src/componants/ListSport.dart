@@ -1,7 +1,7 @@
 // componants/ListSport.dart
 import 'package:flutter/material.dart';
 import '../../service/list_service.dart';
-import '../../service/list_models.dart';
+import '../../models/list_models.dart';
 
 class ListSportPage extends StatefulWidget {
   const ListSportPage({super.key});

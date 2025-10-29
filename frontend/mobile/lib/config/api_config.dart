@@ -9,7 +9,7 @@ class ApiConfig {
   static const String _baseUrl = 'http://localhost:4000';
 
   // 🔹 สำหรับ Development (ในบ้าน):
-  //    - Physical Device (มือถือจริง): 'http://192.168.100.67:4000'
+  //    - Physical Device (มือถือจริง): 'http://10.13.2.102:4000'
   //    - Android Emulator: 'http://10.0.2.2:4000'
   //    - iOS Simulator: 'http://localhost:4000'
   //    - Web Browser: 'http://localhost:4000'

@@ -127,20 +127,25 @@ export const profileService = {
     try {
       const userStr = localStorage.getItem('user');
       if (!userStr) {
-        console.warn('User not found in localStorage');
+        console.warn('👤 [getCurrentUserProfile] User not found in localStorage');
         return null;
       }
 
       const user = JSON.parse(userStr);
+      console.log('👤 [getCurrentUserProfile] User from localStorage:', user);
 
       // ตรวจสอบว่ามี id หรือไม่
       if (!user.id && !user.user_id) {
-        console.warn('User ID not found in localStorage');
+        console.error('❌ [getCurrentUserProfile] User ID not found in localStorage');
         return null;
       }
 
       const userId = user.id || user.user_id;
+      console.log('👤 [getCurrentUserProfile] Fetching profile for user ID:', userId);
+
       const profile = await profileService.getUserProfile(userId);
+
+      console.log('✅ [getCurrentUserProfile] Profile fetched:', profile);
 
       // อัปเดท localStorage ด้วยข้อมูลล่าสุด
       const updatedUser = {
@@ -151,9 +156,11 @@ export const profileService = {
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
 
+      console.log('✅ [getCurrentUserProfile] Updated user in localStorage:', updatedUser);
+
       return profile;
     } catch (error) {
-      console.error('Error fetching current user profile:', error);
+      console.error('❌ [getCurrentUserProfile] Error:', error);
       return null;
     }
   },

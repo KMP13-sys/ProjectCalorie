@@ -2,7 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import '../service/user_models.dart';
+import '../models/profile_models.dart';
 import '../config/api_config.dart';
 import 'storage_helper.dart';
 import 'auth_service.dart';

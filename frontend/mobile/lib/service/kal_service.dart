@@ -4,7 +4,7 @@ import 'dart:convert';
 import '../config/api_config.dart';
 import 'storage_helper.dart';
 import 'auth_service.dart';
-import 'kal_models.dart';
+import '../models/kal_models.dart';
 
 class KalService {
   // ใช้ ApiConfig แทนการ hardcode URL

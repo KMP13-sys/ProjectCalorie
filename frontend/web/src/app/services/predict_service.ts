@@ -64,9 +64,20 @@ const FLASK_API_BASE_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://127.
 // ============================================
 
 function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') {
+    console.log('⚠️ [getAuthToken] Window is undefined (SSR)');
+    return null;
+  }
   // Check for accessToken (used by auth_service.ts)
-  return localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+  const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+
+  if (!token) {
+    console.error('❌ [getAuthToken] No token found in localStorage');
+  } else {
+    console.log('✅ [getAuthToken] Token found');
+  }
+
+  return token;
 }
 
 function getAuthHeaders(): HeadersInit {
@@ -100,6 +111,14 @@ export async function predictFood(
   imageFile: File
 ): Promise<PredictFoodResponse> {
   try {
+    console.log('🔮 [predictFood] Starting prediction for user ID:', userId);
+
+    // Validate userId
+    if (!userId || userId === 0) {
+      console.error('❌ [predictFood] Invalid userId:', userId);
+      throw new Error('Invalid user ID. Please login again.');
+    }
+
     // Validate file type
     const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
     if (!allowedTypes.includes(imageFile.type)) {
@@ -111,9 +130,12 @@ export async function predictFood(
     if (imageFile.size > maxSize) {
       throw new Error('File size too large. Maximum size is 5MB.');
     }
+
     // Prepare form data
     const formData = new FormData();
     formData.append('image', imageFile);
+
+    console.log('🔮 [predictFood] Calling Flask API:', `${FLASK_API_BASE_URL}/api/predict-food/${userId}`);
 
     const response = await fetch(
       `${FLASK_API_BASE_URL}/api/predict-food/${userId}`,
@@ -124,8 +146,11 @@ export async function predictFood(
       }
     );
 
+    console.log('🔮 [predictFood] Response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('❌ [predictFood] API error:', errorData);
       throw {
         response: {
           status: response.status,
@@ -136,10 +161,11 @@ export async function predictFood(
 
     // Parse response
     const data: PredictFoodResponse = await response.json();
+    console.log('✅ [predictFood] Success:', data);
     return data;
 
   } catch (error: any) {
-    console.error('Error in predictFood:', error);
+    console.error('❌ [predictFood] Error:', error);
     handleApiError(error);
   }
 }
@@ -149,6 +175,15 @@ export async function saveMeal(
   mealData: SaveMealRequest
 ): Promise<SaveMealResponse> {
   try {
+    console.log('💾 [saveMeal] Starting save meal for user ID:', userId);
+    console.log('💾 [saveMeal] Meal data:', mealData);
+
+    // Validate userId
+    if (!userId || userId === 0) {
+      console.error('❌ [saveMeal] Invalid userId:', userId);
+      throw new Error('Invalid user ID. Please login again.');
+    }
+
     // Validate required fields
     if (!mealData.food_id) {
       throw new Error('food_id is required');
@@ -162,6 +197,8 @@ export async function saveMeal(
       throw new Error('confidence_score must be between 0 and 1');
     }
 
+    console.log('💾 [saveMeal] Calling Flask API:', `${FLASK_API_BASE_URL}/api/save-meal/${userId}`);
+
     const response = await fetch(
       `${FLASK_API_BASE_URL}/api/save-meal/${userId}`,
       {
@@ -174,8 +211,11 @@ export async function saveMeal(
       }
     );
 
+    console.log('💾 [saveMeal] Response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('❌ [saveMeal] API error:', errorData);
       throw {
         response: {
           status: response.status,
@@ -186,10 +226,11 @@ export async function saveMeal(
 
     // Parse response
     const data: SaveMealResponse = await response.json();
+    console.log('✅ [saveMeal] Success:', data);
     return data;
 
   } catch (error: any) {
-    console.error('Error in saveMeal:', error);
+    console.error('❌ [saveMeal] Error:', error);
     handleApiError(error);
   }
 }
