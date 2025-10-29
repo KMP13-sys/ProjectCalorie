@@ -1,94 +1,88 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 
 interface OpenProps {
-  onComplete?: () => void  // เพิ่ม prop นี้
+  onComplete?: () => void
 }
 
 export default function Open({ onComplete }: OpenProps) {
-  useEffect(() => {
-    // เรียก callback แทนการ push route
-    const timer = setTimeout(() => {
-      if (onComplete) {
-        onComplete()
-      }
-    }, 2000) // 2 วินาที
+  const [isVisible, setIsVisible] = useState(true)
+  const [progress, setProgress] = useState(0)
 
-    return () => clearTimeout(timer)
+  useEffect(() => {
+    // จำลองการโหลดแบบ Flutter (มี progress bar ค่อย ๆ เพิ่ม)
+    let progressValue = 0
+    const interval = setInterval(() => {
+      progressValue += 10
+      setProgress(progressValue)
+      if (progressValue >= 100) {
+        clearInterval(interval)
+      }
+    }, 200)
+
+    // เหมือน Future.delayed(Duration(seconds: 2))
+    const timer = setTimeout(() => {
+      setIsVisible(false)
+      setTimeout(() => {
+        if (onComplete) onComplete()
+      }, 500) // เผื่อเวลา fade out
+    }, 2000)
+
+    return () => {
+      clearTimeout(timer)
+      clearInterval(interval)
+    }
   }, [onComplete])
 
-  // ลบ handleSkip function หรือแก้ไขให้เรียก onComplete
   const handleSkip = () => {
-    if (onComplete) {
-      onComplete()
-    }
+    setIsVisible(false)
+    if (onComplete) onComplete()
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#6fa85e] via-[#8bc273] to-[#a8d48f] relative overflow-hidden">
-      {/* Pixel Grid Background Pattern */}
-      <div 
+    <div
+      className={`flex items-center justify-center min-h-screen transition-opacity duration-500 ${
+        isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      } bg-gradient-to-br from-[#6fa85e] via-[#8bc273] to-[#a8d48f] relative overflow-hidden`}
+    >
+      {/* พื้นหลัง Pixel Grid */}
+      <div
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `
             linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .3) 25%, rgba(255, 255, 255, .3) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .3) 75%, rgba(255, 255, 255, .3) 76%, transparent 77%, transparent),
             linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .3) 25%, rgba(255, 255, 255, .3) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .3) 75%, rgba(255, 255, 255, .3) 76%, transparent 77%, transparent)
           `,
-          backgroundSize: '50px 50px'
+          backgroundSize: '50px 50px',
         }}
       ></div>
 
-      {/* Floating Pixel Clouds */}
-      <div className="absolute top-10 left-10 w-24 h-16 opacity-20">
-        <div className="grid grid-cols-6 gap-1">
-          {[...Array(24)].map((_, i) => (
-            <div 
-              key={i} 
-              className={`w-3 h-3 ${[0, 1, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17].includes(i) ? 'bg-white' : 'bg-transparent'}`}
-              style={{ imageRendering: 'pixelated' }}
-            ></div>
-          ))}
-        </div>
-      </div>
-
-      <div className="absolute top-32 right-20 w-24 h-16 opacity-20">
-        <div className="grid grid-cols-6 gap-1">
-          {[...Array(24)].map((_, i) => (
-            <div 
-              key={i} 
-              className={`w-3 h-3 ${[0, 1, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17].includes(i) ? 'bg-white' : 'bg-transparent'}`}
-              style={{ imageRendering: 'pixelated' }}
-            ></div>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Content Container */}
-      <div className="relative z-10">
-        <div 
+      {/* กล่องหลัก */}
+      <div className="relative z-10 text-center">
+        <div
           className="bg-white border-8 border-black p-12 relative"
-          style={{ 
+          style={{
             boxShadow: '12px 12px 0px rgba(0,0,0,0.3)',
-            imageRendering: 'pixelated'
+            imageRendering: 'pixelated',
           }}
         >
-          {/* Decorative Corner Pixels */}
-          <div className="absolute top-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
-          <div className="absolute top-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
-          <div className="absolute bottom-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
-          <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
+          {/* ขอบตกแต่ง */}
+          <div className="absolute top-0 left-0 w-6 h-6 bg-[#6fa85e]" />
+          <div className="absolute top-0 right-0 w-6 h-6 bg-[#6fa85e]" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 bg-[#6fa85e]" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#6fa85e]" />
 
-          <div className="flex flex-col items-center justify-center gap-6 text-center">
-            {/* Logo with Pixel Border */}
+          {/* โลโก้ */}
+          <div className="flex flex-col items-center gap-6">
             <div className="relative">
-              <div 
+              <div
                 className="bg-gradient-to-br from-[#a8d48f] to-[#8bc273] border-6 border-black p-4"
                 style={{ boxShadow: '6px 6px 0px rgba(0,0,0,0.2)' }}
               >
-                <Image 
-                  src="/pic/logo.png" 
-                  alt="Salad Bowl"
+                <Image
+                  src="/pic/logo.png"
+                  alt="Cal Deficits Logo"
                   width={128}
                   height={128}
                   className="object-contain"
@@ -96,77 +90,48 @@ export default function Open({ onComplete }: OpenProps) {
                   priority
                 />
               </div>
-              {/* Sparkle Pixels */}
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-300 animate-ping"></div>
-              <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-yellow-300 animate-ping" style={{ animationDelay: '0.5s' }}></div>
             </div>
 
-            {/* Title with Pixel Style */}
-            <div className="relative">
-              <h1 
-                className="text-5xl md:text-6xl font-bold text-gray-800 tracking-wider mb-2"
-                style={{ 
-                  fontFamily: 'monospace',
-                  textShadow: '4px 4px 0px rgba(111, 168, 94, 0.5)'
-                }}
-              >
-                CAL-DEFICITS
-              </h1>
-              <div className="flex justify-center gap-1">
-                <div className="w-2 h-2 bg-[#6fa85e]"></div>
-                <div className="w-2 h-2 bg-[#8bc273]"></div>
-                <div className="w-2 h-2 bg-[#a8d48f]"></div>
-                <div className="w-2 h-2 bg-[#8bc273]"></div>
-                <div className="w-2 h-2 bg-[#6fa85e]"></div>
-              </div>
-            </div>
+            {/* ชื่อแอป */}
+            <h1
+              className="text-5xl md:text-6xl font-bold text-gray-800 tracking-wider mb-2"
+              style={{
+                fontFamily: 'monospace',
+                textShadow: '4px 4px 0px rgba(111,168,94,0.5)',
+              }}
+            >
+              CAL-DEFICITS
+            </h1>
 
-            {/* Pixel Loading Text */}
-            <div className="bg-black border-4 border-[#6fa85e] px-6 py-2">
-              <p 
-                className="text-white text-lg font-bold animate-pulse"
-                style={{ fontFamily: 'monospace' }}
-              >
-                &gt; LOADING...
-              </p>
-            </div>
-
-            {/* Pixel Art Loading Bar */}
+            {/* แถบโหลด */}
             <div className="w-64">
               <div className="bg-black border-4 border-gray-800 p-2">
                 <div className="bg-gray-900 h-8 relative overflow-hidden">
-                  <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#6fa85e] to-[#a8d48f]"
-                    style={{
-                      animation: 'pixelLoading 2s ease-in-out',
-                      width: '100%'
-                    }}
-                  >
-                    {/* Pixel shine effect */}
-                    <div className="absolute top-0 left-0 w-full h-2 bg-white opacity-40"></div>
-                    <div className="absolute bottom-0 left-0 w-full h-2 bg-black opacity-20"></div>
-                  </div>
+                  <div
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#6fa85e] to-[#a8d48f] transition-all duration-200"
+                    style={{ width: `${progress}%` }}
+                  ></div>
                 </div>
               </div>
             </div>
+
+            <p
+              className="text-white bg-black border-4 border-[#6fa85e] px-6 py-2 mt-4 font-bold"
+              style={{ fontFamily: 'monospace' }}
+            >
+              &gt; LOADING... {progress}%
+            </p>
+
+            {/* ปุ่มข้าม */}
+            <button
+              onClick={handleSkip}
+              className="mt-6 text-black font-mono font-bold hover:underline"
+            >
+              SKIP ▶
+            </button>
           </div>
         </div>
-
-        {/* Floating Pixel Stars */}
-        <div className="absolute -top-8 left-1/4 w-4 h-4 bg-yellow-300 animate-bounce"></div>
-        <div className="absolute -bottom-8 right-1/4 w-4 h-4 bg-yellow-300 animate-bounce" style={{ animationDelay: '0.3s' }}></div>
       </div>
-
-      <style jsx>{`
-        @keyframes pixelLoading {
-          0% { 
-            width: 0%; 
-          }
-          100% { 
-            width: 100%; 
-          }
-        }
-      `}</style>
     </div>
   )
 }

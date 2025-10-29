@@ -6,7 +6,7 @@ import NavBarUser from '../componants/NavBarUser';
 import Kcalbar from '../componants/Kcalbar';
 import Piegraph from '../componants/Piegraph';
 import Activity from '../componants/activityfactor';
-import Camera from  '../componants/camera';
+import Camera from '../componants/camera';
 import ListMenu from '../componants/ListMenu';
 import ListSport from '../componants/ListSport';
 import RacMenu from '../componants/RecMenu';
@@ -16,7 +16,11 @@ import { kalService } from '../services/kal_service';
 
 export default function MainPage() {
   const [hasActivityLevel, setHasActivityLevel] = useState(false);
-  const [kcalbarKey, setKcalbarKey] = useState(0); // key สำหรับ force re-render Kcalbar
+  const [kcalbarKey, setKcalbarKey] = useState(0);// key สำหรับ force re-render Kcalbar
+  const [pieKey, setPieKey] = useState(0); 
+  const [remainingCalories, setRemainingCalories] = useState<number>(0);
+
+
 
   useEffect(() => {
     checkActivityLevel();
@@ -38,6 +42,7 @@ export default function MainPage() {
     console.log('🔄 Activity updated, refreshing...');
     setHasActivityLevel(true);
     setKcalbarKey(prev => prev + 1); // Force re-render Kcalbar
+    setPieKey(prev => prev + 1); 
   };
 
   return (
@@ -109,7 +114,8 @@ export default function MainPage() {
           <div className="w-1/2 flex space-x-6">
             {/* 6. row2 คอลัมม์ 2: Recommend MENU (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
             <div className="flex-1 bg-white rounded-lg shadow-md ">
-              <RacMenu/>
+              <RacMenu remainingCalories={remainingCalories} />
+
             </div>
             
             {/* 7. row2 คอลัมม์ 3: Recommend sport (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
