@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class WeeklyGraph extends StatelessWidget {
-  // ข้อมูลจำลอง
   final List<Map<String, dynamic>> weeklyData = [
     {'name': 'Mon', 'NetCal': 1850},
     {'name': 'Tue', 'NetCal': 2100},
@@ -15,6 +14,12 @@ class WeeklyGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final chartHeight = screenWidth * 0.55; // responsive height
+    final fontSize = screenWidth * 0.035; // responsive font
+    final dotRadius = screenWidth * 0.02;
+    final reservedSize = screenWidth * 0.1;
+
     final spots = List.generate(weeklyData.length, (index) {
       return FlSpot(index.toDouble(), weeklyData[index]['NetCal'].toDouble());
     });
@@ -22,35 +27,37 @@ class WeeklyGraph extends StatelessWidget {
     final totalWeek =
         weeklyData.fold(0, (sum, item) => sum + (item['NetCal'] as int));
 
+    final maxY = weeklyData
+            .map((e) => e['NetCal'] as int)
+            .reduce((a, b) => a > b ? a : b)
+            .toDouble() +
+        400;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: 10),
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
           Container(
-            height: 220,
-            padding: const EdgeInsets.all(12),
+            height: chartHeight,
+            padding: EdgeInsets.all(screenWidth * 0.03),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(0),
               boxShadow: [
-              BoxShadow(
-                color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.3),
-                offset: const Offset(8, 8),
-                blurRadius: 0,
-              ),
-            ],
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  offset: Offset(chartHeight * 0.035, chartHeight * 0.035),
+                  blurRadius: 0,
+                ),
+              ],
             ),
             child: LineChart(
               LineChartData(
                 minX: 0,
                 maxX: (weeklyData.length - 1).toDouble(),
                 minY: 0,
-                maxY: weeklyData
-                        .map((e) => e['NetCal'] as int)
-                        .reduce((a, b) => a > b ? a : b)
-                        .toDouble() +
-                    400,
+                maxY: maxY,
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: true,
@@ -72,7 +79,7 @@ class WeeklyGraph extends StatelessWidget {
                     sideTitles: SideTitles(
                       showTitles: true,
                       interval: 1,
-                      reservedSize: 40,
+                      reservedSize: reservedSize,
                       getTitlesWidget: (value, meta) {
                         int index = value.toInt();
                         if (index < 0 || index >= weeklyData.length)
@@ -80,10 +87,10 @@ class WeeklyGraph extends StatelessWidget {
                         return Center(
                           child: Text(
                             weeklyData[index]['name'],
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.black54,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              fontSize: fontSize,
                             ),
                           ),
                         );
@@ -94,22 +101,21 @@ class WeeklyGraph extends StatelessWidget {
                     sideTitles: SideTitles(
                       showTitles: true,
                       interval: 500,
-                      reservedSize: 40,
+                      reservedSize: reservedSize,
                       getTitlesWidget: (value, meta) {
                         return Text(
                           '${value.toInt()}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.black87,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: fontSize,
                           ),
                         );
                       },
                     ),
                   ),
                   topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(
                   show: true,
@@ -130,7 +136,7 @@ class WeeklyGraph extends StatelessWidget {
                       show: true,
                       getDotPainter: (spot, percent, barData, index) =>
                           FlDotCirclePainter(
-                        radius: 5,
+                        radius: dotRadius,
                         color: Colors.green,
                         strokeWidth: 0,
                       ),
@@ -150,10 +156,10 @@ class WeeklyGraph extends StatelessWidget {
                         final data = weeklyData[index];
                         return LineTooltipItem(
                           '${data['name']}\n${data['NetCal']} Kcal',
-                          const TextStyle(
+                          TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: fontSize,
                           ),
                         );
                       }).whereType<LineTooltipItem>().toList();
@@ -163,18 +169,17 @@ class WeeklyGraph extends StatelessWidget {
               ),
             ),
           ),
-          // แสดงผลรวมตรงกลางด้านล่าง
           Positioned(
             bottom: 0,
             child: Container(
-              width: MediaQuery.of(context).size.width - 32, // match padding
+              width: screenWidth - 32,
               alignment: Alignment.center,
               child: Text(
                 'Total: $totalWeek',
-                style: const TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
+                style: TextStyle(
+                  color: Colors.black,
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                  fontSize: fontSize,
                 ),
               ),
             ),

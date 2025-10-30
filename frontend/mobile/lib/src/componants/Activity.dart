@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Activity extends StatefulWidget {
-  final Function(int caloriesBurned) onSave; // ส่งค่ากลับไปเพื่อลบแคลใน Kcalbar
+  final Function(int caloriesBurned) onSave;
 
   const Activity({Key? key, required this.onSave}) : super(key: key);
 
@@ -11,9 +11,8 @@ class Activity extends StatefulWidget {
 
 class _ActivityState extends State<Activity> {
   String selectedActivity = 'วิ่ง';
-  int duration = 0; // นาที
+  int duration = 0;
 
-  // แคลที่เผาผลาญต่อนาที (สมมติ)
   final Map<String, int> caloriesPerMin = {
     'วิ่ง': 10,
     'ปั่นจักรยาน': 8,
@@ -21,13 +20,12 @@ class _ActivityState extends State<Activity> {
     'เดิน': 5,
   };
 
-  void increaseTime() {
-    setState(() => duration += 1);
-  }
+  void increaseTime() => setState(() => duration += 1);
 
   void decreaseTime() {
     setState(() {
       if (duration > 0) duration -= 5;
+      if (duration < 0) duration = 0;
     });
   }
 
@@ -41,115 +39,134 @@ class _ActivityState extends State<Activity> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 255, 255, 255),
-        border: Border.all(width: 5, color: Colors.black),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.3),
-            offset: const Offset(8, 8),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 🔽 Dropdown เลือกกิจกรรม
-          Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFCCBC),
-              border: Border.all(width: 2, color: Colors.black),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallScreen = screenWidth < 400;
+    final isUltraSmall = screenWidth < 360;
+
+    // scale สำหรับปุ่มและตัวอักษร
+    final scale = isUltraSmall ? 0.85 : isSmallScreen ? 0.95 : 1.0;
+
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: screenWidth * 0.95, // ไม่เกินขอบหน้าจอ
+        ),
+        padding: EdgeInsets.all(isSmallScreen ? 10 : 16),
+        margin: EdgeInsets.all(isSmallScreen ? 8 : 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(width: 3, color: Colors.black),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              offset: const Offset(6, 6),
             ),
-            child: DropdownButton<String>(
-              value: selectedActivity,
-              underline: const SizedBox(),
-              isExpanded: true,
-              items: caloriesPerMin.keys
-                  .map((activity) => DropdownMenuItem(
-                        value: activity,
-                        child: Text(
-                          activity,
-                          style: const TextStyle(
-                              fontFamily: 'monospace',
-                              fontWeight: FontWeight.bold),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Dropdown
+            Container(
+              height: isSmallScreen ? 40 : 55,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFCCBC),
+                border: Border.all(width: 2, color: Colors.black),
+              ),
+              child: DropdownButton<String>(
+                value: selectedActivity,
+                underline: const SizedBox(),
+                isExpanded: true,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.bold,
+                  fontSize: isSmallScreen ? 14 : 16,
+                  color: Colors.black,
+                ),
+                items: caloriesPerMin.keys
+                    .map((activity) => DropdownMenuItem(
+                          value: activity,
+                          child: Text(activity),
+                        ))
+                    .toList(),
+                onChanged: (value) => setState(() => selectedActivity = value!),
+              ),
+            ),
+
+            SizedBox(height: isSmallScreen ? 12 : 20),
+
+            // Time row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildTimeButton("-", decreaseTime, const Color(0xFFFFFFAA), isSmallScreen, scale),
+                Expanded(
+                  child: Container(
+                    height: isSmallScreen ? 40 : 55,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        "$duration",
+                        style: TextStyle(
+                          fontSize: 32 * scale,
+                          fontFamily: 'TA8bit',
+                          fontWeight: FontWeight.bold,
                         ),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() => selectedActivity = value!);
-              },
+                      ),
+                    ),
+                  ),
+                ),
+                _buildTimeButton("+", increaseTime, const Color(0xFFB2DFDB), isSmallScreen, scale),
+              ],
             ),
-          ),
 
-          const SizedBox(height: 20),
+            SizedBox(height: isSmallScreen ? 12 : 20),
 
-          // 🕒 ช่องเวลา + ปุ่มเพิ่ม/ลด
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTimeButton("-", decreaseTime, const Color(0xFFFFFFAA)),
-              Container(
-                width: 80,
-                height: 50,
-                alignment: Alignment.center,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFCCBC),
-                  border: Border.all(width: 2, color: Colors.black),
+            // Save button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: saveActivity,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFB2DFDB),
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(width: 2, color: Colors.black),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  elevation: 3,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20 * scale,
+                    vertical: 10 * scale,
+                  ),
                 ),
                 child: Text(
-                  "$duration",
-                  style: const TextStyle(
-                    fontSize: 30,
+                  "SAVE",
+                  style: TextStyle(
                     fontFamily: 'TA8bit',
                     fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 22 * scale,
                   ),
                 ),
               ),
-              _buildTimeButton("+", increaseTime, const Color(0xFFB2DFDB)),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // 💾 ปุ่ม SAVE
-          ElevatedButton(
-            onPressed: saveActivity,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFB2DFDB),
-              shape: RoundedRectangleBorder(
-                side: const BorderSide(width: 2, color: Colors.black),
-                borderRadius: BorderRadius.circular(0),
-              ),
-              elevation: 3,
             ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Text(
-                "SAVE",
-                style: TextStyle(
-                  fontFamily: 'TA8bit',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTimeButton(String symbol, VoidCallback onPressed, Color color) {
+  Widget _buildTimeButton(String symbol, VoidCallback onPressed, Color color, bool isSmall, double scale) {
     return SizedBox(
-      width: 45,
-      height: 45,
+      width: (isSmall ? 40 : 50) * scale,
+      height: (isSmall ? 40 : 50) * scale,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -157,15 +174,16 @@ class _ActivityState extends State<Activity> {
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             side: const BorderSide(width: 2, color: Colors.black),
+            borderRadius: BorderRadius.circular(4),
           ),
           elevation: 2,
         ),
         child: Text(
           symbol,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'TA8bit',
             fontWeight: FontWeight.bold,
-            fontSize: 25,
+            fontSize: (isSmall ? 22 : 28) * scale,
             color: Colors.black,
           ),
         ),

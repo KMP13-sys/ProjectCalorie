@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../../service/recommend_service.dart'; // ✅ import service
+import '../../service/recommend_service.dart';
 
 class SportItem {
   final int id;
@@ -20,8 +20,8 @@ class SportItem {
 
 class RacSport extends StatefulWidget {
   final int remainingCalories;
-  final int refreshTrigger; // จะเปลี่ยนเมื่อแนบรูปใหม่
-  final int userId; // ✅ เพิ่ม userId
+  final int refreshTrigger;
+  final int userId;
 
   const RacSport({
     Key? key,
@@ -42,13 +42,11 @@ class _RacSportState extends State<RacSport> {
     setState(() => loading = true);
 
     try {
-      // ✅ เรียกใช้ static method โดยตรง
       final recommendations = await RecommendationService.getSportRecommendations(
         userId: widget.userId,
         topN: 5,
       );
 
-      // ✅ แปลงข้อมูลจาก API เป็น SportItem และกรองตาม remainingCalories
       final items = recommendations
           .map((rec) => SportItem.fromJson(rec))
           .where((item) => item.calories.abs() <= widget.remainingCalories)
@@ -59,7 +57,6 @@ class _RacSportState extends State<RacSport> {
         loading = false;
       });
     } catch (e) {
-      // ignore: avoid_print
       print("❌ Error: $e");
       setState(() {
         sportList = [];
@@ -77,7 +74,6 @@ class _RacSportState extends State<RacSport> {
   @override
   void didUpdateWidget(covariant RacSport oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // ถ้า refreshTrigger เปลี่ยน → โหลดข้อมูลใหม่
     if (oldWidget.refreshTrigger != widget.refreshTrigger) {
       fetchRecommend();
     }
@@ -85,76 +81,83 @@ class _RacSportState extends State<RacSport> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final fontSize = screenWidth * 0.04;
+    final headerFontSize = screenWidth * 0.05;
+    final spacing = screenWidth * 0.02;
+    final borderWidth = screenWidth * 0.012;
+    final shadowOffset = screenWidth * 0.02;
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFAA),
-        border: Border.all(width: 5, color: const Color(0xFF2a2a2a)),
+        border: Border.all(width: borderWidth, color: const Color(0xFF2a2a2a)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
-            offset: const Offset(8, 8),
+            offset: Offset(shadowOffset, shadowOffset),
             blurRadius: 0,
-          )
+          ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(spacing * 2),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             "RECOMMEND SPORT",
             style: TextStyle(
-              fontSize: 15,
+              fontSize: headerFontSize,
               fontWeight: FontWeight.bold,
               letterSpacing: 4,
-              color: Color(0xFF2a2a2a),
+              color: const Color(0xFF2a2a2a),
               fontFamily: 'TA8bit',
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          Container(height: 3, color: const Color(0xFF2a2a2a)),
-          const SizedBox(height: 16),
+          SizedBox(height: spacing),
+          Container(height: borderWidth, color: const Color(0xFF2a2a2a)),
+          SizedBox(height: spacing * 2),
           if (loading)
-            const Center(
+            Center(
               child: Text(
                 "กำลังโหลด...",
-                style: TextStyle(color: Colors.black54),
+                style: TextStyle(color: Colors.black54, fontSize: fontSize),
               ),
             )
           else if (sportList.isEmpty)
-            const Center(
+            Center(
               child: Text(
                 "ไม่มีกีฬาที่เหมาะสม",
-                style: TextStyle(color: Colors.black54),
+                style: TextStyle(color: Colors.black54, fontSize: fontSize),
               ),
             )
           else
             ...sportList.map((item) {
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                padding: EdgeInsets.symmetric(vertical: spacing),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
                         "🏃‍♂️ ${item.name}",
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: fontSize,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2a2a2a),
+                          color: const Color(0xFF2a2a2a),
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: spacing),
                     Text(
                       "${item.calories} kcal",
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: fontSize,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2a2a2a),
+                        color: const Color(0xFF2a2a2a),
                       ),
                     ),
                   ],

@@ -22,7 +22,6 @@ class _ListMenuPageState extends State<ListMenuPage> {
     _loadMeals();
   }
 
-  /// ดึงข้อมูลอาหารจาก API
   Future<void> _loadMeals() async {
     setState(() {
       _isLoading = true;
@@ -45,56 +44,71 @@ class _ListMenuPageState extends State<ListMenuPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // ✅ ปรับขนาด font/padding ตามหน้าจอ
+    final bool isSmallScreen = screenWidth < 400;
+    final double fontSizeTitle = isSmallScreen ? 18 : 24;
+    final double fontSizeText = isSmallScreen ? 12 : 16;
+    final double padding = isSmallScreen ? 10 : 20;
+    final double containerHeight = isSmallScreen ? screenHeight * 0.4 : 264;
+
     return Container(
-      height: 264,
+      height: containerHeight,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 219, 249, 255),
         border: Border.all(color: const Color(0xFF2a2a2a), width: 5),
         boxShadow: [
           BoxShadow(
-            color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.3),
+            color: Colors.black.withOpacity(0.3),
             offset: const Offset(8, 8),
             blurRadius: 0,
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(padding),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          const Text(
-            'LIST MENU',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 4,
-              color: Color(0xFF2a2a2a),
-              fontFamily: 'TA8bit',
+          Center(
+            child: Text(
+              'LIST MENU',
+              style: TextStyle(
+                fontSize: fontSizeTitle,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+                color: const Color(0xFF2a2a2a),
+                fontFamily: 'TA8bit',
+              ),
             ),
           ),
           const SizedBox(height: 10),
 
-                    const Row(
+          // หัวคอลัมน์
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
                   'FOOD',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: fontSizeText,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2a2a2a),
+                    color: const Color(0xFF2a2a2a),
                     fontFamily: 'TA8bit',
                   ),
                 ),
               ),
-              SizedBox(width: 40),
               Text(
                 'KCAL',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: fontSizeText,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2a2a2a),
+                  color: const Color(0xFF2a2a2a),
                   fontFamily: 'TA8bit',
                 ),
               ),
@@ -103,12 +117,11 @@ class _ListMenuPageState extends State<ListMenuPage> {
 
           const SizedBox(height: 10),
 
-          // ✅ เส้นคั่นใต้หัวข้อ
+          // เส้นคั่น
           Container(height: 3, color: const Color(0xFF2a2a2a)),
           const SizedBox(height: 10),
 
-
-          // Content
+          // เนื้อหา
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -123,8 +136,8 @@ class _ListMenuPageState extends State<ListMenuPage> {
                           children: [
                             Text(
                               _errorMessage!,
-                              style: const TextStyle(
-                                fontSize: 14,
+                              style: TextStyle(
+                                fontSize: fontSizeText,
                                 color: Colors.red,
                                 fontFamily: 'TA8bit',
                               ),
@@ -145,12 +158,12 @@ class _ListMenuPageState extends State<ListMenuPage> {
                         ),
                       )
                     : _meals.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
                               'No meals today',
                               style: TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF2a2a2a),
+                                fontSize: fontSizeText,
+                                color: const Color(0xFF2a2a2a),
                                 fontFamily: 'TA8bit',
                               ),
                             ),
@@ -160,31 +173,32 @@ class _ListMenuPageState extends State<ListMenuPage> {
                               children: _meals.asMap().entries.map((entry) {
                                 final meal = entry.value;
                                 return Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      // ชื่ออาหาร
                                       Expanded(
                                         child: Text(
                                           meal.foodName,
-                                          style: const TextStyle(
-                                            fontSize: 16,
+                                          style: TextStyle(
+                                            fontSize: fontSizeText,
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFF2a2a2a),
+                                            color: const Color(0xFF2a2a2a),
                                             fontFamily: 'TA8bit',
                                           ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-
-                                      // แคลอรี่
                                       Text(
                                         '${meal.calories} Kcal',
-                                        style: const TextStyle(
-                                          fontSize: 16,
+                                        style: TextStyle(
+                                          fontSize: fontSizeText,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF2a2a2a),
+                                          color: const Color(0xFF2a2a2a),
                                           fontFamily: 'TA8bit',
                                         ),
                                       ),

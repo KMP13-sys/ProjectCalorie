@@ -7,12 +7,22 @@ import '../../service/predict_service.dart';
 class CameraBottomNavBar extends StatelessWidget {
   const CameraBottomNavBar({super.key});
 
+  // ✅ Responsive helper
+  double _responsiveSize(BuildContext context, double base) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 400) return base * 0.8; // มือถือเล็ก
+    if (width > 600) return base * 1.2; // แท็บเล็ต
+    return base; // ปกติ
+  }
+
   Future<void> _pickImage(BuildContext context) async {
     final ImagePicker picker = ImagePicker();
 
     final ImageSource? source = await showDialog<ImageSource>(
       context: context,
       builder: (BuildContext context) {
+        final width = MediaQuery.of(context).size.width;
+        final dialogWidth = width * 0.85; // ✅ ปรับขนาด dialog ตามจอ
         return Center(
           child: Dialog(
             insetPadding: const EdgeInsets.all(24),
@@ -22,6 +32,7 @@ class CameraBottomNavBar extends StatelessWidget {
               borderRadius: BorderRadius.zero,
             ),
             child: Container(
+              width: dialogWidth,
               decoration: BoxDecoration(
                 color: const Color(0xFFF2F2F2),
                 border: Border.all(color: Colors.black, width: 4),
@@ -112,13 +123,14 @@ class CameraBottomNavBar extends StatelessWidget {
   }
 
   Future<void> _processImage(BuildContext context, File imageFile) async {
-    // แสดง loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        final dialogWidth = MediaQuery.of(context).size.width * 0.8;
         return Center(
           child: Container(
+            width: dialogWidth,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -155,12 +167,10 @@ class CameraBottomNavBar extends StatelessWidget {
     );
 
     try {
-      // ตรวจสอบความคมชัดของภาพ
       final isClear = await PredictService.isImageClear(imageFile);
 
       if (!isClear) {
-        Navigator.pop(context); // ปิด loading dialog
-
+        Navigator.pop(context);
         if (context.mounted) {
           _showErrorDialog(
             context,
@@ -171,17 +181,13 @@ class CameraBottomNavBar extends StatelessWidget {
         return;
       }
 
-      // ส่งภาพไปทำนาย (ดึง userId จาก SharedPreferences อัตโนมัติ)
       final result = await PredictService.predictFood(imageFile);
-
-      Navigator.pop(context); // ปิด loading dialog
+      Navigator.pop(context);
 
       if (!context.mounted) return;
 
       if (result['success'] == true && result['data'] != null) {
         final data = result['data'];
-
-        // นำทางไปหน้าแสดงผล
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -198,18 +204,14 @@ class CameraBottomNavBar extends StatelessWidget {
           ),
         );
       } else {
-        // แสดง error dialog
         _showErrorDialog(
           context,
-          result['low_confidence'] == true
-            ? 'ไม่ใช่อาหาร'
-            : 'เกิดข้อผิดพลาด',
+          result['low_confidence'] == true ? 'ไม่ใช่อาหาร' : 'เกิดข้อผิดพลาด',
           result['error'] ?? 'ไม่สามารถทำนายภาพได้',
         );
       }
     } catch (e) {
-      Navigator.pop(context); // ปิด loading dialog
-
+      Navigator.pop(context);
       if (context.mounted) {
         _showErrorDialog(
           context,
@@ -221,6 +223,7 @@ class CameraBottomNavBar extends StatelessWidget {
   }
 
   void _showErrorDialog(BuildContext context, String title, String message) {
+    final dialogWidth = MediaQuery.of(context).size.width * 0.85;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -233,6 +236,7 @@ class CameraBottomNavBar extends StatelessWidget {
               borderRadius: BorderRadius.zero,
             ),
             child: Container(
+              width: dialogWidth,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFC1C1),
                 border: Border.all(color: Colors.black, width: 4),
@@ -307,36 +311,42 @@ class CameraBottomNavBar extends StatelessWidget {
     required String text,
     required Color color,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: Colors.black, width: 3),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.black),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fontSize = constraints.maxWidth < 320 ? 12.0 : 14.0;
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          decoration: BoxDecoration(
+            color: color,
+            border: Border.all(color: Colors.black, width: 3),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.black, size: fontSize + 4),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final double size = _responsiveSize(context, 64); // ✅ responsive button size
     return Container(
-      height: 80,
+      height: _responsiveSize(context, 80),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         border: const Border(
@@ -354,8 +364,8 @@ class CameraBottomNavBar extends StatelessWidget {
         child: GestureDetector(
           onTap: () => _pickImage(context),
           child: Container(
-            width: 64,
-            height: 64,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               color: const Color(0xFFA3EBA1),
               border: Border.all(color: Colors.black, width: 4),
@@ -368,9 +378,9 @@ class CameraBottomNavBar extends StatelessWidget {
               ],
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.camera_alt,
-              size: 32,
+              size: size * 0.5,
               color: Colors.black,
             ),
           ),

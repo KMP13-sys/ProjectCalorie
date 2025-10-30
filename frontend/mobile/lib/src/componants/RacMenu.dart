@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../../service/recommend_service.dart'; // ✅ import service
+import '../../service/recommend_service.dart';
 
 class MenuItem {
   final int id;
@@ -21,7 +21,7 @@ class MenuItem {
 class RacMenu extends StatefulWidget {
   final int remainingCalories;
   final int refreshTrigger;
-  final int userId; // ✅ userId เพื่อดึงข้อมูลแนะนำ
+  final int userId;
 
   const RacMenu({
     super.key,
@@ -57,17 +57,13 @@ class _RacMenuState extends State<RacMenu> {
     setState(() => loading = true);
 
     try {
-      // ✅ เรียกใช้ static method โดยตรง ไม่ต้องสร้าง instance
       final recommendations = await RecommendationService.getFoodRecommendations(
         userId: widget.userId,
         topN: 5,
       );
 
-      // ✅ แปลงข้อมูลจาก API เป็น MenuItem
       final items = recommendations
-          .map((rec) {
-            return MenuItem.fromJson(rec);
-          })
+          .map((rec) => MenuItem.fromJson(rec))
           .where((item) => item.calories <= widget.remainingCalories)
           .toList();
 
@@ -76,7 +72,6 @@ class _RacMenuState extends State<RacMenu> {
         loading = false;
       });
     } catch (e) {
-      // ignore: avoid_print
       print("❌ Error: $e");
       setState(() {
         menuList = [];
@@ -87,74 +82,80 @@ class _RacMenuState extends State<RacMenu> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final fontSize = screenWidth * 0.04; // responsive font
+    final headerFontSize = screenWidth * 0.05;
+    final spacing = screenWidth * 0.02;
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFAA),
-        border: Border.all(width: 5, color: const Color(0xFF2A2A2A)),
+        border: Border.all(width: screenWidth * 0.012, color: const Color(0xFF2A2A2A)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
-            offset: const Offset(8, 8),
+            offset: Offset(screenWidth * 0.02, screenWidth * 0.02),
             blurRadius: 0,
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(screenWidth * 0.04),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             "RECOMMEND MENU",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'TA8bit',
               fontWeight: FontWeight.bold,
-              fontSize: 15,
+              fontSize: headerFontSize,
               letterSpacing: 4,
-              color: Color(0xFF2A2A2A),
+              color: const Color(0xFF2A2A2A),
             ),
           ),
-          const SizedBox(height: 8),
-          Container(height: 3, color: const Color(0xFF2A2A2A)),
-          const SizedBox(height: 12),
+          SizedBox(height: spacing),
+          Container(height: screenWidth * 0.008, color: const Color(0xFF2A2A2A)),
+          SizedBox(height: spacing * 1.5),
 
           if (loading)
-            const Center(
-              child: Text("กำลังโหลด...", style: TextStyle(color: Colors.grey)),
+            Center(
+              child: Text("กำลังโหลด...",
+                  style: TextStyle(color: Colors.grey, fontSize: fontSize)),
             )
           else if (menuList.isEmpty)
-            const Center(
+            Center(
               child: Text(
                 "ไม่มีเมนูที่เหมาะสม",
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: Colors.grey, fontSize: fontSize),
               ),
             )
           else
             ...menuList.map((item) {
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                padding: EdgeInsets.symmetric(vertical: spacing),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
-                        "${item.name}",
-                        style: const TextStyle(
+                        item.name,
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2A2A2A),
-                          fontSize: 16,
+                          color: const Color(0xFF2A2A2A),
+                          fontSize: fontSize,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: spacing),
                     Text(
                       "${item.calories} kcal",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2A2A2A),
-                        fontSize: 16,
+                        color: const Color(0xFF2A2A2A),
+                        fontSize: fontSize,
                       ),
                     ),
                   ],

@@ -10,10 +10,11 @@ class ApiConfig {
 
   // 🔹 สำหรับ Development (ในบ้าน):
   //    - Physical Device (มือถือจริง): 'http://10.13.2.102:4000'
+  //10.13.2.112
   //    - Android Emulator: 'http://10.0.2.2:4000'
   //    - iOS Simulator: 'http://localhost:4000'
   //    - Web Browser: 'http://localhost:4000'
-  //
+  //10.13.2.112
   // 🔹 สำหรับ Production (ใช้นอกบ้าน):
   //    - Public IP: 'http://203.158.130.254:4000' (ต้องเปิด Port Forwarding)
   //    - Ngrok: 'https://your-ngrok-url.ngrok-free.app'

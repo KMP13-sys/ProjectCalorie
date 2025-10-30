@@ -12,6 +12,7 @@ class PredictService {
       'API_BASE_URL',
       defaultValue: 'http://localhost:5000',
       //10.13.2.102
+      //10.13.2.112
     );
     return defaultUrl;
   }
