@@ -13,16 +13,20 @@ const router = Router();
 
 // รายการอาหารของวันปัจจุบัน
 router.get("/meals/:userId", validateToken, getTodayMeals);
+
 // รายการกิจกรรมของวันปัจจุบัน
 router.get("/activities/:userId", validateToken, getTodayActivities);
+
 // กราฟรายสัปดาห์
-router.get("/weekly", validateToken, getWeeklyCalories);
+router.get("/weekly/:userId", validateToken, getWeeklyCalories);
 
 // คำนวณและบันทึกแคลอรี่ (BMR + TDEE + Target Calories)
 router.post("/calculate-calories/:userId", validateToken, calculateAndSaveCalories);
+
+// สถานะแคลอรี่ประจำวัน
 router.get("/status/:userId", validateToken, getCalorieStatus);
 
-// ดึงสารอาหารรายวัน
+// กราฟวงกลม
 router.get("/macros/:userId", validateToken, getDailyMacros);
 
 export default router;

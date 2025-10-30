@@ -121,15 +121,13 @@ class WeeklyCaloriesResponse {
   final String message;
   final List<DailyCalorieData> data;
 
-  WeeklyCaloriesResponse({
-    required this.message,
-    required this.data,
-  });
+  WeeklyCaloriesResponse({required this.message, required this.data});
 
   factory WeeklyCaloriesResponse.fromJson(Map<String, dynamic> json) {
     return WeeklyCaloriesResponse(
       message: json['message'] ?? '',
-      data: (json['data'] as List<dynamic>?)
+      data:
+          (json['data'] as List<dynamic>?)
               ?.map((item) => DailyCalorieData.fromJson(item))
               .toList() ??
           [],
@@ -139,16 +137,9 @@ class WeeklyCaloriesResponse {
 
 class DailyCalorieData {
   final String date;
-  final double consumedCalories;
-  final double burnedCalories;
   final double netCalories;
 
-  DailyCalorieData({
-    required this.date,
-    required this.consumedCalories,
-    required this.burnedCalories,
-    required this.netCalories,
-  });
+  DailyCalorieData({required this.date, required this.netCalories});
 
   factory DailyCalorieData.fromJson(Map<String, dynamic> json) {
     // Helper function เพื่อแปลงค่าเป็น double
@@ -162,8 +153,6 @@ class DailyCalorieData {
 
     return DailyCalorieData(
       date: json['date'] ?? '',
-      consumedCalories: parseValue(json['consumed_calories']),
-      burnedCalories: parseValue(json['burned_calories']),
       netCalories: parseValue(json['net_calories']),
     );
   }

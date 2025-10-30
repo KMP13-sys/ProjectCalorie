@@ -202,7 +202,7 @@ export const getDailyMacros = async (req: Request, res: Response) => {
   }
 };
 
-
+// กราฟรายสัปดาห์
 export const getWeeklyCalories = async (req: Request, res: Response) => {
   const user = (req as any).user;
   const userId = user?.user_id || user?.id; // ปรับให้รองรับ JWT ทั้งสองรูปแบบ
@@ -215,8 +215,6 @@ export const getWeeklyCalories = async (req: Request, res: Response) => {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT 
          DATE_FORMAT(date, '%Y-%m-%d') AS date,
-         consumed_calories,
-         burned_calories,
          net_calories
        FROM DailyCalories
        WHERE user_id = ?

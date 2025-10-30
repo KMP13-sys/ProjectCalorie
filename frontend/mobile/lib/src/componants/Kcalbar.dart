@@ -62,7 +62,7 @@ class _KcalbarState extends State<Kcalbar> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final textScale = MediaQuery.of(context).textScaleFactor;
+    //final textScale = MediaQuery.of(context).textScaleFactor;
 
     // responsive scaling
     double scale(double base) => base * (screenWidth / 400).clamp(0.8, 1.4);
@@ -156,15 +156,15 @@ class _KcalbarState extends State<Kcalbar> {
                       color: Colors.black,
                     ),
                   ),
-                  SizedBox(height: scale(4)),
-                  Text(
-                    'เพื่อคำนวณแคลอรี่ที่เหมาะสมกับคุณ',
-                    style: TextStyle(
-                      fontSize: scale(8),
-                      fontFamily: 'TA8bit',
-                      color: Colors.black87,
-                    ),
-                  ),
+                  SizedBox(height: scale(3)), // 4
+                  // Text(
+                  //   'เพื่อคำนวณแคลอรี่ที่เหมาะสมกับคุณ',
+                  //   style: TextStyle(
+                  //     fontSize: scale(8),
+                  //     fontFamily: 'TA8bit',
+                  //     color: Colors.black87,
+                  //   ),
+                  // ),
                 ],
               ),
             ),

@@ -38,8 +38,6 @@ export interface DailyMacros {
 
 export interface DailyCalorieData {
   date: string
-  consumed_calories: number
-  burned_calories: number
   net_calories: number
 }
 
@@ -175,20 +173,39 @@ export const kalService = {
   },
 
   /**
-   * Get weekly calories
+   * Get weekly calories (ดึงข้อมูล 7 วันล่าสุด)
+   * Backend จะใช้ user_id จาก JWT token โดยอัตโนมัติ
    */
   getWeeklyCalories: async (): Promise<WeeklyCaloriesResponse> => {
     try {
-      console.log('[KalService] Fetching weekly calories')
-      const url = `${DAILY_API_URL}/weekly`
+      const userId = getUserId()
+      if (!userId) {
+        throw new Error('User ID not found. Please login again.')
+      }
+
+      console.log('🌐 [KalService] Fetching weekly calories for user:', userId)
+      const url = `${DAILY_API_URL}/weekly/${userId}`
 
       const response = await api.get<WeeklyCaloriesResponse>(url)
 
-      console.log('[KalService] Response status:', response.status)
-      console.log('[KalService] Successfully fetched weekly calories')
+      console.log('✅ [KalService] Response status:', response.status)
+      console.log('✅ [KalService] Weekly data received:', response.data.data.length, 'days')
       return response.data
     } catch (error: any) {
-      console.error('[KalService] Exception in getWeeklyCalories:', error)
+      console.error('❌ [KalService] Exception in getWeeklyCalories:', error)
+
+      // แยกประเภท error
+      if (error.response?.status === 401) {
+        throw new Error('Session expired. Please login again.')
+      } else if (error.response?.status === 404) {
+        // ไม่มีข้อมูล - return empty array
+        console.log('⚠️ [KalService] No weekly data found')
+        return {
+          message: 'No weekly data found',
+          data: []
+        }
+      }
+
       const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch weekly calories'
       throw new Error(errorMessage)
     }
