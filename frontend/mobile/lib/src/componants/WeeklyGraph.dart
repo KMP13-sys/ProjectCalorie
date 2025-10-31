@@ -268,25 +268,27 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
 
     // ✅ เหมือนเว็บ: Y-axis เริ่มจาก 0 เสมอ
     final minY = 0.0;
-    // เพิ่ม padding 20% ด้านบน
-    final maxY = maxValue * 1.2;
 
-    // ✅ คำนวณ interval สำหรับ Y-axis (แบ่งเป็น 4-5 ช่วง)
-    final yRange = maxY - minY;
+    // ✅ คำนวณ interval ก่อน (แบ่งเป็น 4-5 ช่วง)
     double interval;
-    if (yRange <= 100) {
+    if (maxValue <= 100) {
       interval = 25;
-    } else if (yRange <= 200) {
+    } else if (maxValue <= 200) {
       interval = 50;
-    } else if (yRange <= 500) {
+    } else if (maxValue <= 500) {
       interval = 100;
-    } else if (yRange <= 1000) {
+    } else if (maxValue <= 1000) {
       interval = 200;
-    } else if (yRange <= 2000) {
+    } else if (maxValue <= 2000) {
       interval = 500;
     } else {
       interval = 1000;
     }
+
+    // ✅ ปัด maxY ขึ้นให้เป็น multiple ของ interval
+    // ตัวอย่าง: maxValue = 711, interval = 200 → maxY = 800
+    // ตัวอย่าง: maxValue = 850, interval = 200 → maxY = 1000
+    final maxY = ((maxValue / interval).ceil() * interval).toDouble();
 
     debugPrint('📊 Weekly Data: $weeklyData');
     debugPrint('📊 Values: $values');
