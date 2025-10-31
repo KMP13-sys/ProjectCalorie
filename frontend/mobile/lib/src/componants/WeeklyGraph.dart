@@ -5,9 +5,8 @@ import '../../service/kal_service.dart';
 
 /// Widget สำหรับแสดงกราฟแคลอรี่รายสัปดาห์
 /// - ดึงข้อมูลจาก KalService.getWeeklyCalories()
-/// - แสดง loading state ระหว่างดึงข้อมูล
-/// - จัดการ error และแสดงปุ่ม retry
-/// - รองรับ responsive design
+/// - แสดงผลเหมือนเว็บ: หัวข้อด้านบน + กราฟด้านล่าง
+/// - Responsive ทุกส่วน
 class WeeklyGraph extends StatefulWidget {
   const WeeklyGraph({super.key});
 
@@ -38,12 +37,10 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
         errorMessage = '';
       });
 
-      // ✅ Debug: แสดง request
       debugPrint('🌐 Fetching weekly calories data...');
 
       final response = await KalService.getWeeklyCalories();
 
-      // ✅ Debug: แสดงข้อมูลที่ได้
       debugPrint('✅ Weekly data received: ${response.data.length} items');
 
       // แปลงข้อมูลจาก API ให้อยู่ในรูปแบบที่ใช้งานได้
@@ -68,30 +65,24 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
 
       debugPrint('✅ Weekly data loaded successfully');
     } catch (e) {
-      // ✅ แยกประเภท error เหมือน auth_service
       debugPrint('❌ Error loading weekly data: $e');
 
       String errorMsg = 'Failed to load weekly data';
 
-      // ตรวจสอบประเภทของ error
       if (e.toString().contains('Session expired') ||
           e.toString().contains('No access token')) {
         errorMsg = 'Please login again';
-        debugPrint('⚠️ Authentication error detected');
       } else if (e.toString().contains('SocketException') ||
-                 e.toString().contains('Failed host lookup')) {
+          e.toString().contains('Failed host lookup')) {
         errorMsg = 'Network connection error';
-        debugPrint('⚠️ Network error detected');
       }
 
       setState(() {
         errorMessage = errorMsg;
         isLoading = false;
-        // แสดงข้อมูลว่างเปล่าแทนข้อมูลตัวอย่าง
         weeklyData = [];
       });
 
-      // ✅ Rethrow exception ถ้าเป็น Exception เพื่อให้ parent widget จัดการได้
       if (e is Exception) rethrow;
     }
   }
@@ -101,53 +92,69 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ Responsive dimensions สำหรับมือถือ
-    final chartHeight = screenHeight * 0.35; // ใช้ความสูงหน้าจอแทน
-    final fontSize = screenWidth * 0.032; // ลด font size ลงเล็กน้อย
-    final dotRadius = screenWidth * 0.015; // ลดขนาด dot
-    final reservedSize = screenWidth * 0.12; // เพิ่มพื้นที่สำหรับตัวเลข
-    final padding = screenWidth * 0.03; // padding ภายใน
-    final horizontalPadding = screenWidth * 0.03; // padding ซ้าย-ขวา
-    final tooltipFontSize = fontSize * 0.9; // ขนาด font ใน tooltip
+    // ✅ Responsive dimensions - เพิ่มความสูงกราฟ
+    final chartHeight = screenHeight * 0.45; // เพิ่มจาก 0.38 เป็น 0.45
+    final fontSize = screenWidth * 0.038; // เพิ่มขนาดตัวอักษร
+    final titleFontSize = screenWidth * 0.045; // เพิ่มขนาดหัวข้อ
+    final dotRadius = screenWidth * 0.02; // เพิ่มขนาด dot
+    final reservedSize = screenWidth * 0.15;
+    final padding = screenWidth * 0.04;
+    final horizontalPadding = screenWidth * 0.04;
+    final borderRadius = screenWidth * 0.02;
+    final shadowBlurRadius = screenWidth * 0.02;
+    final iconSize = screenWidth * 0.12;
 
-    // แสดง loading indicator
+    // ========== Loading State ==========
     if (isLoading) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: screenHeight * 0.012,
+        ),
         child: Container(
           height: chartHeight,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
-                offset: const Offset(2, 2),
-                blurRadius: 8,
+                offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
+                blurRadius: shadowBlurRadius,
               ),
             ],
           ),
-          child: const Center(
-            child: CircularProgressIndicator(color: Colors.green),
+          child: Center(
+            child: SizedBox(
+              width: iconSize * 0.6,
+              height: iconSize * 0.6,
+              child: const CircularProgressIndicator(
+                color: Colors.green,
+                strokeWidth: 3,
+              ),
+            ),
           ),
         ),
       );
     }
 
-    // แสดง error message (ถ้ามี) พร้อมปุ่ม retry
+    // ========== Error State ==========
     if (errorMessage.isNotEmpty && weeklyData.isEmpty) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: screenHeight * 0.012,
+        ),
         child: Container(
           height: chartHeight,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
-                offset: const Offset(2, 2),
-                blurRadius: 8,
+                offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
+                blurRadius: shadowBlurRadius,
               ),
             ],
           ),
@@ -160,7 +167,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                   Icon(
                     Icons.error_outline,
                     color: Colors.red,
-                    size: fontSize * 3,
+                    size: iconSize,
                   ),
                   SizedBox(height: screenHeight * 0.02),
                   Text(
@@ -173,10 +180,9 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: screenHeight * 0.025),
-                  // ✅ ปุ่ม Retry
                   ElevatedButton.icon(
                     onPressed: _loadWeeklyData,
-                    icon: Icon(Icons.refresh, size: fontSize * 1.2),
+                    icon: Icon(Icons.refresh, size: fontSize * 1.3),
                     label: Text(
                       'Retry',
                       style: TextStyle(fontSize: fontSize * 1.1),
@@ -189,7 +195,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                         vertical: screenHeight * 0.015,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(borderRadius),
                       ),
                     ),
                   ),
@@ -201,20 +207,23 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
       );
     }
 
-    // ตรวจสอบว่ามีข้อมูลหรือไม่
+    // ========== Empty State ==========
     if (weeklyData.isEmpty) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: screenHeight * 0.012,
+        ),
         child: Container(
           height: chartHeight,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
-                offset: const Offset(2, 2),
-                blurRadius: 8,
+                offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
+                blurRadius: shadowBlurRadius,
               ),
             ],
           ),
@@ -225,7 +234,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                 Icon(
                   Icons.pie_chart_outline,
                   color: Colors.grey,
-                  size: fontSize * 3,
+                  size: iconSize,
                 ),
                 SizedBox(height: screenHeight * 0.02),
                 Text(
@@ -243,229 +252,258 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
       );
     }
 
+    // ========== คำนวณข้อมูลสำหรับกราฟ ==========
+
     final spots = List.generate(weeklyData.length, (index) {
       return FlSpot(index.toDouble(), weeklyData[index]['NetCal'].toDouble());
     });
 
+    // คำนวณผลรวมแคลอรี่ทั้งสัปดาห์
     final totalWeek =
         weeklyData.fold(0, (sum, item) => sum + (item['NetCal'] as int));
 
-    // หา maxY โดยตรวจสอบว่ามีข้อมูลหรือไม่
-    final maxValue = weeklyData
-        .map((e) => e['NetCal'] as int)
-        .reduce((a, b) => a > b ? a : b);
-    final maxY = (maxValue > 0 ? maxValue.toDouble() : 1000.0) + 400;
+    // หา maxValue สำหรับ Y-axis
+    final values = weeklyData.map((e) => e['NetCal'] as int).toList();
+    final maxValue = values.reduce((a, b) => a > b ? a : b).toDouble();
+
+    // ✅ เหมือนเว็บ: Y-axis เริ่มจาก 0 เสมอ
+    final minY = 0.0;
+    // เพิ่ม padding 20% ด้านบน
+    final maxY = maxValue * 1.2;
+
+    // ✅ คำนวณ interval สำหรับ Y-axis (แบ่งเป็น 4-5 ช่วง)
+    final yRange = maxY - minY;
+    double interval;
+    if (yRange <= 100) {
+      interval = 25;
+    } else if (yRange <= 200) {
+      interval = 50;
+    } else if (yRange <= 500) {
+      interval = 100;
+    } else if (yRange <= 1000) {
+      interval = 200;
+    } else if (yRange <= 2000) {
+      interval = 500;
+    } else {
+      interval = 1000;
+    }
+
+    debugPrint('📊 Weekly Data: $weeklyData');
+    debugPrint('📊 Values: $values');
+    debugPrint('📊 Max: $maxValue, Total: $totalWeek, MaxY: $maxY, Interval: $interval');
+
+    // ========== แสดงกราฟ ==========
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 10),
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Container(
-            height: chartHeight,
-            padding: EdgeInsets.all(padding),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  offset: const Offset(2, 2),
-                  blurRadius: 8,
-                ),
-              ],
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: screenHeight * 0.012,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
+              blurRadius: shadowBlurRadius,
             ),
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: (weeklyData.length - 1).toDouble(),
-                minY: 0,
-                maxY: maxY,
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: true,
-                  horizontalInterval: 500,
-                  verticalInterval: 1,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey[300]!,
-                    strokeWidth: 1,
-                    dashArray: [3, 3],
-                  ),
-                  getDrawingVerticalLine: (value) => FlLine(
-                    color: Colors.grey[300]!,
-                    strokeWidth: 1,
-                    dashArray: [3, 3],
-                  ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // ✅ หัวข้อด้านบน: แสดงผลรวมแคลอรี่ทั้งสัปดาห์
+            Padding(
+              padding: EdgeInsets.all(padding * 1.5),
+              child: Text(
+                'รวมแคลที่ทานไปทั้งสัปดาห์: $totalWeek kcal',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  fontSize: titleFontSize,
                 ),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      reservedSize: reservedSize * 0.8,
-                      getTitlesWidget: (value, meta) {
-                        int index = value.toInt();
-                        if (index < 0 || index >= weeklyData.length) {
-                          return const SizedBox();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            weeklyData[index]['name'],
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w600,
-                              fontSize: fontSize * 0.95,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 500,
-                      reservedSize: reservedSize,
-                      getTitlesWidget: (value, meta) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: Text(
-                            '${value.toInt()}',
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w500,
-                              fontSize: fontSize * 0.85,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                borderData: FlBorderData(
-                  show: true,
-                  border: const Border(
-                    bottom: BorderSide(color: Colors.black),
-                    left: BorderSide(color: Colors.black),
-                    right: BorderSide(color: Colors.transparent),
-                    top: BorderSide(color: Colors.transparent),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: Colors.green,
-                    barWidth: screenWidth * 0.008, // responsive line width
-                    dotData: FlDotData(
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // ✅ กราฟ
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(padding),
+                child: LineChart(
+                  LineChartData(
+                    minX: 0,
+                    maxX: (weeklyData.length - 1).toDouble(),
+                    minY: minY,
+                    maxY: maxY,
+                    gridData: FlGridData(
                       show: true,
-                      getDotPainter: (spot, percent, barData, index) =>
-                          FlDotCirclePainter(
-                        radius: dotRadius * 1.5, // เพิ่มขนาด dot ให้กดง่ายขึ้น
-                        color: Colors.green,
-                        strokeWidth: screenWidth * 0.004,
-                        strokeColor: Colors.white,
+                      drawVerticalLine: true,
+                      horizontalInterval: interval,
+                      verticalInterval: 1,
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: Colors.grey[300]!,
+                        strokeWidth: screenWidth * 0.0025,
+                        dashArray: [
+                          (screenWidth * 0.0075).toInt(),
+                          (screenWidth * 0.0075).toInt(),
+                        ],
+                      ),
+                      getDrawingVerticalLine: (value) => FlLine(
+                        color: Colors.grey[300]!,
+                        strokeWidth: screenWidth * 0.0025,
+                        dashArray: [
+                          (screenWidth * 0.0075).toInt(),
+                          (screenWidth * 0.0075).toInt(),
+                        ],
                       ),
                     ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: Colors.green.withOpacity(0.1), // เพิ่ม gradient
-                    ),
-                  ),
-                ],
-                lineTouchData: LineTouchData(
-                  enabled: true,
-                  handleBuiltInTouches: true,
-                  touchSpotThreshold: screenWidth * 0.05, // เพิ่ม touch area
-                  getTouchedSpotIndicator: (barData, spotIndexes) {
-                    return spotIndexes.map((index) {
-                      return TouchedSpotIndicatorData(
-                        FlLine(
-                          color: Colors.green.withAlpha(128),
-                          strokeWidth: 2,
-                          dashArray: [4, 4],
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 1,
+                          reservedSize: reservedSize * 0.85,
+                          getTitlesWidget: (value, meta) {
+                            int index = value.toInt();
+                            if (index < 0 || index >= weeklyData.length) {
+                              return const SizedBox();
+                            }
+                            return Padding(
+                              padding: EdgeInsets.only(top: screenHeight * 0.005),
+                              child: Text(
+                                weeklyData[index]['name'],
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: fontSize * 0.95,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        FlDotData(
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: interval,
+                          reservedSize: reservedSize,
+                          getTitlesWidget: (value, meta) {
+                            return Padding(
+                              padding: EdgeInsets.only(right: screenWidth * 0.015),
+                              child: Text(
+                                '${value.toInt()}',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: fontSize * 0.75, // ลดจาก 0.85 เป็น 0.75
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: spots,
+                        isCurved: true,
+                        color: Colors.green,
+                        barWidth: screenWidth * 0.008,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
                           show: true,
                           getDotPainter: (spot, percent, barData, index) =>
                               FlDotCirclePainter(
-                            radius: dotRadius * 2, // ขนาดใหญ่ขึ้นเมื่อ touch
+                            radius: dotRadius,
                             color: Colors.green,
-                            strokeWidth: screenWidth * 0.006,
+                            strokeWidth: screenWidth * 0.005,
                             strokeColor: Colors.white,
                           ),
                         ),
-                      );
-                    }).toList();
-                  },
-                  touchTooltipData: LineTouchTooltipData(
-                    tooltipRoundedRadius: 8,
-                    tooltipPadding: EdgeInsets.symmetric(
-                      horizontal: padding * 1.5,
-                      vertical: padding,
-                    ),
-                    fitInsideHorizontally: true,
-                    fitInsideVertically: true,
-                    getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                      if (touchedSpots.isEmpty) return [];
-                      return touchedSpots.map((spot) {
-                        final int index = spot.x.toInt();
-                        if (index < 0 || index >= weeklyData.length) return null;
-                        final data = weeklyData[index];
-                        return LineTooltipItem(
-                          '${data['name']}\n${data['NetCal']} Kcal',
-                          TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: tooltipFontSize,
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.green.withOpacity(0.3),
+                              Colors.green.withOpacity(0.1),
+                            ],
                           ),
-                        );
-                      }).whereType<LineTooltipItem>().toList();
-                    },
+                        ),
+                      ),
+                    ],
+                    lineTouchData: LineTouchData(
+                      enabled: true,
+                      handleBuiltInTouches: true,
+                      touchSpotThreshold: screenWidth * 0.05,
+                      getTouchedSpotIndicator: (barData, spotIndexes) {
+                        return spotIndexes.map((index) {
+                          return TouchedSpotIndicatorData(
+                            FlLine(
+                              color: Colors.green.withOpacity(0.5),
+                              strokeWidth: screenWidth * 0.005,
+                              dashArray: [
+                                (screenWidth * 0.01).toInt(),
+                                (screenWidth * 0.01).toInt(),
+                              ],
+                            ),
+                            FlDotData(
+                              show: true,
+                              getDotPainter: (spot, percent, barData, index) =>
+                                  FlDotCirclePainter(
+                                radius: dotRadius * 2,
+                                color: Colors.green,
+                                strokeWidth: screenWidth * 0.006,
+                                strokeColor: Colors.white,
+                              ),
+                            ),
+                          );
+                        }).toList();
+                      },
+                      touchTooltipData: LineTouchTooltipData(
+                        getTooltipColor: (touchedSpot) => Colors.green,
+                        tooltipRoundedRadius: borderRadius * 0.8,
+                        tooltipPadding: EdgeInsets.symmetric(
+                          horizontal: padding * 1.5,
+                          vertical: padding,
+                        ),
+                        fitInsideHorizontally: true,
+                        fitInsideVertically: true,
+                        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                          if (touchedSpots.isEmpty) return [];
+                          return touchedSpots.map((spot) {
+                            final int index = spot.x.toInt();
+                            if (index < 0 || index >= weeklyData.length) {
+                              return null;
+                            }
+                            final data = weeklyData[index];
+                            return LineTooltipItem(
+                              '${data['name']}\n${data['NetCal']} Kcal',
+                              TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: fontSize * 0.95,
+                              ),
+                            );
+                          }).whereType<LineTooltipItem>().toList();
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: padding * 0.5,
-            child: Container(
-              width: screenWidth - (horizontalPadding * 2),
-              alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(
-                vertical: padding * 0.8,
-                horizontal: padding * 2,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.green.withAlpha(230),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(25),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              child: Text(
-                'Total: $totalWeek Kcal',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: fontSize * 1.1,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

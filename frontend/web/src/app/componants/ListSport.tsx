@@ -41,7 +41,7 @@ const ListSport: React.FC<ListSportProps> = () => {
       </h2>
 
       {/* 🔹 หัวตาราง */}
-      <div className="mt-3 flex justify-between text-[#2a2a2a] text-[10px] font-bold">
+      <div className="mt-3 flex justify-between text-[#2a2a2a] text-[15px] font-bold">
         <span className="flex-1">SPORT</span>
         <span className="w-[40px] text-center">TIME</span>
         <span className="w-[50px] text-right">BURN</span>
@@ -51,7 +51,7 @@ const ListSport: React.FC<ListSportProps> = () => {
       <div className="h-[3px] bg-[#2a2a2a] my-2" />
 
       {/* 🔹 รายการกีฬา */}
-      <div className="overflow-y-auto flex-1">
+      <div className="overflow-y flex-1">
         {/* แสดง Loading */}
         {loading && (
           <div className="text-center text-[#2a2a2a] font-bold text-[16px] mt-5">

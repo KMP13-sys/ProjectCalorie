@@ -103,11 +103,11 @@ export default function NutritionPieChart() {
     <div className="w-full h-full flex items-center justify-center">
       {/* Pie Chart */}
       <div style={{ width: 450, height: 450 }}>
-        <PieChart width={450} height={450}>
+        <PieChart width={500} height={500}>
           <Pie
             data={data}
-            cx={225}
-            cy={225}
+            cx={230}
+            cy={220}
             labelLine={false}
             label={(entry: any) => {
               const percent = ((entry.value / total) * 100).toFixed(0);

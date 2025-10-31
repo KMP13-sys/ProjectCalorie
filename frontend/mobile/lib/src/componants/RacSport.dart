@@ -42,17 +42,18 @@ class _RacSportState extends State<RacSport> {
     setState(() => loading = true);
 
     try {
-      final recommendations = await RecommendationService.getSportRecommendations(
-        userId: widget.userId,
-        topN: 5,
-      );
+      final recommendations =
+          await RecommendationService.getSportRecommendations(
+            userId: widget.userId,
+            topN: 5,
+          );
 
       final items = recommendations
           .map((rec) => SportItem.fromJson(rec))
-          .where((item) => item.calories.abs() <= widget.remainingCalories)
           .toList();
 
       setState(() {
+        // ✅ เอาแค่ 3 รายการแรก เพราะ API ไม่ส่ง calories มาให้ filter
         sportList = items.take(3).toList();
         loading = false;
       });
@@ -141,7 +142,7 @@ class _RacSportState extends State<RacSport> {
                   children: [
                     Expanded(
                       child: Text(
-                        "🏃‍♂️ ${item.name}",
+                        " ${item.name}",
                         style: TextStyle(
                           fontSize: fontSize,
                           fontWeight: FontWeight.bold,
@@ -151,15 +152,18 @@ class _RacSportState extends State<RacSport> {
                         maxLines: 1,
                       ),
                     ),
-                    SizedBox(width: spacing),
-                    Text(
-                      "${item.calories} kcal",
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2a2a2a),
+                    // ✅ แสดง calories เฉพาะเมื่อมีค่ามากกว่า 0
+                    if (item.calories > 0) ...[
+                      SizedBox(width: spacing),
+                      Text(
+                        "${item.calories.abs()} kcal",
+                        style: TextStyle(
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2a2a2a),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               );

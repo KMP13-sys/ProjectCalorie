@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                   const SizedBox(height: 5),
 
-                  // Weekly Graph
+                  // Weekly Graph - ✅ เพิ่มความสูงให้มากขึ้น
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
@@ -188,8 +188,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                     child: SizedBox(
                       width: double.infinity,
-                      height: 200,
-                      child: WeeklyGraph(),
+                      height: MediaQuery.of(context).size.height * 0.45, // เพิ่มจาก 0.38 เป็น 0.45
+                      child: const WeeklyGraph(),
                     ),
                   ),
 

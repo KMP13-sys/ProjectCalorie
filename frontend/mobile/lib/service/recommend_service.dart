@@ -65,13 +65,15 @@ class RecommendationService {
         if (data is Map && data.containsKey('recommendations')) {
           final recs = data['recommendations'];
           if (recs is List) {
-            return List<Map<String, dynamic>>.from(recs);
+            // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
+            return _convertToMapList(recs);
           }
         }
 
         // ✅ ถ้า API ส่งกลับมาเป็น list โดยตรง
         if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
+          // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
+          return _convertToMapList(data);
         }
 
         return [];
@@ -132,12 +134,14 @@ class RecommendationService {
         if (data is Map && data.containsKey('recommendations')) {
           final recs = data['recommendations'];
           if (recs is List) {
-            return List<Map<String, dynamic>>.from(recs);
+            // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
+            return _convertToMapList(recs);
           }
         }
 
         if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
+          // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
+          return _convertToMapList(data);
         }
 
         return [];
@@ -149,6 +153,30 @@ class RecommendationService {
       print("❌ Error fetching sport recommendations: $e");
       rethrow;
     }
+  }
+
+  /// 🧰 Helper แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
+  static List<Map<String, dynamic>> _convertToMapList(List data) {
+    return data.map((item) {
+      if (item is Map<String, dynamic>) {
+        // ✅ ถ้าเป็น Map แล้ว ส่งกลับไปเลย
+        return item;
+      } else if (item is String) {
+        // ✅ ถ้าเป็น String ให้แปลงเป็น Map ที่มี name
+        return {
+          'id': 0,
+          'name': item,
+          'calories': 0, // ไม่มีข้อมูล calories จาก API
+        };
+      } else {
+        // ✅ กรณีอื่นๆ (ไม่น่าจะเกิด)
+        return {
+          'id': 0,
+          'name': item.toString(),
+          'calories': 0,
+        };
+      }
+    }).toList();
   }
 
   /// 🧰 Helper แปลงข้อความ error

@@ -26,21 +26,16 @@ export default function WeeklyGraph() {
   const [error, setError] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // ========== โหลดข้อมูลกราฟรายสัปดาห์ ==========
+  // โหลดข้อมูลกราฟรายสัปดาห์
   useEffect(() => {
     const loadWeeklyData = async () => {
       try {
         setIsLoading(true);
         setError('');
 
-        console.log('🌐 [WeeklyGraph] Fetching weekly calories data...');
         const response = await kalService.getWeeklyCalories();
 
-        console.log('✅ [WeeklyGraph] Data received:', response.data);
-
-        // แปลงข้อมูลให้อยู่ในรูปแบบที่ Recharts ใช้งานได้
         const formattedData: WeeklyChartData[] = response.data.map((item: DailyCalorieData) => {
-          // แปลงวันที่เป็นชื่อวัน (Mon, Tue, Wed, ...)
           const date = new Date(item.date);
           const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
           const dayName = dayNames[date.getDay()];
@@ -52,19 +47,14 @@ export default function WeeklyGraph() {
           };
         });
 
-        console.log('✅ [WeeklyGraph] Formatted data:', formattedData);
         setWeeklyData(formattedData);
       } catch (err: any) {
-        console.error('❌ [WeeklyGraph] Error loading weekly data:', err);
-
-        // แยกประเภท error
         let errorMsg = 'Failed to load weekly data';
         if (err.message?.includes('Session expired') || err.message?.includes('login again')) {
           errorMsg = 'Please login again';
         } else if (err.message?.includes('Network') || err.message?.includes('fetch')) {
           errorMsg = 'Network connection error';
         }
-
         setError(errorMsg);
       } finally {
         setIsLoading(false);
@@ -74,12 +64,11 @@ export default function WeeklyGraph() {
     loadWeeklyData();
   }, []);
 
-  // ========== จัดการขนาดหน้าจอ ==========
+  // จัดการขนาดหน้าจอ
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-
         if (width > 0 && height > 0) {
           setDimensions({ width, height });
         } else {
@@ -87,18 +76,16 @@ export default function WeeklyGraph() {
         }
       }
     };
-
     setTimeout(updateDimensions, 100);
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // ========== Render Loading State ==========
   if (isLoading) {
     return (
       <div
         ref={containerRef}
-        className="w-full h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center"
+        className="w-full h-full bg-white rounded-lg p-4 flex items-center justify-center"
         style={{ minHeight: '300px' }}
       >
         <div className="text-center">
@@ -109,12 +96,11 @@ export default function WeeklyGraph() {
     );
   }
 
-  // ========== Render Error State ==========
   if (error) {
     return (
       <div
         ref={containerRef}
-        className="w-full h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center"
+        className="w-full h-full bg-white rounded-lg p-4 flex items-center justify-center"
         style={{ minHeight: '300px' }}
       >
         <div className="text-center">
@@ -131,12 +117,11 @@ export default function WeeklyGraph() {
     );
   }
 
-  // ========== Render Empty State ==========
   if (weeklyData.length === 0) {
     return (
       <div
         ref={containerRef}
-        className="w-full h-full bg-white rounded-lg shadow-md p-4 flex items-center justify-center"
+        className="w-full h-full bg-white rounded-lg p-4 flex items-center justify-center"
         style={{ minHeight: '300px' }}
       >
         <div className="text-center">
@@ -148,13 +133,22 @@ export default function WeeklyGraph() {
     );
   }
 
-  // ========== Render Chart ==========
+  // ✅ คำนวณผลรวมแคลอรี่ทั้งสัปดาห์
+  const totalCalories = weeklyData.reduce((sum, item) => sum + item.NetCal, 0);
+
   return (
     <div
       ref={containerRef}
-      className="w-full h-full bg-white rounded-lg shadow-md p-4"
+      className="w-full h-full bg-white rounded-lg p-4"
       style={{ minHeight: '300px' }}
     >
+      {/* ✅ แสดงผลรวมแคลอรี่ทั้งสัปดาห์ */}
+      <div className="text-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-700">
+          รวมแคลที่ทานไปทั้งสัปดาห์: <span className="text-green-600">{totalCalories.toLocaleString()}</span> kcal
+        </h2>
+      </div>
+
       {dimensions.width > 0 && dimensions.height > 0 ? (
         <ResponsiveContainer width="100%" height="100%" minHeight={250}>
           <LineChart
@@ -166,40 +160,27 @@ export default function WeeklyGraph() {
               bottom: 5,
             }}
           >
-            {/* เส้น Grid แนวตั้งและแนวนอน */}
             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-
-            {/* แกน X (แสดงวันในสัปดาห์) */}
-            <XAxis
-              dataKey="name"
-              stroke="#555"
-              style={{ fontSize: '14px', fontWeight: 500 }}
-            />
-
-            {/* แกน Y (แสดงค่าแคลอรี่) */}
-            <YAxis
-              stroke="#555"
-              style={{ fontSize: '14px', fontWeight: 500 }}
-            />
-
-            {/* Tooltip (แสดงค่าเมื่อผู้ใช้เลื่อนเมาส์ไปที่จุด) */}
+            <XAxis dataKey="name" stroke="#555" style={{ fontSize: '14px', fontWeight: 500 }} />
+            <YAxis stroke="#555" style={{ fontSize: '14px', fontWeight: 500 }} />
+            
+            {/* ✅ แก้ข้อความ tooltip */}
             <Tooltip
-              formatter={(value, name) => [`${value} Kcal`, 'Net Calories']}
+              formatter={(value) => [`${value} Kcal`, 'ทานไป']}
               contentStyle={{
                 borderRadius: '8px',
                 border: '1px solid #ccc',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               }}
             />
+            
+            {/* ✅ แก้ชื่อ legend */}
+            <Legend formatter={() => 'รวมแคลต่อวัน (Kcal)'} />
 
-            {/* Legend (คำอธิบายสีของเส้น) */}
-            <Legend />
-
-            {/* เส้นกราฟหลัก */}
             <Line
               type="monotone"
               dataKey="NetCal"
-              name="Net Calories (Kcal)"
+              name="รวมแคลต่อวัน (Kcal)"
               stroke="#4caf50"
               strokeWidth={3}
               dot={{ r: 5, fill: '#4caf50', strokeWidth: 2, stroke: '#fff' }}

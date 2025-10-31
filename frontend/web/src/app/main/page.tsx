@@ -79,14 +79,14 @@ export default function MainPage() {
 
       {/* 🔹 MAIN LAYOUT AREA: จัดการองค์ประกอบทั้งหมด */}
       <div className="p-4 space-y-6">
-        <div className="grid grid-cols-12 gap-5 h-[36vh]">
+        <div className="grid grid-cols-12 gap-3 h-[36vh]">
 
           {/* 1. row1 คอลัมม์1: Kcalbar & Pie Graph (col-span-4) */}
-          <div className="col-span-4 flex flex-col bg-white rounded-lg shadow-md p-2 h-[70vh]">
-            <div className="h-[120px]">
+          <div className="col-span-4 flex flex-col bg-white rounded-lg shadow-md h-[70vh]">
+            <div className="h-[120px] p-2">
               <Kcalbar key={kcalbarKey} />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex overflow-hidden items-center justify-center">
               <Piegraph key={pieKey} />
             </div>
           </div>
@@ -110,12 +110,12 @@ export default function MainPage() {
           </div>
 
           {/* 3. row1 คอลัมม์3: List MENU (col-span-3) */}
-          <div className="col-span-3 bg-yellow-100 rounded-lg shadow-md">
+          <div className="col-span-3 bg-yellow-100">
             <ListMenu/>
           </div>
 
           {/* 4. row1 คอลัมม์4: List sport (col-span-3) */}
-          <div className="col-span-3 bg-yellow-100 rounded-lg shadow-md ">
+          <div className="col-span-3 bg-yellow-100 ">
             <ListSport/>
           </div>
 
@@ -129,22 +129,22 @@ export default function MainPage() {
         {/* ROW 2: */}
         {/* ======================================================= */}
 
-        <div className="flex space-x-6 h-[40vh] "> 
+        <div className="flex space-x-3 h-[50vh] "> 
           
           {/* 5. row2 คอลัมม์ 1: กราฟสถิติ (มีความยาว 1/2 ของจอ) */}
-          <div className="w-1/2 bg-white rounded-lg shadow-md ">
+          <div className="w-1/2 bg-white rounded-lg shadow-md p-6">
             <WeeklyGraph/>
           </div>
 
           {/* Container สำหรับคอลัมม์ 2 และ 3 (รวมกันเป็น 1/2 ของจอที่เหลือ) */}
-          <div className="w-1/2 flex space-x-6">
+          <div className="w-1/2 flex space-x-3">
             {/* 6. row2 คอลัมม์ 2: Recommend MENU (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
-            <div className="flex-1 bg-white rounded-lg shadow-md ">
+            <div className="flex-1 bg-white ">
               {/* <RacMenu /> */}
             </div>
             
             {/* 7. row2 คอลัมม์ 3: Recommend sport (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
-            <div className="flex-1 bg-white rounded-lg shadow-md ">
+            <div className="flex-1 bg-white">
               {/* <RacSport/> */}
             </div>
             
