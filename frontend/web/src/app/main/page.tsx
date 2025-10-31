@@ -17,7 +17,7 @@ import Activity from '../componants/Activity';
 
 export default function MainPage() {
   const [hasActivityLevel, setHasActivityLevel] = useState(false);
-  const [kcalbarKey, setKcalbarKey] = useState(0);// key สำหรับ force re-render Kcalbar
+  const [kcalbarKey, setKcalbarKey] = useState(0);
   const [pieKey, setPieKey] = useState(0);
   const [remainingCalories, setRemainingCalories] = useState<number>(0);
 
@@ -25,7 +25,6 @@ export default function MainPage() {
     checkActivityLevel();
   }, []);
 
-  // Refresh data when page becomes visible (e.g., after adding food)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -37,14 +36,12 @@ export default function MainPage() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Also refresh when component mounts (for navigation back)
     const refreshOnMount = () => {
       console.log('🔄 Component mounted, refreshing...');
       setKcalbarKey(prev => prev + 1);
       setPieKey(prev => prev + 1);
     };
 
-    // Small delay to ensure navigation is complete
     const timer = setTimeout(refreshOnMount, 100);
 
     return () => {
@@ -53,7 +50,6 @@ export default function MainPage() {
     };
   }, []);
 
-  // เช็คว่ามีการเลือก activity level แล้วหรือยัง
   const checkActivityLevel = async () => {
     try {
       const status = await kalService.getCalorieStatus();
@@ -64,103 +60,89 @@ export default function MainPage() {
     }
   };
 
-  // Callback เมื่อเลือก activity level เสร็จ
   const handleActivityUpdated = () => {
     console.log('🔄 Activity updated, refreshing...');
     setHasActivityLevel(true);
-    setKcalbarKey(prev => prev + 1); // Force re-render Kcalbar
-    setPieKey(prev => prev + 1); 
+    setKcalbarKey(prev => prev + 1);
+    setPieKey(prev => prev + 1);
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
-
       {/* NavBar */}
       <NavBarUser />
 
-      {/* 🔹 MAIN LAYOUT AREA: จัดการองค์ประกอบทั้งหมด */}
-      <div className="p-4 space-y-6">
-        <div className="grid grid-cols-12 gap-3 h-[36vh]">
+      {/* 🔹 MAIN LAYOUT AREA */}
+      <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6">
+        
+        {/* ======================================================= */}
+        {/* ROW 1: Main Content Grid */}
+        {/* ======================================================= */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-5">
 
-          {/* 1. row1 คอลัมม์1: Kcalbar & Pie Graph (col-span-4) */}
-          <div className="col-span-4 flex flex-col bg-white rounded-lg shadow-md h-[70vh]">
-            <div className="h-[120px] p-2">
+          {/* 1. Kcalbar & Pie Graph */}
+          <div className="md:col-span-1 lg:col-span-4 flex flex-col bg-white rounded-lg shadow-md p-2 sm:p-3 md:p-4 min-h-[400px] sm:min-h-[500px] md:min-h-[600px] lg:h-[70vh]">
+            <div className="h-[100px] sm:h-[110px] md:h-[120px]">
               <Kcalbar key={kcalbarKey} />
             </div>
-            <div className="flex overflow-hidden items-center justify-center">
+            <div className="flex-1 overflow-hidden">
               <Piegraph key={pieKey} />
             </div>
           </div>
 
-          {/* 2. row1 คอลัมม์2: Controls (activityfactor etc.) (col-span-2) */}
-          <div className="col-span-2 flex flex-col space-y-8 bg-white rounded-lg shadow-md py-5 px-4">
-              <div className="">
-                  <Activityfactor onCaloriesUpdated={handleActivityUpdated} />
+          {/* 2. Controls (Activity Factor, Camera, Activity) */}
+          <div className="md:col-span-1 lg:col-span-2 flex flex-col space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 bg-white rounded-lg shadow-md py-3 px-3 sm:py-4 sm:px-4 md:py-5 md:px-4">
+            <div>
+              <Activityfactor onCaloriesUpdated={handleActivityUpdated} />
+            </div>
+
+            {hasActivityLevel ? (
+              <div className="h-8 sm:h-9 md:h-10 bg-gray-200 flex items-center justify-center rounded-md">
+                <Camera autoPredictOnSelect={true} />
               </div>
+            ) : null}
 
-              {/* แสดง Camera เฉพาะเมื่อมีการเลือก activity level แล้ว */}
-              {hasActivityLevel ? (
-                <div className="h-10 bg-gray-200 flex items-center justify-center rounded-md">
-                    <Camera autoPredictOnSelect={true} />
-                </div>
-
-
-              ) : null}
-
-              <Activity onSave={(burnedCalories: number) => {
-                // อัพเดต Kcalbar และ Piegraph หลังบันทึกกิจกรรม
-                setKcalbarKey(prev => prev + 1);
-                setPieKey(prev => prev + 1);
-              }} />
-
-              <div className="flex-1 border border-gray-300 p-2 rounded-md">
-                  <p>ตัวนับ/เลือกกีฬาและเวลา</p>
-              </div>
+            <Activity onSave={(burnedCalories: number) => {
+              setKcalbarKey(prev => prev + 1);
+              setPieKey(prev => prev + 1);
+            }} />
           </div>
 
-          {/* 3. row1 คอลัมม์3: List MENU (col-span-3) */}
-          <div className="col-span-3 bg-yellow-100">
-            <ListMenu/>
+          {/* 3. List MENU */}
+          <div className="md:col-span-1 lg:col-span-3 bg-yellow-100 rounded-lg shadow-md min-h-[300px] sm:min-h-[400px] md:min-h-[500px] lg:min-h-0">
+            <ListMenu />
           </div>
 
-          {/* 4. row1 คอลัมม์4: List sport (col-span-3) */}
-          <div className="col-span-3 bg-yellow-100 ">
-            <ListSport/>
+          {/* 4. List Sport */}
+          <div className="md:col-span-1 lg:col-span-3 bg-yellow-100 rounded-lg shadow-md min-h-[300px] sm:min-h-[400px] md:min-h-[500px] lg:min-h-0">
+            <ListSport />
           </div>
-
         </div>
 
-
-        <div className="grid grid-cols-4  h-[30vh]"></div>
-
-
         {/* ======================================================= */}
-        {/* ROW 2: */}
+        {/* ROW 2: Statistics & Recommendations */}
         {/* ======================================================= */}
-
-        <div className="flex space-x-3 h-[50vh] "> 
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-6">
           
-          {/* 5. row2 คอลัมม์ 1: กราฟสถิติ (มีความยาว 1/2 ของจอ) */}
-          <div className="w-1/2 bg-white rounded-lg shadow-md p-6">
-            <WeeklyGraph/>
+          {/* 5. Weekly Graph */}
+          <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md min-h-[300px] sm:min-h-[350px] md:min-h-[400px] lg:h-[40vh]">
+            <WeeklyGraph />
           </div>
 
-          {/* Container สำหรับคอลัมม์ 2 และ 3 (รวมกันเป็น 1/2 ของจอที่เหลือ) */}
-          <div className="w-1/2 flex space-x-3">
-            {/* 6. row2 คอลัมม์ 2: Recommend MENU (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
-            <div className="flex-1 bg-white ">
+          {/* Container for Recommendations */}
+          <div className="w-full lg:w-1/2 flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-6">
+            
+            {/* 6. Recommend MENU */}
+            <div className="flex-1 bg-white rounded-lg shadow-md min-h-[250px] sm:min-h-[300px] lg:min-h-0">
               {/* <RacMenu /> */}
             </div>
             
-            {/* 7. row2 คอลัมม์ 3: Recommend sport (แบ่งครึ่งเท่าๆกันของครึ่งหน้าจอที่เหลือ = 1/4 ของจอ) */}
-            <div className="flex-1 bg-white">
-              {/* <RacSport/> */}
+            {/* 7. Recommend Sport */}
+            <div className="flex-1 bg-white rounded-lg shadow-md min-h-[250px] sm:min-h-[300px] lg:min-h-0">
+              {/* <RacSport /> */}
             </div>
-            
           </div>
-          
         </div>
-        
       </div>
     </div>
   );

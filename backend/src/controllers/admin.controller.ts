@@ -26,3 +26,24 @@ export const deleteUserByAdmin = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const role = (req as any).user?.role;
+    if (role !== "admin") {
+      return res.status(403).json({ message: "Admin only" });
+    }
+
+    // ดึงเฉพาะฟิลด์ที่อนุญาต (ไม่เอา password, image_profile)
+    const [rows]: any = await db.query(`
+      SELECT user_id, username, email, phone_number, age, gender, height, weight, goal, role
+      FROM users
+    `);
+
+    res.json({ users: rows });
+  } catch (err) {
+    console.error("getAllUsers error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

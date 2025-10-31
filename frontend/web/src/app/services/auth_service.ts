@@ -69,6 +69,12 @@ export interface RegisterData {
   goal: string
 }
 
+// ใน src/app/services/auth_service.ts
+// ...
+export { api }; // เพิ่มบรรทัดนี้ถ้าต้องการ Named Import ด้วย
+
+
+
 // ========================================
 // Axios Instance
 // ========================================
