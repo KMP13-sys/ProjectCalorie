@@ -42,6 +42,11 @@ class _ListMenuPageState extends State<ListMenuPage> {
     }
   }
 
+  // Public refresh method ที่จะถูกเรียกจาก parent widget
+  void refresh() {
+    _loadMeals();
+  }
+
   @override
   Widget build(BuildContext context) {
     // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
@@ -194,7 +199,7 @@ class _ListMenuPageState extends State<ListMenuPage> {
                                         ),
                                       ),
                                       Text(
-                                        '${meal.calories} Kcal',
+                                        '${meal.calories}',
                                         style: TextStyle(
                                           fontSize: fontSizeText,
                                           fontWeight: FontWeight.bold,

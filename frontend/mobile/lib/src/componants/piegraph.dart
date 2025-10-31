@@ -47,12 +47,19 @@ class _NutritionPieChartComponentState
 
   @override
   Widget build(BuildContext context) {
-    // ดึงขนาดหน้าจอสำหรับ responsive
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
+
+    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    final bool isSmallScreen = screenWidth < 400;
+    final double containerHeight = isSmallScreen
+        ? screenWidth * 0.35
+        : screenWidth * 0.4;
+    final double fontSize = isSmallScreen ? 12 : 14;
 
     if (_isLoading) {
       return SizedBox(
-        height: screenWidth * 0.4,
+        height: containerHeight,
         child: const Center(
           child: CircularProgressIndicator(
             color: Color(0xFF2a2a2a),
@@ -63,12 +70,12 @@ class _NutritionPieChartComponentState
 
     if (_errorMessage != null || _macros == null) {
       return SizedBox(
-        height: screenWidth * 0.4,
+        height: containerHeight,
         child: Center(
           child: Text(
             _errorMessage ?? 'No data',
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: fontSize,
               color: Colors.red,
               fontFamily: 'TA8bit',
             ),
@@ -81,13 +88,13 @@ class _NutritionPieChartComponentState
         _macros!.fat == 0 &&
         _macros!.carbohydrate == 0) {
       return SizedBox(
-        height: screenWidth * 0.4,
-        child: const Center(
+        height: containerHeight,
+        child: Center(
           child: Text(
             'No nutrition data',
             style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF2a2a2a),
+              fontSize: fontSize,
+              color: const Color(0xFF2a2a2a),
               fontFamily: 'TA8bit',
             ),
           ),
@@ -95,12 +102,14 @@ class _NutritionPieChartComponentState
       );
     }
 
-    return _buildPieChart(screenWidth);
+    return _buildPieChart(screenWidth, isSmallScreen);
   }
 
-  Widget _buildPieChart(double screenWidth) {
-    // ปรับขนาด Pie Chart ให้เหมาะกับจอ
-    final chartSize = screenWidth * 0.6; // 60% ของความกว้างหน้าจอ
+  Widget _buildPieChart(double screenWidth, bool isSmallScreen) {
+    // ✅ ปรับขนาด Pie Chart ให้เหมาะกับจอ - เพิ่มขนาดกราฟ
+    final chartSize = isSmallScreen
+        ? screenWidth * 0.7
+        : screenWidth * 0.75;
 
     return Center(
       child: SizedBox(
@@ -108,7 +117,7 @@ class _NutritionPieChartComponentState
         height: chartSize,
         child: PieChart(
           PieChartData(
-            sections: _buildSections(chartSize),
+            sections: _buildSections(chartSize, isSmallScreen),
             sectionsSpace: 0,
             centerSpaceRadius: 0,
           ),
@@ -117,33 +126,52 @@ class _NutritionPieChartComponentState
     );
   }
 
-  List<PieChartSectionData> _buildSections(double chartSize) {
+  List<PieChartSectionData> _buildSections(
+      double chartSize, bool isSmallScreen) {
     return [
       _buildSection(
-          _macros!.carbohydrate,
-          const Color.fromARGB(255, 152, 206, 251),
-          'Carbs',
-          chartSize),
+        _macros!.carbohydrate,
+        const Color.fromARGB(255, 152, 206, 251),
+        'Carbs',
+        chartSize,
+        isSmallScreen,
+      ),
       _buildSection(
-          _macros!.fat, const Color.fromARGB(255, 243, 122, 113), 'Fat', chartSize),
+        _macros!.fat,
+        const Color.fromARGB(255, 243, 122, 113),
+        'Fat',
+        chartSize,
+        isSmallScreen,
+      ),
       _buildSection(
-          _macros!.protein,
-          const Color.fromARGB(255, 243, 199, 103),
-          'Protein',
-          chartSize),
+        _macros!.protein,
+        const Color.fromARGB(255, 243, 199, 103),
+        'Protein',
+        chartSize,
+        isSmallScreen,
+      ),
     ];
   }
 
   PieChartSectionData _buildSection(
-      double value, Color color, String title, double chartSize) {
-    // ปรับขนาดตัวหนังสือและ radius ตามขนาดจอ
-    final radius = chartSize * 0.3;
-    final fontSize = chartSize * 0.08;
+    double value,
+    Color color,
+    String title,
+    double chartSize,
+    bool isSmallScreen,
+  ) {
+    // ✅ ปรับขนาดตัวหนังสือและ radius ตามขนาดจอ - ลดขนาดตัวหนังสือ
+    final radius = isSmallScreen ? chartSize * 0.28 : chartSize * 0.3;
+    final fontSize = isSmallScreen ? chartSize * 0.05 : chartSize * 0.055;
+
+    // ✅ คำนวณเปอร์เซ็นต์จากค่ารวมทั้งหมด
+    final total = _macros!.protein + _macros!.fat + _macros!.carbohydrate;
+    final percent = total > 0 ? ((value / total) * 100).toStringAsFixed(0) : '0';
 
     return PieChartSectionData(
       value: value,
       color: color,
-      title: '$title\n${value.toStringAsFixed(1)}g',
+      title: '$title $percent%',
       radius: radius,
       titleStyle: TextStyle(
         fontSize: fontSize,

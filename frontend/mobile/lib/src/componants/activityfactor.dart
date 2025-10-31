@@ -90,7 +90,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
           content: const Text(
             '⭐ เลือกได้อีกครั้งพรุ่งนี้นะ!',
             style:
-                TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold),
+                TextStyle(fontFamily: 'TA8bit', fontWeight: FontWeight.bold, color: Color( 0xFF2a2a2a)),
           ),
           backgroundColor: const Color(0xFFFFF9BD),
           behavior: SnackBarBehavior.floating,
@@ -105,7 +105,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       builder: (context) => const ActivityFactorDialog(),
     );
 
@@ -130,8 +130,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
           SnackBar(
             content: Text(
               '✨ บันทึก LV.$level: $label แล้ว!',
-              style: const TextStyle(
-                  fontFamily: 'monospace', fontWeight: FontWeight.bold),
+              style: const TextStyle(fontFamily: 'TA8bit', fontWeight: FontWeight.bold, color: Color( 0xFF2a2a2a)),
             ),
             backgroundColor: const Color(0xFFFFF9BD),
             behavior: SnackBarBehavior.floating,
@@ -150,97 +149,130 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isSmall = width < 400;
-    final scale = (width / 400).clamp(0.8, 1.2);
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return Transform.scale(
-      scale: scale,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _openActivitySelector(context),
-          child: Container(
-            height: isSmall ? 50 : 60,
-            padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 14),
-            decoration: BoxDecoration(
-              color: _savedLevel != null
-                  ? const Color(0xFFFFF9BD)
-                  : const Color(0xFFF5F5F5),
-              border: Border.all(color: Colors.black, width: 4),
-              boxShadow: const [
-                BoxShadow(color: Colors.black, offset: Offset(3, 3), blurRadius: 0),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: isSmall ? 36 : 42,
-                  height: isSmall ? 36 : 42,
-                  padding: const EdgeInsets.symmetric(vertical: 1),
-                  decoration: BoxDecoration(
-                    color: _savedLevel != null
-                        ? const Color(0xFFFFF9BD)
-                        : Colors.white,
-                    border: Border.all(color: Colors.black, width: 3),
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: _savedLevel != null
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('LV',
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 8 : 9,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'monospace',
-                                    color: Colors.black,
-                                  )),
-                              Text('$_savedLevel',
-                                  style: TextStyle(
-                                    fontSize: isSmall ? 14 : 17,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'monospace',
-                                    color: Colors.black,
-                                  )),
-                            ],
-                          )
-                        : Icon(Icons.directions_run,
-                            size: isSmall ? 18 : 22, color: Colors.black),
+    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    final bool isSmallScreen = screenWidth < 400;
+    final double containerHeight = isSmallScreen ? 50 : 60;
+    final double padding = isSmallScreen ? 10 : 14;
+    final double iconBoxSize = isSmallScreen ? 36 : 42;
+    final double fontSizeLabel = isSmallScreen ? 9 : 11;
+    final double fontSizeValue = isSmallScreen ? 12 : 14;
+    final double fontSizeLV = isSmallScreen ? 8 : 9;
+    final double fontSizeLVNumber = isSmallScreen ? 14 : 17;
+    final double iconSize = isSmallScreen ? 18 : 22;
+    final double arrowSize = isSmallScreen ? 12 : 15;
+    final double borderWidth = isSmallScreen ? 3 : 4;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openActivitySelector(context),
+        child: Container(
+          height: containerHeight,
+          padding: EdgeInsets.symmetric(horizontal: padding),
+          decoration: BoxDecoration(
+            color: _savedLevel != null
+                ? const Color(0xFFFFF9BD)
+                : const Color(0xFFF5F5F5),
+            border: Border.all(color: Colors.black, width: borderWidth),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black,
+                offset: Offset(
+                  isSmallScreen ? 2 : 3,
+                  isSmallScreen ? 2 : 3,
+                ),
+                blurRadius: 0,
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: iconBoxSize,
+                height: iconBoxSize,
+                padding: const EdgeInsets.symmetric(vertical: 1),
+                decoration: BoxDecoration(
+                  color: _savedLevel != null
+                      ? const Color(0xFFFFF9BD)
+                      : Colors.white,
+                  border: Border.all(
+                    color: Colors.black,
+                    width: isSmallScreen ? 2 : 3,
                   ),
                 ),
-                SizedBox(width: isSmall ? 6 : 10),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('ACTIVITY',
-                          style: TextStyle(
-                              fontSize: isSmall ? 9 : 11,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'monospace',
-                              letterSpacing: 1,
-                              color: Colors.black)),
-                      Text(
-                        _savedLevel != null
-                            ? (_savedLabel ?? 'ไม่ระบุ')
-                            : 'กดเพื่อเลือก',
-                        style: TextStyle(
-                            fontSize: isSmall ? 12 : 14,
-                            fontFamily: 'monospace',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: _savedLevel != null
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'LV',
+                              style: TextStyle(
+                                fontSize: fontSizeLV,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TA8bit',
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              '$_savedLevel',
+                              style: TextStyle(
+                                fontSize: fontSizeLVNumber,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'TA8bit',
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Icon(
+                          Icons.directions_run,
+                          size: iconSize,
+                          color: Colors.black,
+                        ),
+                ),
+              ),
+              SizedBox(width: isSmallScreen ? 6 : 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ACTIVITY',
+                      style: TextStyle(
+                        fontSize: fontSizeLabel,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'TA8bit',
+                        letterSpacing: 1,
+                        color: Colors.black,
                       ),
-                    ],
-                  ),
+                    ),
+                    Text(
+                      _savedLevel != null
+                          ? (_savedLabel ?? 'ไม่ระบุ')
+                          : 'กดเพื่อเลือก',
+                      style: TextStyle(
+                        fontSize: fontSizeValue,
+                        fontFamily: 'TA8bit',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
-                Icon(Icons.arrow_forward_ios,
-                    color: Colors.black, size: isSmall ? 12 : 15),
-              ],
-            ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.black,
+                size: arrowSize,
+              ),
+            ],
           ),
         ),
       ),
@@ -277,7 +309,7 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
           content: const Text(
             '⚠️ เลือกระดับก่อนนะ!',
             style:
-                TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold),
+                TextStyle(fontFamily: 'TA8bit', fontWeight: FontWeight.bold, color: Color( 0xFF2a2a2a)),
           ),
           backgroundColor: const Color(0xFFFFF9BD),
           behavior: SnackBarBehavior.floating,
@@ -323,7 +355,7 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
           content: Text(
             '❌ เกิดข้อผิดพลาด: ${e.toString()}',
             style: const TextStyle(
-                fontFamily: 'monospace', fontWeight: FontWeight.bold),
+                fontFamily: 'TA8bit', fontWeight: FontWeight.bold),
           ),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
@@ -337,173 +369,199 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isSmall = width < 400;
-    final scale = (width / 400).clamp(0.8, 1.2);
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-    return Transform.scale(
-      scale: scale,
-      child: Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          constraints: BoxConstraints(maxWidth: isSmall ? width * 0.9 : 420, maxHeight: 480),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.black, width: 4),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(isSmall ? 12 : 18),
-                color: const Color(0xFFFFF9BD),
-                child: const Center(
-                  child: Text(
-                    'ACTIVITY LEVEL',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.bold),
+    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    final bool isSmallScreen = screenWidth < 400;
+    final double dialogMaxWidth = isSmallScreen ? screenWidth * 0.9 : 420;
+    final double dialogMaxHeight = isSmallScreen ? screenHeight * 0.7 : 480;
+    final double headerPadding = isSmallScreen ? 12 : 18;
+    final double contentPadding = isSmallScreen ? 10 : 14;
+    final double itemMargin = isSmallScreen ? 6 : 8;
+    final double itemPadding = isSmallScreen ? 6 : 8;
+    final double levelBoxSize = isSmallScreen ? 30 : 36;
+    final double fontSizeTitle = isSmallScreen ? 14 : 16;
+    final double fontSizeLabel = isSmallScreen ? 12 : 14;
+    final double fontSizeDesc = isSmallScreen ? 9 : 10;
+    final double checkSize = isSmallScreen ? 14 : 16;
+    final double buttonHeight = isSmallScreen ? 32 : 36;
+    final double borderWidth = isSmallScreen ? 3 : 4;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: dialogMaxWidth,
+          maxHeight: dialogMaxHeight,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.black, width: borderWidth),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(headerPadding),
+              color: const Color(0xFFFFF9BD),
+              child: Center(
+                child: Text(
+                  'ACTIVITY LEVEL',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'TA8bit',
+                    fontWeight: FontWeight.bold,
+                    fontSize: fontSizeTitle,
                   ),
                 ),
               ),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(isSmall ? 10 : 14),
-                  child: Column(
-                    children: [
-                      ..._activityLevels.map((item) {
-                        final isSelected = _selectedLevel == item['level'];
-                        return GestureDetector(
-                          onTap: () => setState(() => _selectedLevel = item['level']),
-                          child: Container(
-                            margin: EdgeInsets.only(bottom: isSmall ? 6 : 8),
-                            padding: EdgeInsets.all(isSmall ? 6 : 8),
-                            color: isSelected
-                                ? const Color(0xFFFFF9BD)
-                                : const Color(0xFFE0E0E0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: isSmall ? 30 : 36,
-                                  height: isSmall ? 30 : 36,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border.all(color: Colors.black, width: 2),
-                                  ),
-                                  child: Center(
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        '${item['level']}',
-                                        style: const TextStyle(
-                                          fontFamily: 'monospace',
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: isSmall ? 6 : 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item['label'],
-                                        style: const TextStyle(
-                                          fontFamily: 'monospace',
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      Text(
-                                        item['description'],
-                                        style: const TextStyle(
-                                          fontFamily: 'monospace',
-                                          fontSize: 10,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected)
-                                  Container(
-                                    width: isSmall ? 14 : 16,
-                                    height: isSmall ? 14 : 16,
-                                    margin: EdgeInsets.only(left: isSmall ? 4 : 6),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(contentPadding),
+                child: Column(
+                  children: [
+                    ..._activityLevels.map((item) {
+                      final isSelected = _selectedLevel == item['level'];
+                      return GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedLevel = item['level']),
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: itemMargin),
+                          padding: EdgeInsets.all(itemPadding),
+                          color: isSelected
+                              ? const Color(0xFFFFF9BD)
+                              : const Color(0xFFE0E0E0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: levelBoxSize,
+                                height: levelBoxSize,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(
                                     color: Colors.black,
-                                    child: const Center(
-                                      child: Text(
-                                        '✔',
-                                        style: TextStyle(
-                                          color: Colors.yellow,
-                                          fontSize: 10,
-                                          fontFamily: 'monospace',
-                                        ),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      '${item['level']}',
+                                      style: TextStyle(
+                                        fontFamily: 'TA8bit',
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                        fontSize: fontSizeLabel,
                                       ),
                                     ),
                                   ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      SizedBox(height: isSmall ? 10 : 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: Container(
-                                height: isSmall ? 32 : 36,
-                                color: const Color(0xFFC0C0C0),
-                                child: Center(
-                                  child: Text(
-                                    'ยกเลิก',
-                                    style: TextStyle(
-                                      fontFamily: 'monospace',
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: isSmall ? 12 : 14,
-                                      color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(width: isSmallScreen ? 6 : 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['label'],
+                                      style: TextStyle(
+                                        fontFamily: 'TA8bit',
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                        fontSize: fontSizeLabel,
+                                      ),
                                     ),
+                                    Text(
+                                      item['description'],
+                                      style: TextStyle(
+                                        fontFamily: 'TA8bit',
+                                        fontSize: fontSizeDesc,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                Container(
+                                  width: checkSize,
+                                  height: checkSize,
+                                  margin: EdgeInsets.only(
+                                    left: isSmallScreen ? 4 : 6,
+                                  ),
+                                  color: Colors.black,
+                                  child: Center(
+                                    child: Text(
+                                      '✔',
+                                      style: TextStyle(
+                                        color: Colors.yellow,
+                                        fontSize: fontSizeDesc,
+                                        fontFamily: 'TA8bit',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    SizedBox(height: isSmallScreen ? 10 : 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              height: buttonHeight,
+                              color: const Color(0xFFC0C0C0),
+                              child: Center(
+                                child: Text(
+                                  'ยกเลิก',
+                                  style: TextStyle(
+                                    fontFamily: 'TA8bit',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: fontSizeLabel,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          SizedBox(width: isSmall ? 6 : 8),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _saveSelection,
-                              child: Container(
-                                height: isSmall ? 32 : 36,
-                                color: const Color(0xFFFFF9BD),
-                                child: Center(
-                                  child: Text(
-                                    'บันทึก',
-                                    style: TextStyle(
-                                      fontFamily: 'monospace',
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: isSmall ? 12 : 14,
-                                      color: Colors.black,
-                                    ),
+                        ),
+                        SizedBox(width: isSmallScreen ? 6 : 8),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _saveSelection,
+                            child: Container(
+                              height: buttonHeight,
+                              color: const Color(0xFFFFF9BD),
+                              child: Center(
+                                child: Text(
+                                  'บันทึก',
+                                  style: TextStyle(
+                                    fontFamily: 'TA8bit',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: fontSizeLabel,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

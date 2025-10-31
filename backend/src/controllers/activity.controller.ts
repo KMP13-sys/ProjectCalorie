@@ -61,7 +61,7 @@ export const logActivity = async (req: Request, res: Response) => {
       [activity_id, sport_id, time, calories_burned]
     );
 
-    // รวมแคลอรี่ของวันนั้นทั้งหมด
+    // รวมการเผาผลาญแคลอรี่ของวันนั้นทั้งหมด
     const [sumResult] = await connection.query<RowDataPacket[]>(
       `SELECT SUM(calories_burned) AS total_burned
        FROM ActivityDetail

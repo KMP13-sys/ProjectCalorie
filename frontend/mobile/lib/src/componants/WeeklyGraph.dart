@@ -89,20 +89,32 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ Responsive dimensions - เพิ่มความสูงกราฟ
-    final chartHeight = screenHeight * 0.45; // เพิ่มจาก 0.38 เป็น 0.45
-    final fontSize = screenWidth * 0.038; // เพิ่มขนาดตัวอักษร
-    final titleFontSize = screenWidth * 0.045; // เพิ่มขนาดหัวข้อ
-    final dotRadius = screenWidth * 0.02; // เพิ่มขนาด dot
-    final reservedSize = screenWidth * 0.15;
-    final padding = screenWidth * 0.04;
-    final horizontalPadding = screenWidth * 0.04;
-    final borderRadius = screenWidth * 0.02;
-    final shadowBlurRadius = screenWidth * 0.02;
-    final iconSize = screenWidth * 0.12;
+    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    final bool isSmallScreen = screenWidth < 400;
+    final double chartHeight = isSmallScreen
+        ? screenHeight * 0.4
+        : screenHeight * 0.45;
+    final double fontSize = isSmallScreen
+        ? screenWidth * 0.035
+        : screenWidth * 0.038;
+    final double titleFontSize = isSmallScreen
+        ? screenWidth * 0.04
+        : screenWidth * 0.045;
+    final double dotRadius = isSmallScreen
+        ? screenWidth * 0.018
+        : screenWidth * 0.02;
+    final double reservedSize = screenWidth * 0.15;
+    final double padding = screenWidth * 0.04;
+    final double horizontalPadding = screenWidth * 0.04;
+    final double borderRadius = screenWidth * 0.02;
+    final double shadowBlurRadius = screenWidth * 0.02;
+    final double iconSize = isSmallScreen
+        ? screenWidth * 0.1
+        : screenWidth * 0.12;
 
     // ========== Loading State ==========
     if (isLoading) {
@@ -118,7 +130,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
                 blurRadius: shadowBlurRadius,
               ),
@@ -152,7 +164,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
                 blurRadius: shadowBlurRadius,
               ),
@@ -221,7 +233,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
                 blurRadius: shadowBlurRadius,
               ),
@@ -307,7 +319,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               offset: Offset(screenWidth * 0.005, screenWidth * 0.005),
               blurRadius: shadowBlurRadius,
             ),
@@ -436,8 +448,8 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.green.withOpacity(0.3),
-                              Colors.green.withOpacity(0.1),
+                              Colors.green.withValues(alpha: 0.3),
+                              Colors.green.withValues(alpha: 0.1),
                             ],
                           ),
                         ),
@@ -451,7 +463,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                         return spotIndexes.map((index) {
                           return TouchedSpotIndicatorData(
                             FlLine(
-                              color: Colors.green.withOpacity(0.5),
+                              color: Colors.green.withValues(alpha: 0.5),
                               strokeWidth: screenWidth * 0.005,
                               dashArray: [
                                 (screenWidth * 0.01).toInt(),

@@ -103,14 +103,14 @@ export const calculateAndSaveCalories = async (req: Request, res: Response) => {
     }
 
     // 4. บันทึกลง DailyCalories (เก็บ activity_level และ target_calories)
-    const today = new Date().toISOString().split("T")[0];
+    // ใช้ CURDATE() ของ MySQL เพื่อให้แน่ใจว่าวันที่รีเซ็ตตอนเที่ยงคืนตาม timezone ของ database
     await db.query(
       `INSERT INTO DailyCalories (user_id, date, activity_level, target_calories)
-       VALUES (?, ?, ?, ?)
+       VALUES (?, CURDATE(), ?, ?)
        ON DUPLICATE KEY UPDATE
          activity_level = VALUES(activity_level),
          target_calories = VALUES(target_calories)`,
-      [userId, today, activityLevel, targetCalories]
+      [userId, activityLevel, targetCalories]
     );
 
     console.log(`✅ Calculated and saved: ActivityLevel=${activityLevel}, Target=${targetCalories} for user ${userId}`);

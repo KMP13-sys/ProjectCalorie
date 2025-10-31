@@ -7,12 +7,22 @@ import '../../service/predict_service.dart';
 class CameraBottomNavBar extends StatelessWidget {
   const CameraBottomNavBar({super.key});
 
-  // ✅ Responsive helper
+  // ✅ Responsive helper - ปรับขนาดตามหน้าจอ
   double _responsiveSize(BuildContext context, double base) {
     final width = MediaQuery.of(context).size.width;
-    if (width < 400) return base * 0.8; // มือถือเล็ก
+    if (width < 360) return base * 0.75; // มือถือเล็กมาก
+    if (width < 400) return base * 0.85; // มือถือเล็ก
     if (width > 600) return base * 1.2; // แท็บเล็ต
     return base; // ปกติ
+  }
+
+  // ✅ Responsive font size
+  double _responsiveFontSize(BuildContext context, double base) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 360) return base * 0.85;
+    if (width < 400) return base * 0.9;
+    if (width > 600) return base * 1.1;
+    return base;
   }
 
   Future<void> _pickImage(BuildContext context) async {
@@ -21,82 +31,108 @@ class CameraBottomNavBar extends StatelessWidget {
     final ImageSource? source = await showDialog<ImageSource>(
       context: context,
       builder: (BuildContext context) {
+        // ✅ Responsive dialog sizing
         final width = MediaQuery.of(context).size.width;
-        final dialogWidth = width * 0.85; // ✅ ปรับขนาด dialog ตามจอ
+        final bool isSmallScreen = width < 400;
+        final double dialogWidth = isSmallScreen ? width * 0.9 : width * 0.85;
+        final double dialogPadding = isSmallScreen ? 12 : 16;
+        final double titleFontSize = _responsiveFontSize(context, 16);
+        final double textFontSize = _responsiveFontSize(context, 14);
+        final double spacing = isSmallScreen ? 10 : 12;
+
         return Center(
           child: Dialog(
-            insetPadding: const EdgeInsets.all(24),
+            insetPadding: EdgeInsets.all(isSmallScreen ? 16 : 24),
             backgroundColor: const Color(0xFFf8f8f8),
             shape: RoundedRectangleBorder(
-              side: const BorderSide(color: Colors.black, width: 4),
+              side: BorderSide(
+                color: Colors.black,
+                width: isSmallScreen ? 3 : 4,
+              ),
               borderRadius: BorderRadius.zero,
             ),
             child: Container(
               width: dialogWidth,
               decoration: BoxDecoration(
                 color: const Color(0xFFF2F2F2),
-                border: Border.all(color: Colors.black, width: 4),
+                border: Border.all(
+                  color: Colors.black,
+                  width: isSmallScreen ? 3 : 4,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.4),
-                    offset: const Offset(6, 6),
+                    offset: Offset(
+                      isSmallScreen ? 4 : 6,
+                      isSmallScreen ? 4 : 6,
+                    ),
                     blurRadius: 0,
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(dialogPadding),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: EdgeInsets.symmetric(
+                      vertical: isSmallScreen ? 6 : 8,
+                    ),
                     color: const Color(0xFFBDBDBD),
-                    child: const Text(
+                    child: Text(
                       'SELECT IMAGE SOURCE',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'monospace',
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: titleFontSize,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: isSmallScreen ? 12 : 16),
                   InkWell(
                     onTap: () => Navigator.pop(context, ImageSource.camera),
                     child: _optionBox(
+                      context: context,
                       icon: Icons.camera_alt,
                       text: 'ถ่ายรูปใหม่ (Camera)',
                       color: const Color(0xFFD4F2C1),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: spacing),
                   InkWell(
                     onTap: () => Navigator.pop(context, ImageSource.gallery),
                     child: _optionBox(
+                      context: context,
                       icon: Icons.photo_library,
                       text: 'เลือกรูปจากอัลบั้ม (Gallery)',
                       color: const Color(0xFFFFF3A3),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: isSmallScreen ? 16 : 20),
                   InkWell(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      width: 100,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      width: isSmallScreen ? 80 : 100,
+                      padding: EdgeInsets.symmetric(
+                        vertical: isSmallScreen ? 6 : 8,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFCCCCCC),
-                        border: Border.all(color: Colors.black, width: 3),
+                        border: Border.all(
+                          color: Colors.black,
+                          width: isSmallScreen ? 2 : 3,
+                        ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'CANCEL',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
+                          fontSize: textFontSize,
                         ),
                       ),
                     ),
@@ -127,36 +163,48 @@ class CameraBottomNavBar extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        final dialogWidth = MediaQuery.of(context).size.width * 0.8;
+        // ✅ Responsive loading dialog
+        final width = MediaQuery.of(context).size.width;
+        final bool isSmallScreen = width < 400;
+        final double dialogWidth = isSmallScreen ? width * 0.85 : width * 0.8;
+        final double dialogPadding = isSmallScreen ? 16 : 24;
+        final double fontSize = _responsiveFontSize(context, 14);
+
         return Center(
           child: Container(
             width: dialogWidth,
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(dialogPadding),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Colors.black, width: 4),
+              border: Border.all(
+                color: Colors.black,
+                width: isSmallScreen ? 3 : 4,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
-                  offset: const Offset(6, 6),
+                  color: Colors.black.withValues(alpha: 0.4),
+                  offset: Offset(
+                    isSmallScreen ? 4 : 6,
+                    isSmallScreen ? 4 : 6,
+                  ),
                   blurRadius: 0,
                 ),
               ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                  strokeWidth: 3,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
+                  strokeWidth: isSmallScreen ? 2.5 : 3,
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: isSmallScreen ? 12 : 16),
                 Text(
                   'กำลังวิเคราะห์ภาพอาหาร...',
                   style: TextStyle(
                     fontFamily: 'monospace',
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: fontSize,
                   ),
                 ),
               ],
@@ -223,76 +271,100 @@ class CameraBottomNavBar extends StatelessWidget {
   }
 
   void _showErrorDialog(BuildContext context, String title, String message) {
-    final dialogWidth = MediaQuery.of(context).size.width * 0.85;
+    // ✅ Responsive error dialog
+    final width = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = width < 400;
+    final double dialogWidth = isSmallScreen ? width * 0.9 : width * 0.85;
+    final double dialogPadding = isSmallScreen ? 12 : 16;
+    final double titleFontSize = _responsiveFontSize(context, 16);
+    final double messageFontSize = _responsiveFontSize(context, 14);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Center(
           child: Dialog(
-            insetPadding: const EdgeInsets.all(24),
+            insetPadding: EdgeInsets.all(isSmallScreen ? 16 : 24),
             backgroundColor: const Color(0xFFf8f8f8),
             shape: RoundedRectangleBorder(
-              side: const BorderSide(color: Colors.black, width: 4),
+              side: BorderSide(
+                color: Colors.black,
+                width: isSmallScreen ? 3 : 4,
+              ),
               borderRadius: BorderRadius.zero,
             ),
             child: Container(
               width: dialogWidth,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFC1C1),
-                border: Border.all(color: Colors.black, width: 4),
+                border: Border.all(
+                  color: Colors.black,
+                  width: isSmallScreen ? 3 : 4,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.4),
-                    offset: const Offset(6, 6),
+                    offset: Offset(
+                      isSmallScreen ? 4 : 6,
+                      isSmallScreen ? 4 : 6,
+                    ),
                     blurRadius: 0,
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(dialogPadding),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: EdgeInsets.symmetric(
+                      vertical: isSmallScreen ? 6 : 8,
+                    ),
                     color: const Color(0xFFFF6B6B),
                     child: Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'monospace',
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: titleFontSize,
                         color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: isSmallScreen ? 12 : 16),
                   Text(
                     message,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 14,
+                      fontSize: messageFontSize,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: isSmallScreen ? 16 : 20),
                   InkWell(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      width: 100,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      width: isSmallScreen ? 80 : 100,
+                      padding: EdgeInsets.symmetric(
+                        vertical: isSmallScreen ? 6 : 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: Colors.black, width: 3),
+                        border: Border.all(
+                          color: Colors.black,
+                          width: isSmallScreen ? 2 : 3,
+                        ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'ตกลง',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
+                          fontSize: messageFontSize,
                         ),
                       ),
                     ),
@@ -307,24 +379,39 @@ class CameraBottomNavBar extends StatelessWidget {
   }
 
   static Widget _optionBox({
+    required BuildContext context,
     required IconData icon,
     required String text,
     required Color color,
   }) {
     return LayoutBuilder(
-      builder: (context, constraints) {
-        final fontSize = constraints.maxWidth < 320 ? 12.0 : 14.0;
+      builder: (_, constraints) {
+        // ✅ Responsive option box
+        final width = MediaQuery.of(context).size.width;
+        final bool isSmallScreen = width < 400;
+        final double fontSize = constraints.maxWidth < 320
+            ? 11.0
+            : isSmallScreen
+                ? 12.0
+                : 14.0;
+        final double iconSize = fontSize + 4;
+        final double verticalPadding = isSmallScreen ? 10 : 12;
+        final double borderWidth = isSmallScreen ? 2 : 3;
+
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          padding: EdgeInsets.symmetric(
+            vertical: verticalPadding,
+            horizontal: 12,
+          ),
           decoration: BoxDecoration(
             color: color,
-            border: Border.all(color: Colors.black, width: 3),
+            border: Border.all(color: Colors.black, width: borderWidth),
           ),
           child: Row(
             children: [
-              Icon(icon, color: Colors.black, size: fontSize + 4),
-              const SizedBox(width: 10),
+              Icon(icon, color: Colors.black, size: iconSize),
+              SizedBox(width: isSmallScreen ? 8 : 10),
               Expanded(
                 child: Text(
                   text,
@@ -344,13 +431,20 @@ class CameraBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double size = _responsiveSize(context, 64); // ✅ responsive button size
+    // ✅ Responsive camera button
+    final width = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = width < 400;
+    final double buttonSize = _responsiveSize(context, 64);
+    final double containerHeight = _responsiveSize(context, 80);
+    final double borderWidth = isSmallScreen ? 2 : 3;
+    final double buttonBorderWidth = isSmallScreen ? 3 : 4;
+
     return Container(
-      height: _responsiveSize(context, 80),
+      height: containerHeight,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
-        border: const Border(
-          top: BorderSide(color: Colors.black, width: 3),
+        border: Border(
+          top: BorderSide(color: Colors.black, width: borderWidth),
         ),
         boxShadow: [
           BoxShadow(
@@ -364,15 +458,21 @@ class CameraBottomNavBar extends StatelessWidget {
         child: GestureDetector(
           onTap: () => _pickImage(context),
           child: Container(
-            width: size,
-            height: size,
+            width: buttonSize,
+            height: buttonSize,
             decoration: BoxDecoration(
               color: const Color(0xFFA3EBA1),
-              border: Border.all(color: Colors.black, width: 4),
+              border: Border.all(
+                color: Colors.black,
+                width: buttonBorderWidth,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.4),
-                  offset: const Offset(4, 4),
+                  offset: Offset(
+                    isSmallScreen ? 3 : 4,
+                    isSmallScreen ? 3 : 4,
+                  ),
                   blurRadius: 0,
                 ),
               ],
@@ -380,7 +480,7 @@ class CameraBottomNavBar extends StatelessWidget {
             ),
             child: Icon(
               Icons.camera_alt,
-              size: size * 0.5,
+              size: buttonSize * 0.5,
               color: Colors.black,
             ),
           ),

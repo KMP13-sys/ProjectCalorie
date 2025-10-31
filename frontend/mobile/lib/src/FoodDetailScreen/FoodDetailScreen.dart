@@ -444,6 +444,27 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Responsive calculations
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bool isSmallScreen = screenWidth < 400;
+    final bool isUltraSmall = screenWidth < 360;
+    final double scale = isUltraSmall ? 0.85 : isSmallScreen ? 0.95 : 1.0;
+
+    final double horizontalPadding = isSmallScreen ? 12 : 24;
+    final double verticalPadding = isSmallScreen ? 12 : 20;
+    final double borderWidth = isSmallScreen ? 4 : 8;
+    final double innerBorderWidth = isSmallScreen ? 3 : 6;
+    final double shadowOffset = isSmallScreen ? 6 : 12;
+    final double backButtonPadding = isSmallScreen ? 6 : 8;
+    final double backButtonBorder = isSmallScreen ? 3 : 4;
+    final double backIconSize = (isSmallScreen ? 20 : 24) * scale;
+    final double imageHeight = screenHeight * (isSmallScreen ? 0.22 : 0.28);
+    final double headerFontSize = (isSmallScreen ? 14 : 18) * scale;
+    final double infoFontSize = (isSmallScreen ? 12 : 14) * scale;
+    final double buttonHeight = (isSmallScreen ? 45 : 55) * scale;
+    final double buttonFontSize = (isSmallScreen ? 16 : 20) * scale;
+
     return Scaffold(
       backgroundColor: const Color(0xFFf0f4f0),
       body: Column(
@@ -465,7 +486,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                 top: false,
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                    padding: EdgeInsets.symmetric(vertical: verticalPadding, horizontal: horizontalPadding),
                     child: Column(
                       children: [
                         // Back Button with pixel art style
@@ -474,42 +495,42 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                           child: InkWell(
                             onTap: () => Navigator.pop(context),
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(backButtonPadding),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                border: Border.all(color: Colors.black, width: 4),
+                                border: Border.all(color: Colors.black, width: backButtonBorder),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(alpha: 0.3),
-                                    offset: const Offset(4, 4),
+                                    offset: Offset(backButtonBorder * 1.0, backButtonBorder * 1.0),
                                     blurRadius: 0,
                                   ),
                                 ],
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.arrow_back,
-                                size: 24,
+                                size: backIconSize,
                                 color: Colors.black,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: isSmallScreen ? 12 : 20),
 
                         // Main Content Container with pixel art border
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(color: Colors.black, width: 8),
+                            border: Border.all(color: Colors.black, width: borderWidth),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.3),
-                                offset: const Offset(12, 12),
+                                offset: Offset(shadowOffset, shadowOffset),
                                 blurRadius: 0,
                               ),
                             ],
                           ),
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                           child: Column(
                             children: [
                               // Corner Pixels Decoration
@@ -520,9 +541,9 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                       // Food Image with pixel frame
                                       Container(
                                         width: double.infinity,
-                                        height: 280,
+                                        height: imageHeight,
                                         decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.black, width: 6),
+                                          border: Border.all(color: Colors.black, width: innerBorderWidth),
                                           color: Colors.grey[100],
                                         ),
                                         child: Stack(
@@ -561,34 +582,34 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(height: 16),
+                                      SizedBox(height: isSmallScreen ? 12 : 16),
 
                                       // Header Box
                                       Container(
                                         width: double.infinity,
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 8 : 12),
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
                                             colors: [Color(0xFFA3EBA1), Color(0xFF8bc273)],
                                           ),
-                                          border: Border.all(color: Colors.black, width: 4),
+                                          border: Border.all(color: Colors.black, width: isSmallScreen ? 3 : 4),
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.black.withValues(alpha: 0.2),
-                                              offset: const Offset(6, 6),
+                                              offset: Offset(isSmallScreen ? 4 : 6, isSmallScreen ? 4 : 6),
                                               blurRadius: 0,
                                             ),
                                           ],
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           '★ What food is this ★',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             fontFamily: 'monospace',
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            color: Color(0xFF1f2937),
-                                            shadows: [
+                                            fontSize: headerFontSize,
+                                            color: const Color(0xFF1f2937),
+                                            shadows: const [
                                               Shadow(
                                                 offset: Offset(2, 2),
                                                 color: Colors.white38,
@@ -597,7 +618,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 12),
+                                      SizedBox(height: isSmallScreen ? 8 : 12),
 
                                       // Info Container
                                       Container(
@@ -607,35 +628,35 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                             end: Alignment.bottomCenter,
                                             colors: [Color(0xFFFFFFCC), Color(0xFFFFFFAA)],
                                           ),
-                                          border: Border.all(color: Colors.black, width: 6),
+                                          border: Border.all(color: Colors.black, width: innerBorderWidth),
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.black.withValues(alpha: 0.2),
-                                              offset: const Offset(6, 6),
+                                              offset: Offset(isSmallScreen ? 4 : 6, isSmallScreen ? 4 : 6),
                                               blurRadius: 0,
                                             ),
                                           ],
                                         ),
-                                        padding: const EdgeInsets.all(12),
+                                        padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
                                         child: Column(
                                           children: [
-                                            _infoBox('Menu: ${widget.foodName}'),
-                                            _infoBox('Carbs: ${widget.carbs} g'),
-                                            _infoBox('Fat: ${widget.fat} g'),
-                                            _infoBox('Protein: ${widget.protein} g'),
-                                            _infoBox('Calories: ${widget.calories} kcal'),
-                                            _infoBox('Confidence: ${(widget.confidence * 100).toStringAsFixed(1)}%'),
+                                            _infoBox('Menu: ${widget.foodName}', fontSize: infoFontSize),
+                                            _infoBox('Carbs: ${widget.carbs} g', fontSize: infoFontSize),
+                                            _infoBox('Fat: ${widget.fat} g', fontSize: infoFontSize),
+                                            _infoBox('Protein: ${widget.protein} g', fontSize: infoFontSize),
+                                            _infoBox('Calories: ${widget.calories} kcal', fontSize: infoFontSize),
+                                            _infoBox('Confidence: ${(widget.confidence * 100).toStringAsFixed(1)}%', fontSize: infoFontSize),
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(height: 20),
+                                      SizedBox(height: isSmallScreen ? 12 : 20),
 
                                       // Save Button
                                       InkWell(
                                         onTap: _isSaving ? null : _saveMeal,
                                         child: Container(
                                           width: double.infinity,
-                                          height: 55,
+                                          height: buttonHeight,
                                           decoration: BoxDecoration(
                                             gradient: _isSaving
                                                 ? null
@@ -645,11 +666,13 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                                     colors: [Color(0xFFA3EBA1), Color(0xFF8bc273)],
                                                   ),
                                             color: _isSaving ? const Color(0xFFCCCCCC) : null,
-                                            border: Border.all(color: Colors.black, width: 6),
+                                            border: Border.all(color: Colors.black, width: innerBorderWidth),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: Colors.black.withValues(alpha: 0.3),
-                                                offset: _isSaving ? const Offset(3, 3) : const Offset(8, 8),
+                                                offset: _isSaving
+                                                  ? Offset(shadowOffset / 2, shadowOffset / 2)
+                                                  : Offset(shadowOffset, shadowOffset),
                                                 blurRadius: 0,
                                               ),
                                             ],
@@ -661,23 +684,31 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                                 Positioned(
                                                   top: -1,
                                                   left: -1,
-                                                  child: Container(width: 8, height: 8, color: Colors.white),
+                                                  child: Container(
+                                                    width: isSmallScreen ? 6 : 8,
+                                                    height: isSmallScreen ? 6 : 8,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
                                                 Positioned(
                                                   top: -1,
                                                   right: -1,
-                                                  child: Container(width: 8, height: 8, color: Colors.white),
+                                                  child: Container(
+                                                    width: isSmallScreen ? 6 : 8,
+                                                    height: isSmallScreen ? 6 : 8,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
                                               ],
                                               Center(
                                                 child: Text(
                                                   _isSaving ? 'SAVING...' : 'SAVE',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontFamily: 'monospace',
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 20,
+                                                    fontSize: buttonFontSize,
                                                     color: Colors.black,
-                                                    shadows: [
+                                                    shadows: const [
                                                       Shadow(
                                                         offset: Offset(2, 2),
                                                         color: Colors.black26,
@@ -763,16 +794,22 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     );
   }
 
-  Widget _infoBox(String text) {
+  Widget _infoBox(String text, {required double fontSize}) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = screenWidth < 400;
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: EdgeInsets.symmetric(vertical: isSmallScreen ? 3 : 4),
+      padding: EdgeInsets.symmetric(
+        vertical: isSmallScreen ? 6 : 8,
+        horizontal: isSmallScreen ? 10 : 12,
+      ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFFFFDD), Color(0xFFFFFFB3)],
         ),
-        border: Border.all(color: const Color(0xFFFFD700), width: 2),
+        border: Border.all(color: const Color(0xFFFFD700), width: isSmallScreen ? 1.5 : 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -784,11 +821,11 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
       child: Text(
         text,
         textAlign: TextAlign.left,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'monospace',
-          fontSize: 14,
+          fontSize: fontSize,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF333333),
+          color: const Color(0xFF333333),
         ),
       ),
     );

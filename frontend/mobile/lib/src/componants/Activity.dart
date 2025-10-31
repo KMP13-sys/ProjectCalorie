@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../service/add_activity_service.dart';
 
 class Activity extends StatefulWidget {
   final Function(int caloriesBurned) onSave;
@@ -12,15 +13,33 @@ class Activity extends StatefulWidget {
 class _ActivityState extends State<Activity> {
   String selectedActivity = 'วิ่ง';
   int duration = 0;
+  bool isLoading = false;
 
-  final Map<String, int> caloriesPerMin = {
-    'วิ่ง': 10,
-    'ปั่นจักรยาน': 8,
-    'โยคะ': 4,
-    'เดิน': 5,
-  };
+  // รายการกีฬา 20 ชนิด (ต้องตรงกับชื่อใน database ตาราง Sports)
+  final List<String> sports = [
+    'เต้น',
+    'บาสเก็ตบอล',
+    'มวย',
+    'กระโดดเชือก',
+    'ปั่นจักรยาน',
+    'ปิงปอง',
+    'เทควันโด',
+    'ว่ายน้ำ',
+    'วิ่ง',
+    'แบดมินตัน',
+    'สเกตบอร์ด',
+    'วอลเลย์บอล',
+    'ฟุตบอล',
+    'เซิร์ฟ',
+    'ยกน้ำหนัก',
+    'โยคะ',
+    'แอโรบิค',
+    'เครื่องเล่น Elliptical',
+    'เทนนิส',
+    'สควอช',
+  ];
 
-  void increaseTime() => setState(() => duration += 1);
+  void increaseTime() => setState(() => duration += 5);
 
   void decreaseTime() {
     setState(() {
@@ -29,38 +48,113 @@ class _ActivityState extends State<Activity> {
     });
   }
 
-  void saveActivity() {
-    final burned = (caloriesPerMin[selectedActivity]! * duration);
-    widget.onSave(burned);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('บันทึกแล้ว! เผาผลาญไป $burned kcal')),
-    );
+  /// Helper method เพื่อแปลงค่าจาก response เป็น int
+  /// รองรับทั้ง num และ String (เช่น "150.00")
+  int _parseToInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      return parsed?.toInt() ?? 0;
+    }
+    return 0;
+  }
+
+  Future<void> saveActivity() async {
+    // ตรวจสอบว่าเลือกเวลามากกว่า 0 หรือไม่
+    if (duration <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('กรุณาเลือกระยะเวลาที่มากกว่า 0 นาที'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      // เรียก API ผ่าน AddActivityService
+      final result = await AddActivityService.logActivity(
+        sportName: selectedActivity,
+        time: duration,
+      );
+
+      if (!mounted) return;
+
+      // ดึงค่าแคลอรี่จาก response (รองรับทั้ง num และ String)
+      final caloriesBurned = _parseToInt(result['calories_burned']);
+      final totalBurned = _parseToInt(result['total_burned']);
+
+      // เรียก callback เพื่ออัพเดท UI ของหน้า parent
+      widget.onSave(caloriesBurned);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'บันทึกแล้ว! เผาผลาญไป $caloriesBurned kcal\nรวมวันนี้: $totalBurned kcal',
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      // รีเซ็ตค่าเวลากลับเป็น 0
+      setState(() {
+        duration = 0;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('เกิดข้อผิดพลาด: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final isSmallScreen = screenWidth < 400;
-    final isUltraSmall = screenWidth < 360;
 
-    // scale สำหรับปุ่มและตัวอักษร
-    final scale = isUltraSmall ? 0.85 : isSmallScreen ? 0.95 : 1.0;
+    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    final bool isSmallScreen = screenWidth < 400;
+    final bool isUltraSmall = screenWidth < 360;
+    final double scale = isUltraSmall ? 0.85 : isSmallScreen ? 0.95 : 1.0;
+    final double padding = isSmallScreen ? 10 : 16;
+    final double margin = isSmallScreen ? 8 : 16;
+    final double borderWidth = isSmallScreen ? 2 : 3;
+    final double dropdownHeight = isSmallScreen ? 40 : 55;
+    final double timeBoxHeight = isSmallScreen ? 40 : 55;
+    final double fontSize = isSmallScreen ? 14 : 16;
+    final double timeDisplayFontSize = 32 * scale;
+    final double buttonFontSize = 22 * scale;
+    final double spacing = isSmallScreen ? 12 : 20;
 
     return Center(
       child: Container(
         constraints: BoxConstraints(
-          maxWidth: screenWidth * 0.95, // ไม่เกินขอบหน้าจอ
+          maxWidth: screenWidth * 0.95,
         ),
-        padding: EdgeInsets.all(isSmallScreen ? 10 : 16),
-        margin: EdgeInsets.all(isSmallScreen ? 8 : 16),
+        padding: EdgeInsets.all(padding),
+        margin: EdgeInsets.all(margin),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(width: 3, color: Colors.black),
+          border: Border.all(width: borderWidth, color: Colors.black),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              offset: const Offset(6, 6),
+              color: Colors.black.withValues(alpha: 0.3),
+              offset: Offset(isSmallScreen ? 4 : 6, isSmallScreen ? 4 : 6),
             ),
           ],
         ),
@@ -69,7 +163,7 @@ class _ActivityState extends State<Activity> {
           children: [
             // Dropdown
             Container(
-              height: isSmallScreen ? 40 : 55,
+              height: dropdownHeight,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFCCBC),
@@ -82,10 +176,10 @@ class _ActivityState extends State<Activity> {
                 style: TextStyle(
                   fontFamily: 'monospace',
                   fontWeight: FontWeight.bold,
-                  fontSize: isSmallScreen ? 14 : 16,
+                  fontSize: fontSize,
                   color: Colors.black,
                 ),
-                items: caloriesPerMin.keys
+                items: sports
                     .map((activity) => DropdownMenuItem(
                           value: activity,
                           child: Text(activity),
@@ -95,27 +189,33 @@ class _ActivityState extends State<Activity> {
               ),
             ),
 
-            SizedBox(height: isSmallScreen ? 12 : 20),
+            SizedBox(height: spacing),
 
             // Time row
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTimeButton("-", decreaseTime, const Color(0xFFFFFFAA), isSmallScreen, scale),
+                _buildTimeButton(
+                  "-",
+                  decreaseTime,
+                  const Color(0xFFFFFFAA),
+                  isSmallScreen,
+                  scale,
+                ),
                 Expanded(
                   child: Container(
-                    height: isSmallScreen ? 40 : 55,
+                    height: timeBoxHeight,
                     margin: const EdgeInsets.symmetric(horizontal: 8),
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 255, 255, 255),
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 255, 255, 255),
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
                         "$duration",
                         style: TextStyle(
-                          fontSize: 32 * scale,
+                          fontSize: timeDisplayFontSize,
                           fontFamily: 'TA8bit',
                           fontWeight: FontWeight.bold,
                         ),
@@ -123,17 +223,23 @@ class _ActivityState extends State<Activity> {
                     ),
                   ),
                 ),
-                _buildTimeButton("+", increaseTime, const Color(0xFFB2DFDB), isSmallScreen, scale),
+                _buildTimeButton(
+                  "+",
+                  increaseTime,
+                  const Color(0xFFB2DFDB),
+                  isSmallScreen,
+                  scale,
+                ),
               ],
             ),
 
-            SizedBox(height: isSmallScreen ? 12 : 20),
+            SizedBox(height: spacing),
 
             // Save button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: saveActivity,
+                onPressed: isLoading ? null : saveActivity,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFB2DFDB),
                   shape: RoundedRectangleBorder(
@@ -146,15 +252,25 @@ class _ActivityState extends State<Activity> {
                     vertical: 10 * scale,
                   ),
                 ),
-                child: Text(
-                  "SAVE",
-                  style: TextStyle(
-                    fontFamily: 'TA8bit',
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontSize: 22 * scale,
-                  ),
-                ),
+                child: isLoading
+                    ? SizedBox(
+                        height: 22 * scale,
+                        width: 22 * scale,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.black),
+                        ),
+                      )
+                    : Text(
+                        "SAVE",
+                        style: TextStyle(
+                          fontFamily: 'TA8bit',
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: buttonFontSize,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -163,10 +279,19 @@ class _ActivityState extends State<Activity> {
     );
   }
 
-  Widget _buildTimeButton(String symbol, VoidCallback onPressed, Color color, bool isSmall, double scale) {
+  Widget _buildTimeButton(
+    String symbol,
+    VoidCallback onPressed,
+    Color color,
+    bool isSmall,
+    double scale,
+  ) {
+    final double buttonSize = (isSmall ? 40 : 50) * scale;
+    final double buttonFontSize = (isSmall ? 22 : 28) * scale;
+
     return SizedBox(
-      width: (isSmall ? 40 : 50) * scale,
-      height: (isSmall ? 40 : 50) * scale,
+      width: buttonSize,
+      height: buttonSize,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -183,7 +308,7 @@ class _ActivityState extends State<Activity> {
           style: TextStyle(
             fontFamily: 'TA8bit',
             fontWeight: FontWeight.bold,
-            fontSize: (isSmall ? 22 : 28) * scale,
+            fontSize: buttonFontSize,
             color: Colors.black,
           ),
         ),

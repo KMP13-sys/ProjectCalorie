@@ -9,8 +9,8 @@ import '../componants/activityfactor.dart';
 import '../componants/piegraph.dart';
 import '../componants/ListMenu.dart';
 import '../componants/ListSport.dart';
-import '../componants/RacMenu.dart';
-import '../componants/RacSport.dart';
+import '../componants/RecMenu.dart';
+import '../componants/RecSport.dart';
 import '../componants/Activity.dart';
 import '../componants/WeeklyGraph.dart';
 
@@ -23,6 +23,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final GlobalKey _kcalbarKey = GlobalKey();
+  final GlobalKey _listSportKey = GlobalKey();
+  final GlobalKey _listMenuKey = GlobalKey();
+  final GlobalKey _recMenuKey = GlobalKey();
+  final GlobalKey _recSportKey = GlobalKey();
   bool _hasSelectedActivityLevel = false;
 
   int? _userId;
@@ -56,6 +60,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _checkActivityLevelStatus();
+      // Refresh ทุก component เมื่อกลับมาที่หน้าจอนี้ (เช่น หลังจากถ่ายรูปอาหาร)
+      _refreshKcalbar();
+      _refreshListMenu();
+      _refreshListSport();
+      _refreshRecMenu();
+      _refreshRecSport();
     }
   }
 
@@ -79,8 +89,47 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _checkActivityLevelStatus();
   }
 
+  void _refreshListSport() {
+    final state = _listSportKey.currentState;
+    if (state != null) {
+      (state as dynamic).refresh();
+    }
+  }
+
+  void _refreshListMenu() {
+    final state = _listMenuKey.currentState;
+    if (state != null) {
+      (state as dynamic).refresh();
+    }
+  }
+
+  void _refreshRecMenu() {
+    final state = _recMenuKey.currentState;
+    if (state != null) {
+      (state as dynamic).refresh();
+    }
+  }
+
+  void _refreshRecSport() {
+    final state = _recSportKey.currentState;
+    if (state != null) {
+      (state as dynamic).refresh();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ✅ Responsive calculations
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bool isSmallScreen = screenWidth < 600;
+    final bool isMobileScreen = screenWidth < 400;
+
+    final double containerPadding = isMobileScreen ? 8.0 : isSmallScreen ? 12.0 : 16.0;
+    final double spacing = isMobileScreen ? 30.0 : isSmallScreen ? 40.0 : 50.0;
+    final double smallSpacing = isMobileScreen ? 5.0 : 10.0;
+    final double graphHeight = screenHeight * (isMobileScreen ? 0.35 : isSmallScreen ? 0.40 : 0.45);
+
     return Scaffold(
       backgroundColor: const Color(0xFFDBFFC8),
       body: Column(
@@ -101,18 +150,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       Expanded(
                         flex: 1,
                         child: Container(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(containerPadding),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Kcalbar(key: _kcalbarKey),
-                              const SizedBox(height: 50),
+                              SizedBox(height: spacing),
                               const NutritionPieChartComponent(),
-                              const SizedBox(height: 50),
-                              const ListSportPage(),
-                              const SizedBox(height: 10),
+                              SizedBox(height: spacing),
+                              ListSportPage(key: _listSportKey),
+                              SizedBox(height: smallSpacing),
                               if (_userId != null)
                                 RacSport(
+                                  key: _recSportKey,
                                   remainingCalories: 500,
                                   refreshTrigger: 5,
                                   userId: _userId!,
@@ -136,20 +186,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       Expanded(
                         flex: 1,
                         child: Container(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(containerPadding),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ActivityFactorButton(
                                 onCaloriesUpdated: _refreshKcalbar,
                               ),
-                              const SizedBox(height: 20),
-                              const ListMenuPage(),
-                              const SizedBox(height: 10),
+                              SizedBox(height: isMobileScreen ? 15 : 20),
+                              ListMenuPage(key: _listMenuKey),
+                              SizedBox(height: smallSpacing),
 
                               // ✅ เชื่อม RacMenu เข้ากับ RecommendationService
                               if (_userId != null)
                                 RacMenu(
+                                  key: _recMenuKey,
                                   remainingCalories: 500,
                                   refreshTrigger: 3,
                                   userId: _userId!,
@@ -165,10 +216,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
 
-                              const SizedBox(height: 10),
+                              SizedBox(height: smallSpacing),
                               Activity(
                                 onSave: (burned) {
                                   _refreshKcalbar();
+                                  _refreshListSport();
+                                  _refreshRecSport();
                                 },
                               ),
                             ],
@@ -178,22 +231,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ],
                   ),
 
-                  const SizedBox(height: 5),
+                  SizedBox(height: isMobileScreen ? 3 : 5),
 
-                  // Weekly Graph - ✅ เพิ่มความสูงให้มากขึ้น
+                  // Weekly Graph - ✅ Responsive height
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 10.0,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobileScreen ? 2 : 4,
+                      vertical: isMobileScreen ? 6 : 10.0,
                     ),
                     child: SizedBox(
                       width: double.infinity,
-                      height: MediaQuery.of(context).size.height * 0.45, // เพิ่มจาก 0.38 เป็น 0.45
+                      height: graphHeight,
                       child: const WeeklyGraph(),
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  SizedBox(height: smallSpacing),
                 ],
               ),
             ),

@@ -61,16 +61,22 @@ class _KcalbarState extends State<Kcalbar> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
-    //final textScale = MediaQuery.of(context).textScaleFactor;
 
-    // responsive scaling
-    double scale(double base) => base * (screenWidth / 400).clamp(0.8, 1.4);
+    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    final bool isSmallScreen = screenWidth < 400;
+    final double fontSizeTitle = isSmallScreen ? 10 : 12;
+    final double fontSizeText = isSmallScreen ? 9 : 11;
+    final double padding = isSmallScreen ? 12 : 16;
+    final double iconSize = isSmallScreen ? 24 : 32;
+    final double barHeight = isSmallScreen ? 28 : 36;
+    final double borderWidth = isSmallScreen ? 2 : 3;
 
     if (_isLoading) {
       return Container(
-        height: scale(100),
-        padding: EdgeInsets.all(scale(16)),
+        height: isSmallScreen ? 80 : 100,
+        padding: EdgeInsets.all(padding),
         child: const Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8bc273)),
@@ -81,42 +87,48 @@ class _KcalbarState extends State<Kcalbar> {
 
     if (_errorMessage != null) {
       return Container(
-        height: scale(150),
-        padding: EdgeInsets.all(scale(16)),
+        height: isSmallScreen ? 120 : 150,
+        padding: EdgeInsets.all(padding),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline, color: Colors.red, size: scale(32)),
-              SizedBox(height: scale(8)),
+              Icon(Icons.error_outline, color: Colors.red, size: iconSize),
+              SizedBox(height: isSmallScreen ? 6 : 8),
               Text(
                 'ไม่สามารถโหลดข้อมูลได้',
                 style: TextStyle(
-                  fontSize: scale(12),
+                  fontSize: fontSizeTitle,
                   color: Colors.red,
                   fontFamily: 'TA8bit',
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: scale(4)),
+              SizedBox(height: isSmallScreen ? 3 : 4),
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: scale(10), color: Colors.red),
+                style: TextStyle(
+                  fontSize: fontSizeText,
+                  color: Colors.red,
+                ),
               ),
-              SizedBox(height: scale(8)),
+              SizedBox(height: isSmallScreen ? 6 : 8),
               ElevatedButton(
                 onPressed: _loadCalorieStatus,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8bc273),
                   padding: EdgeInsets.symmetric(
-                      horizontal: scale(16), vertical: scale(8)),
+                    horizontal: padding,
+                    vertical: isSmallScreen ? 6 : 8,
+                  ),
                 ),
                 child: Text(
                   'ลองใหม่',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: scale(12),
+                    fontSize: fontSizeTitle,
+                    fontFamily: 'TA8bit',
                   ),
                 ),
               ),
@@ -128,20 +140,23 @@ class _KcalbarState extends State<Kcalbar> {
 
     if (_calorieStatus == null || _calorieStatus!.targetCalories == 0) {
       return Container(
-        height: scale(80),
+        height: isSmallScreen ? 70 : 80,
         padding: EdgeInsets.symmetric(
-          horizontal: scale(16),
-          vertical: scale(12),
+          horizontal: padding,
+          vertical: isSmallScreen ? 10 : 12,
         ),
         decoration: BoxDecoration(
           color: const Color(0xFFFFF9BD),
-          border: Border.all(color: Colors.black, width: scale(2)),
+          border: Border.all(color: Colors.black, width: borderWidth),
         ),
         child: Row(
           children: [
-            Icon(Icons.warning_amber_rounded,
-                size: scale(28), color: Colors.black),
-            SizedBox(width: scale(12)),
+            Icon(
+              Icons.warning_amber_rounded,
+              size: isSmallScreen ? 24 : 28,
+              color: Colors.black,
+            ),
+            SizedBox(width: isSmallScreen ? 10 : 12),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -150,21 +165,12 @@ class _KcalbarState extends State<Kcalbar> {
                   Text(
                     'กรุณาเลือกระดับกิจกรรมประจำวัน',
                     style: TextStyle(
-                      fontSize: scale(10),
+                      fontSize: fontSizeTitle,
                       fontFamily: 'TA8bit',
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  SizedBox(height: scale(3)), // 4
-                  // Text(
-                  //   'เพื่อคำนวณแคลอรี่ที่เหมาะสมกับคุณ',
-                  //   style: TextStyle(
-                  //     fontSize: scale(8),
-                  //     fontFamily: 'TA8bit',
-                  //     color: Colors.black87,
-                  //   ),
-                  // ),
                 ],
               ),
             ),
@@ -188,8 +194,8 @@ class _KcalbarState extends State<Kcalbar> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: scale(16),
-                vertical: scale(8),
+                horizontal: padding,
+                vertical: isSmallScreen ? 6 : 8,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,7 +203,7 @@ class _KcalbarState extends State<Kcalbar> {
                   Text(
                     'Kcal',
                     style: TextStyle(
-                      fontSize: scale(10),
+                      fontSize: fontSizeTitle,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                       fontFamily: 'TA8bit',
@@ -208,7 +214,7 @@ class _KcalbarState extends State<Kcalbar> {
                       '${current.toStringAsFixed(0)} / ${target.toStringAsFixed(0)} Kcal',
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: scale(10),
+                        fontSize: fontSizeTitle,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                         fontFamily: 'TA8bit',
@@ -221,21 +227,24 @@ class _KcalbarState extends State<Kcalbar> {
 
             // Progress Bar responsive
             Container(
-              height: scale(32),
-              margin: EdgeInsets.symmetric(horizontal: scale(16)),
+              height: barHeight,
+              margin: EdgeInsets.symmetric(horizontal: padding),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black, width: scale(3)),
-                borderRadius: BorderRadius.circular(scale(30)),
+                border: Border.all(color: Colors.black, width: borderWidth),
+                borderRadius: BorderRadius.circular(isSmallScreen ? 25 : 30),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.2),
-                    offset: const Offset(4, 4),
+                    offset: Offset(
+                      isSmallScreen ? 3 : 4,
+                      isSmallScreen ? 3 : 4,
+                    ),
                     blurRadius: 0,
                   ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(scale(26)),
+                borderRadius: BorderRadius.circular(isSmallScreen ? 22 : 26),
                 child: Stack(
                   children: [
                     Container(color: widget.backgroundColor),
@@ -245,8 +254,9 @@ class _KcalbarState extends State<Kcalbar> {
                     ),
                     Center(
                       child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: scale(12)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 10 : 12,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -257,7 +267,7 @@ class _KcalbarState extends State<Kcalbar> {
                                     : 'Over ${(-remaining).toStringAsFixed(0)}!',
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: scale(10),
+                                  fontSize: fontSizeTitle,
                                   fontWeight: FontWeight.bold,
                                   color: remaining > 0
                                       ? Colors.black87

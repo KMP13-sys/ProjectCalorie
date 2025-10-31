@@ -245,11 +245,12 @@ def save_meal_to_db(user_id, data):
             cur = conn.cursor()
             conn.start_transaction()
 
+            # ใช้ CURDATE() ของ MySQL เพื่อให้แน่ใจว่าวันที่รีเซ็ตตอนเที่ยงคืนตาม timezone ของ database
             cur.execute("""
                 INSERT INTO Meals (user_id, date)
-                VALUES (%s, %s)
+                VALUES (%s, CURDATE())
                 ON DUPLICATE KEY UPDATE meal_id = LAST_INSERT_ID(meal_id)
-            """, (user_id, dt.date()))
+            """, (user_id,))
             meal_id = cur.lastrowid
 
             cur.execute("""
@@ -269,8 +270,8 @@ def save_meal_to_db(user_id, data):
             conn.commit()
             cur.close()
 
-            # อัปเดตแคลอรี่รวมของวัน
-            update_consumed_calories(user_id, dt.date())
+            # อัปเดตแคลอรี่รวมของวัน (ใช้วันปัจจุบันของ MySQL)
+            update_consumed_calories(user_id)
 
             result = {
                 'success': True,
@@ -291,41 +292,41 @@ def save_meal_to_db(user_id, data):
 # ============================================
 # Update Consumed Calories
 # ============================================
-def update_consumed_calories(user_id, date):
-    """อัปเดตแคลอรี่ที่กินไปในวันนั้นๆ"""
+def update_consumed_calories(user_id):
+    """อัปเดตแคลอรี่ที่กินไปในวันปัจจุบัน (ใช้ CURDATE() ของ MySQL)"""
     try:
         with get_db_connection() as conn:
             cur = conn.cursor(dictionary=True)
 
-            # คำนวณแคลอรี่รวมจากอาหารที่กินไปในวันนั้น
+            # คำนวณแคลอรี่รวมจากอาหารที่กินไปในวันปัจจุบัน (ใช้ CURDATE())
             cur.execute("""
                 SELECT SUM(f.calories) AS totalCalories
                 FROM Meals m
                 JOIN MealDetails md ON m.meal_id = md.meal_id
                 JOIN Foods f ON md.food_id = f.food_id
-                WHERE m.user_id = %s AND m.date = %s
-            """, (user_id, date))
+                WHERE m.user_id = %s AND m.date = CURDATE()
+            """, (user_id,))
 
             result = cur.fetchone()
             total_consumed = result['totalCalories'] if result and result['totalCalories'] else 0
 
-            # อัปเดต consumed_calories ลง DailyCalories
+            # อัปเดต consumed_calories ลง DailyCalories (ใช้ CURDATE())
             # (ต้องมีข้อมูล DailyCalories ของวันนี้อยู่แล้ว)
             cur.execute("""
                 UPDATE DailyCalories
                 SET consumed_calories = %s
-                WHERE user_id = %s AND date = %s
-            """, (total_consumed, user_id, date))
+                WHERE user_id = %s AND date = CURDATE()
+            """, (total_consumed, user_id))
 
             affected_rows = cur.rowcount
             conn.commit()
             cur.close()
 
             if affected_rows > 0:
-                logger.info(f"✅ Updated consumed_calories for user {user_id} on {date}: {total_consumed} kcal")
+                logger.info(f"✅ Updated consumed_calories for user {user_id}: {total_consumed} kcal")
                 return True
             else:
-                logger.warning(f"⚠️ No DailyCalories record found for user {user_id} on {date}")
+                logger.warning(f"⚠️ No DailyCalories record found for user {user_id} today")
                 return False
 
     except Exception as e:

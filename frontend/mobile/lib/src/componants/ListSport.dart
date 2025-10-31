@@ -42,12 +42,18 @@ class _ListSportPageState extends State<ListSportPage> {
     }
   }
 
+  // Public refresh method ที่จะถูกเรียกจาก parent widget
+  void refresh() {
+    _loadActivities();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery สำหรับ responsive
+    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // ✅ ปรับขนาด font/padding ตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double fontSizeTitle = isSmallScreen ? 18 : 24;
     final double fontSizeText = isSmallScreen ? 12 : 16;
@@ -70,18 +76,19 @@ class _ListSportPageState extends State<ListSportPage> {
       ),
       padding: EdgeInsets.all(padding),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Text(
-            'LIST SPORT',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: fontSizeTitle,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 4,
-              color: const Color(0xFF2a2a2a),
-              fontFamily: 'TA8bit',
+          Center(
+            child: Text(
+              'LIST SPORT',
+              style: TextStyle(
+                fontSize: fontSizeTitle,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+                color: const Color(0xFF2a2a2a),
+                fontFamily: 'TA8bit',
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -122,6 +129,7 @@ class _ListSportPageState extends State<ListSportPage> {
               ),
             ],
           ),
+
           const SizedBox(height: 10),
 
           // เส้นคั่น
@@ -132,7 +140,9 @@ class _ListSportPageState extends State<ListSportPage> {
           Expanded(
             child: _isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF2a2a2a)),
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF2a2a2a),
+                    ),
                   )
                 : _errorMessage != null
                     ? Center(
@@ -178,10 +188,13 @@ class _ListSportPageState extends State<ListSportPage> {
                               children: _activities.asMap().entries.map((entry) {
                                 final activity = entry.value;
                                 return Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       // ชื่อกีฬา
                                       Expanded(
