@@ -25,11 +25,30 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _bounceController3;
   late AnimationController _progressController;
 
+  // ✨ Helper สำหรับ Responsive
+  double getResponsiveWidth(BuildContext context) => MediaQuery.of(context).size.width;
+  double getResponsiveHeight(BuildContext context) => MediaQuery.of(context).size.height;
+  
+  // สำหรับ font size responsive
+  double getFontSize(BuildContext context, double baseSize) {
+    double width = getResponsiveWidth(context);
+    if (width > 600) return baseSize; // Desktop/Tablet
+    if (width > 400) return baseSize * 0.9; // Large Phone
+    return baseSize * 0.8; // Small Phone
+  }
+  
+  // สำหรับ spacing responsive
+  double getSpacing(BuildContext context, double baseSpacing) {
+    double width = getResponsiveWidth(context);
+    if (width > 600) return baseSpacing;
+    if (width > 400) return baseSpacing * 0.85;
+    return baseSpacing * 0.7;
+  }
+
   @override
   void initState() {
     super.initState();
 
-    // Animation controllers สำหรับ floating pixels
     _bounceController1 = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -50,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
     );
 
-    // Delay สำหรับ bounce animations
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _bounceController2.forward();
     });
@@ -70,18 +88,14 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  // Validate username
   bool _validateUsername(String username) {
-    // ต้องมีตัวอักษรอย่างน้อย 1 ตัว
     if (!RegExp(r'[a-zA-Z]').hasMatch(username)) {
       setState(() {
-        _errorMessage =
-            'Username ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว';
+        _errorMessage = 'Username ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว';
       });
       return false;
     }
 
-    // ต้องมีความยาวอย่างน้อย 3 ตัวอักษร
     if (username.length < 3) {
       setState(() {
         _errorMessage = 'Username ต้องมีอย่างน้อย 3 ตัวอักษร';
@@ -100,7 +114,6 @@ class _LoginScreenState extends State<LoginScreen>
       _errorMessage = '';
     });
 
-    // Validation
     if (username.isEmpty) {
       setState(() {
         _errorMessage = '⚠ Please enter username!';
@@ -108,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
-    // Validate username format
     if (!_validateUsername(username)) {
       return;
     }
@@ -120,25 +132,20 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
-    // เรียก API
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // ✅ เรียก AuthService.login (จะบันทึก tokens + userId อัตโนมัติ)
       await AuthService.login(username: username, password: password);
 
-      // ✅ Login สำเร็จ (ถ้าไม่สำเร็จจะ throw exception)
       setState(() {
         _isLoading = false;
         _showSuccessModal = true;
       });
 
-      // เริ่ม animation
       _progressController.forward();
 
-      // รอ 2 วินาทีแล้ว redirect
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           Navigator.pushReplacement(
@@ -157,6 +164,9 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = getResponsiveWidth(context);
+    final isSmallScreen = screenWidth < 400;
+    
     return Scaffold(
       body: Stack(
         children: [
@@ -178,38 +188,40 @@ class _LoginScreenState extends State<LoginScreen>
           // Pixel Grid Background
           CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
 
-          // Floating Pixels
-          _buildFloatingPixel(
-            controller: _bounceController1,
-            top: 40,
-            left: 40,
-            size: 24,
-          ),
-          _buildFloatingPixel(
-            controller: _bounceController2,
-            top: 80,
-            right: 64,
-            size: 16,
-          ),
-          _buildFloatingPixel(
-            controller: _bounceController3,
-            bottom: 80,
-            left: 80,
-            size: 20,
-          ),
+          // Floating Pixels - ซ่อนใน small screen
+          if (!isSmallScreen) ...[
+            _buildFloatingPixel(
+              controller: _bounceController1,
+              top: 40,
+              left: 40,
+              size: screenWidth > 600 ? 24 : 16,
+            ),
+            _buildFloatingPixel(
+              controller: _bounceController2,
+              top: 80,
+              right: 64,
+              size: screenWidth > 600 ? 16 : 12,
+            ),
+            _buildFloatingPixel(
+              controller: _bounceController3,
+              bottom: 80,
+              left: 80,
+              size: screenWidth > 600 ? 20 : 14,
+            ),
+          ],
 
           // Main Content
           Center(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(getSpacing(context, 16)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildLoginBox(),
-                    const SizedBox(height: 32),
+                    SizedBox(height: getSpacing(context, 32)),
                     _buildHintText(),
-                    const SizedBox(height: 40),
+                    SizedBox(height: getSpacing(context, 40)),
                   ],
                 ),
               ),
@@ -261,15 +273,22 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildLoginBox() {
+    final screenWidth = getResponsiveWidth(context);
+    final maxWidth = screenWidth > 600 ? 450.0 : screenWidth * 0.95;
+    final borderWidth = screenWidth > 600 ? 8.0 : screenWidth > 400 ? 6.0 : 4.0;
+    
     return Container(
-      constraints: const BoxConstraints(maxWidth: 450),
+      constraints: BoxConstraints(maxWidth: maxWidth),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: Colors.black, width: 8),
+        border: Border.all(color: Colors.black, width: borderWidth),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
-            offset: const Offset(12, 12),
+            offset: Offset(
+              screenWidth > 600 ? 12 : screenWidth > 400 ? 8 : 6,
+              screenWidth > 600 ? 12 : screenWidth > 400 ? 8 : 6,
+            ),
           ),
         ],
       ),
@@ -284,25 +303,30 @@ class _LoginScreenState extends State<LoginScreen>
               // Header Bar
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
+                padding: EdgeInsets.symmetric(
+                  vertical: getSpacing(context, 12),
+                ),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
                     colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
                   ),
                   border: Border(
-                    bottom: BorderSide(color: Colors.black, width: 6),
+                    bottom: BorderSide(
+                      color: Colors.black,
+                      width: screenWidth > 600 ? 6 : screenWidth > 400 ? 4 : 3,
+                    ),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   '◆ LOGIN ◆',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'TA8bit',
-                    fontSize: 24,
+                    fontSize: getFontSize(context, 24),
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    letterSpacing: 2,
-                    shadows: [
+                    letterSpacing: screenWidth > 400 ? 2 : 1,
+                    shadows: const [
                       Shadow(offset: Offset(3, 3), color: Color(0x80000000)),
                     ],
                   ),
@@ -311,52 +335,52 @@ class _LoginScreenState extends State<LoginScreen>
 
               // Content
               Padding(
-                padding: const EdgeInsets.all(32.0),
+                padding: EdgeInsets.all(getSpacing(context, 32)),
                 child: Column(
                   children: [
                     // Logo
                     _buildLogo(),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: getSpacing(context, 24)),
 
                     // Title
-                    const Text(
+                    Text(
                       'CAL-DEFICITS',
                       style: TextStyle(
                         fontFamily: 'TA8bit',
-                        fontSize: 20,
+                        fontSize: getFontSize(context, 20),
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1f2937),
-                        letterSpacing: 2,
+                        color: const Color(0xFF1f2937),
+                        letterSpacing: screenWidth > 400 ? 2 : 1,
                       ),
                     ),
 
                     // Pixel Dots
-                    const SizedBox(height: 8),
+                    SizedBox(height: getSpacing(context, 8)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 8,
-                          height: 8,
+                          width: screenWidth > 400 ? 8 : 6,
+                          height: screenWidth > 400 ? 8 : 6,
                           color: const Color(0xFF6fa85e),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: screenWidth > 400 ? 4 : 3),
                         Container(
-                          width: 8,
-                          height: 8,
+                          width: screenWidth > 400 ? 8 : 6,
+                          height: screenWidth > 400 ? 8 : 6,
                           color: const Color(0xFF8bc273),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: screenWidth > 400 ? 4 : 3),
                         Container(
-                          width: 8,
-                          height: 8,
+                          width: screenWidth > 400 ? 8 : 6,
+                          height: screenWidth > 400 ? 8 : 6,
                           color: const Color(0xFFa8d48f),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: getSpacing(context, 24)),
 
                     // Error Message
                     if (_errorMessage.isNotEmpty) _buildErrorMessage(),
@@ -373,7 +397,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: getSpacing(context, 16)),
 
                     // Password Field
                     _buildInputField(
@@ -383,12 +407,12 @@ class _LoginScreenState extends State<LoginScreen>
                       isPassword: true,
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: getSpacing(context, 24)),
 
                     // Login Button
                     _buildLoginButton(),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: getSpacing(context, 24)),
 
                     // Footer Links
                     _buildFooterLinks(),
@@ -403,40 +427,47 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   List<Widget> _buildCornerPixels() {
+    final screenWidth = getResponsiveWidth(context);
+    final pixelSize = screenWidth > 600 ? 24.0 : screenWidth > 400 ? 20.0 : 16.0;
+    
     return [
       Positioned(
         top: 0,
         left: 0,
-        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+        child: Container(width: pixelSize, height: pixelSize, color: const Color(0xFF6fa85e)),
       ),
       Positioned(
         top: 0,
         right: 0,
-        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+        child: Container(width: pixelSize, height: pixelSize, color: const Color(0xFF6fa85e)),
       ),
       Positioned(
         bottom: 0,
         left: 0,
-        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+        child: Container(width: pixelSize, height: pixelSize, color: const Color(0xFF6fa85e)),
       ),
       Positioned(
         bottom: 0,
         right: 0,
-        child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e)),
+        child: Container(width: pixelSize, height: pixelSize, color: const Color(0xFF6fa85e)),
       ),
     ];
   }
 
   Widget _buildLogo() {
+    final screenWidth = getResponsiveWidth(context);
+    final logoSize = screenWidth > 600 ? 128.0 : screenWidth > 400 ? 100.0 : 80.0;
+    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
+    
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(getSpacing(context, 12)),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFFa8d48f), Color(0xFF8bc273)],
         ),
-        border: Border.all(color: Colors.black, width: 4),
+        border: Border.all(color: Colors.black, width: borderWidth),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -446,34 +477,37 @@ class _LoginScreenState extends State<LoginScreen>
       ),
       child: Image.asset(
         'assets/pic/logo.png',
-        width: 128,
-        height: 128,
+        width: logoSize,
+        height: logoSize,
         fit: BoxFit.contain,
       ),
     );
   }
 
   Widget _buildErrorMessage() {
+    final screenWidth = getResponsiveWidth(context);
+    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
+    
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(getSpacing(context, 12)),
+      margin: EdgeInsets.only(bottom: getSpacing(context, 16)),
       decoration: BoxDecoration(
         color: const Color(0xFFfecaca),
-        border: Border.all(color: const Color(0xFFdc2626), width: 4),
+        border: Border.all(color: const Color(0xFFdc2626), width: borderWidth),
       ),
       child: Row(
         children: [
-          const Text('⚠', style: TextStyle(fontSize: 20)),
-          const SizedBox(width: 8),
+          Text('⚠', style: TextStyle(fontSize: getFontSize(context, 20))),
+          SizedBox(width: getSpacing(context, 8)),
           Expanded(
             child: Text(
               _errorMessage,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'TA8bit',
-                fontSize: 12,
+                fontSize: getFontSize(context, 12),
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF991b1b),
+                color: const Color(0xFF991b1b),
               ),
             ),
           ),
@@ -489,23 +523,26 @@ class _LoginScreenState extends State<LoginScreen>
     bool isPassword = false,
     List<TextInputFormatter>? inputFormatters,
   }) {
+    final screenWidth = getResponsiveWidth(context);
+    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'TA8bit',
-            fontSize: 14,
+            fontSize: getFontSize(context, 14),
             fontWeight: FontWeight.bold,
-            color: Color(0xFF374151),
+            color: const Color(0xFF374151),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: getSpacing(context, 8)),
         Container(
           decoration: BoxDecoration(
             color: const Color(0xFFf3f4f6),
-            border: Border.all(color: const Color(0xFF1f2937), width: 4),
+            border: Border.all(color: const Color(0xFF1f2937), width: borderWidth),
           ),
           child: TextField(
             controller: controller,
@@ -518,20 +555,22 @@ class _LoginScreenState extends State<LoginScreen>
                 });
               }
             },
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'TA8bit',
-              color: Color(0xFF1f2937),
+              fontSize: getFontSize(context, 14),
+              color: const Color(0xFF1f2937),
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 fontFamily: 'TA8bit',
-                color: Color(0xFF9ca3af),
+                fontSize: getFontSize(context, 14),
+                color: const Color(0xFF9ca3af),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: getSpacing(context, 16),
+                vertical: getSpacing(context, 12),
               ),
             ),
           ),
@@ -541,44 +580,50 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildLoginButton() {
+    final screenWidth = getResponsiveWidth(context);
+    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
+    
     return GestureDetector(
       onTap: _isLoading ? null : _handleLogin,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: getSpacing(context, 16)),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
           ),
-          border: Border.all(color: Colors.black, width: 4),
+          border: Border.all(color: Colors.black, width: borderWidth),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
-              offset: const Offset(6, 6),
+              offset: Offset(
+                screenWidth > 600 ? 6 : screenWidth > 400 ? 4 : 3,
+                screenWidth > 600 ? 6 : screenWidth > 400 ? 4 : 3,
+              ),
             ),
           ],
         ),
         child: _isLoading
-            ? const Center(
+            ? Center(
                 child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
+                  width: screenWidth > 400 ? 20 : 16,
+                  height: screenWidth > 400 ? 20 : 16,
+                  child: const CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
               )
-            : const Text(
+            : Text(
                 '▶ LOGIN',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'TA8bit',
-                  fontSize: 18,
+                  fontSize: getFontSize(context, 18),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  letterSpacing: 1,
-                  shadows: [
+                  letterSpacing: screenWidth > 400 ? 1 : 0.5,
+                  shadows: const [
                     Shadow(offset: Offset(2, 2), color: Color(0x80000000)),
                   ],
                 ),
@@ -588,117 +633,189 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildFooterLinks() {
+    final screenWidth = getResponsiveWidth(context);
+    final isSmallScreen = screenWidth < 400;
+    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
+    
     return Container(
-      padding: const EdgeInsets.only(top: 24),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.only(top: getSpacing(context, 24)),
+      decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: Color(0xFFd1d5db),
-            width: 4,
+            color: const Color(0xFFd1d5db),
+            width: borderWidth,
             style: BorderStyle.solid,
           ),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () {
-              // Forgot password
-              showDialog(
-                context: context,
-                builder: (context) => _buildPixelDialog(
-                  title: 'FORGOT PASSWORD',
-                  content: 'กรุณาติดต่อผู้ดูแลระบบ\nเพื่อรีเซ็ตรหัสผ่าน',
-                ),
-              );
-            },
-            child: const Text(
-              '? Forgot Password',
-              style: TextStyle(
-                fontFamily: 'TA8bit',
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4b5563),
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const RegisterScreen()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1f2937),
-                border: Border.all(color: Colors.black, width: 3),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    offset: const Offset(3, 3),
+      child: isSmallScreen 
+        ? Column(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => _buildPixelDialog(
+                      title: 'FORGOT PASSWORD',
+                      content: 'กรุณาติดต่อผู้ดูแลระบบ\nเพื่อรีเซ็ตรหัสผ่าน',
+                    ),
+                  );
+                },
+                child: Text(
+                  '? Forgot Password',
+                  style: TextStyle(
+                    fontFamily: 'TA8bit',
+                    fontSize: getFontSize(context, 12),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF4b5563),
                   ),
-                ],
-              ),
-              child: const Text(
-                '↗ SIGN UP',
-                style: TextStyle(
-                  fontFamily: 'TA8bit',
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
                 ),
               ),
-            ),
+              SizedBox(height: getSpacing(context, 12)),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                  );
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getSpacing(context, 16),
+                    vertical: getSpacing(context, 8),
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1f2937),
+                    border: Border.all(color: Colors.black, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: const Offset(3, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '↗ SIGN UP',
+                    style: TextStyle(
+                      fontFamily: 'TA8bit',
+                      fontSize: getFontSize(context, 12),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => _buildPixelDialog(
+                      title: 'FORGOT PASSWORD',
+                      content: 'กรุณาติดต่อผู้ดูแลระบบ\nเพื่อรีเซ็ตรหัสผ่าน',
+                    ),
+                  );
+                },
+                child: Text(
+                  '? Forgot Password',
+                  style: TextStyle(
+                    fontFamily: 'TA8bit',
+                    fontSize: getFontSize(context, 12),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF4b5563),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                  );
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getSpacing(context, 16),
+                    vertical: getSpacing(context, 8),
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1f2937),
+                    border: Border.all(color: Colors.black, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: const Offset(3, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '↗ SIGN UP',
+                    style: TextStyle(
+                      fontFamily: 'TA8bit',
+                      fontSize: getFontSize(context, 12),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   Widget _buildHintText() {
-    return const Center(
+    return Center(
       child: Text(
         '▼ ENTER YOUR CREDENTIALS ▼',
         style: TextStyle(
           fontFamily: 'TA8bit',
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          fontSize: 14,
-          letterSpacing: 1,
-          shadows: [Shadow(offset: Offset(2, 2), color: Color(0x80000000))],
+          fontSize: getFontSize(context, 14),
+          letterSpacing: getResponsiveWidth(context) > 400 ? 1 : 0.5,
+          shadows: const [Shadow(offset: Offset(2, 2), color: Color(0x80000000))],
         ),
       ),
     );
   }
 
   Widget _buildSuccessModal() {
+    final screenWidth = getResponsiveWidth(context);
+    final maxWidth = screenWidth > 600 ? 400.0 : screenWidth * 0.9;
+    final borderWidth = screenWidth > 600 ? 8.0 : screenWidth > 400 ? 6.0 : 4.0;
+    
     return Container(
       color: Colors.black.withOpacity(0.7),
       child: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          margin: const EdgeInsets.all(16),
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          margin: EdgeInsets.all(getSpacing(context, 16)),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [Color(0xFFa8d48f), Color(0xFF8bc273)],
             ),
-            border: Border.all(color: Colors.black, width: 8),
+            border: Border.all(color: Colors.black, width: borderWidth),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
-                offset: const Offset(8, 8),
+                offset: Offset(
+                  screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 4,
+                  screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 4,
+                ),
               ),
             ],
           ),
           child: Stack(
             children: [
               // Corner Pixels
-              ..._buildCornerPixels().map((w) => w),
+              ..._buildCornerPixels(),
 
               Column(
                 mainAxisSize: MainAxisSize.min,
@@ -706,23 +823,28 @@ class _LoginScreenState extends State<LoginScreen>
                   // Header
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF6fa85e),
+                    padding: EdgeInsets.symmetric(
+                      vertical: getSpacing(context, 12),
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6fa85e),
                       border: Border(
-                        bottom: BorderSide(color: Colors.black, width: 4),
+                        bottom: BorderSide(
+                          color: Colors.black,
+                          width: screenWidth > 600 ? 4 : screenWidth > 400 ? 3 : 2,
+                        ),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       '★ SUCCESS! ★',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'TA8bit',
-                        fontSize: 24,
+                        fontSize: getFontSize(context, 24),
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        letterSpacing: 2,
-                        shadows: [
+                        letterSpacing: screenWidth > 400 ? 2 : 1,
+                        shadows: const [
                           Shadow(
                             offset: Offset(3, 3),
                             color: Color(0x80000000),
@@ -733,61 +855,64 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
 
                   Padding(
-                    padding: const EdgeInsets.all(32.0),
+                    padding: EdgeInsets.all(screenWidth * 0.08),
                     child: Column(
                       children: [
                         // Pixel Heart Icon
                         _buildPixelHeart(),
 
-                        const SizedBox(height: 16),
+                        SizedBox(height: screenWidth * 0.04),
 
                         // Message Box
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(screenWidth * 0.04),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(color: Colors.black, width: 4),
+                            border: Border.all(
+                              color: Colors.black,
+                              width: screenWidth > 600 ? 4 : screenWidth > 400 ? 3 : 2,
+                            ),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
                               Text(
                                 'LOGIN COMPLETE!',
                                 style: TextStyle(
                                   fontFamily: 'TA8bit',
-                                  fontSize: 20,
+                                  fontSize: getFontSize(context, 18),
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1f2937),
+                                  color: const Color(0xFF1f2937),
                                 ),
                               ),
-                              SizedBox(height: 8),
+                              SizedBox(height: screenWidth * 0.02),
                               Text(
                                 'Welcome back, User!',
                                 style: TextStyle(
                                   fontFamily: 'TA8bit',
-                                  fontSize: 14,
-                                  color: Color(0xFF6b7280),
+                                  fontSize: getFontSize(context, 14),
+                                  color: const Color(0xFF6b7280),
                                 ),
                               ),
                             ],
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        SizedBox(height: screenWidth * 0.04),
 
                         // Loading Bar
                         _buildLoadingBar(),
 
-                        const SizedBox(height: 12),
+                        SizedBox(height: screenWidth * 0.03),
 
-                        const Text(
+                        Text(
                           'Loading...',
                           style: TextStyle(
                             fontFamily: 'TA8bit',
-                            fontSize: 12,
+                            fontSize: getFontSize(context, 12),
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
-                            shadows: [
+                            shadows: const [
                               Shadow(
                                 offset: Offset(2, 2),
                                 color: Color(0x80000000),
@@ -797,7 +922,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
             ],
@@ -807,69 +932,114 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // ✅ แก้ไขให้ใช้ Column + Row แทน GridView
   Widget _buildPixelHeart() {
+    final screenWidth = getResponsiveWidth(context);
+    final heartSize = screenWidth > 600 ? 64.0 : screenWidth > 400 ? 56.0 : 48.0;
+    final pixelSize = heartSize / 5;
+    
     return SizedBox(
-      width: 64,
-      height: 64,
-      child: GridView.count(
-        crossAxisCount: 5,
-        mainAxisSpacing: 0,
-        crossAxisSpacing: 0,
-        physics: const NeverScrollableScrollPhysics(),
+      width: heartSize,
+      height: heartSize,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _pixel(Colors.transparent),
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(Colors.transparent),
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(Colors.transparent),
-
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(const Color(0xFFff8787)),
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(const Color(0xFFff8787)),
-          _pixel(const Color(0xFFff6b6b)),
-
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(const Color(0xFFff8787)),
-          _pixel(const Color(0xFFff8787)),
-          _pixel(const Color(0xFFff8787)),
-          _pixel(const Color(0xFFff6b6b)),
-
-          _pixel(Colors.transparent),
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(const Color(0xFFff8787)),
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(Colors.transparent),
-
-          _pixel(Colors.transparent),
-          _pixel(Colors.transparent),
-          _pixel(const Color(0xFFff6b6b)),
-          _pixel(Colors.transparent),
-          _pixel(Colors.transparent),
+          // Row 1
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _pixelWithSize(Colors.transparent, pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(Colors.transparent, pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(Colors.transparent, pixelSize),
+            ],
+          ),
+          // Row 2
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(const Color(0xFFff8787), pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(const Color(0xFFff8787), pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+            ],
+          ),
+          // Row 3
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(const Color(0xFFff8787), pixelSize),
+              _pixelWithSize(const Color(0xFFff8787), pixelSize),
+              _pixelWithSize(const Color(0xFFff8787), pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+            ],
+          ),
+          // Row 4
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _pixelWithSize(Colors.transparent, pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(const Color(0xFFff8787), pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(Colors.transparent, pixelSize),
+            ],
+          ),
+          // Row 5
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _pixelWithSize(Colors.transparent, pixelSize),
+              _pixelWithSize(Colors.transparent, pixelSize),
+              _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
+              _pixelWithSize(Colors.transparent, pixelSize),
+              _pixelWithSize(Colors.transparent, pixelSize),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _pixel(Color color) {
-    return Container(width: 12, height: 12, color: color);
+  Widget _pixelWithSize(Color color, double size) {
+    return Container(
+      width: size,
+      height: size,
+      color: color,
+    );
   }
 
-  // ✅ แก้ไข Loading Bar - ให้เลื่อนแค่ส่วนใน
+  Widget _pixel(Color color) {
+    final screenWidth = getResponsiveWidth(context);
+    final pixelSize = screenWidth > 600 ? 12.0 : screenWidth > 400 ? 10.0 : 9.0;
+    return Container(width: pixelSize, height: pixelSize, color: color);
+  }
+
   Widget _buildLoadingBar() {
+    final screenWidth = getResponsiveWidth(context);
+    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
+    
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(getSpacing(context, 8)),
       decoration: BoxDecoration(
         color: Colors.black,
-        border: Border.all(color: const Color(0xFF6fa85e), width: 4),
+        border: Border.all(color: const Color(0xFF6fa85e), width: borderWidth),
       ),
       child: Container(
-        height: 24,
-        width: double.infinity, // ✅ กำหนดความกว้างเต็ม
+        height: screenWidth > 600 ? 24 : screenWidth > 400 ? 20 : 16,
+        width: double.infinity,
         decoration: const BoxDecoration(color: Color(0xFF2d2d2d)),
         child: Stack(
           children: [
-            // ✅ Animated Inner Bar
             AnimatedBuilder(
               animation: _progressController,
               builder: (context, child) {
@@ -877,11 +1047,10 @@ class _LoginScreenState extends State<LoginScreen>
                   width: double.infinity,
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    width:
-                        MediaQuery.of(context).size.width *
+                    width: MediaQuery.of(context).size.width *
                         _progressController.value *
-                        0.85, // ✅ คำนวณความกว้างแทน
-                    height: 24,
+                        0.85,
+                    height: double.infinity,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Color(0xFF4ecdc4), Color(0xFF44a3c4)],
@@ -890,12 +1059,12 @@ class _LoginScreenState extends State<LoginScreen>
                     child: Column(
                       children: [
                         Container(
-                          height: 8,
+                          height: screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 5,
                           color: Colors.white.withOpacity(0.3),
                         ),
                         const Spacer(),
                         Container(
-                          height: 8,
+                          height: screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 5,
                           color: Colors.black.withOpacity(0.2),
                         ),
                       ],
@@ -911,16 +1080,23 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildPixelDialog({required String title, required String content}) {
+    final screenWidth = getResponsiveWidth(context);
+    final borderWidth = screenWidth > 600 ? 6.0 : screenWidth > 400 ? 4.0 : 3.0;
+    
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
+        margin: EdgeInsets.symmetric(horizontal: getSpacing(context, 16)),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.black, width: 6),
+          border: Border.all(color: Colors.black, width: borderWidth),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
-              offset: const Offset(8, 8),
+              offset: Offset(
+                screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 4,
+                screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 4,
+              ),
             ),
           ],
         ),
@@ -929,56 +1105,65 @@ class _LoginScreenState extends State<LoginScreen>
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
+              padding: EdgeInsets.all(getSpacing(context, 16)),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
                   colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
                 ),
                 border: Border(
-                  bottom: BorderSide(color: Colors.black, width: 4),
+                  bottom: BorderSide(
+                    color: Colors.black,
+                    width: screenWidth > 600 ? 4 : screenWidth > 400 ? 3 : 2,
+                  ),
                 ),
               ),
               child: Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'TA8bit',
-                  fontSize: 18,
+                  fontSize: getFontSize(context, 18),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(getSpacing(context, 24)),
               child: Text(
                 content,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'TA8bit',
-                  fontSize: 14,
-                  color: Color(0xFF374151),
+                  fontSize: getFontSize(context, 14),
+                  color: const Color(0xFF374151),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(getSpacing(context, 16)),
               child: GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(
+                    vertical: getSpacing(context, 12),
+                  ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
                     ),
-                    border: Border.all(color: Colors.black, width: 4),
+                    border: Border.all(
+                      color: Colors.black,
+                      width: screenWidth > 600 ? 4 : screenWidth > 400 ? 3 : 2,
+                    ),
                   ),
-                  child: const Text(
+                  child: Text(
                     '◀ CLOSE',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'TA8bit',
+                      fontSize: getFontSize(context, 14),
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),

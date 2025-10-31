@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
-  final Widget destination; // ✅ เพิ่ม parameter นี้
+  final Widget destination;
 
   const SplashScreen({
     super.key,
-    required this.destination, // ✅ บอกว่าจะไปหน้าไหนหลังจบ animation
+    required this.destination,
   });
 
   @override
@@ -26,36 +26,24 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Animation controllers สำหรับ floating pixels
-    _bounceController1 = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
+    _bounceController1 =
+        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
+          ..repeat(reverse: true);
+    _bounceController2 =
+        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
+          ..repeat(reverse: true);
+    _bounceController3 =
+        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
+          ..repeat(reverse: true);
 
-    _bounceController2 = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
+    _pulseController =
+        AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)
+          ..repeat(reverse: true);
+    _progressController =
+        AnimationController(duration: const Duration(seconds: 2), vsync: this);
 
-    _bounceController3 = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _progressController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-
-    // เริ่ม loading animation
     _progressController.forward();
 
-    // Delay 300ms สำหรับ bounce 2 และ 3
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _bounceController2.forward();
     });
@@ -63,7 +51,6 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) _bounceController3.forward();
     });
 
-    // ✅ Navigate ไปหน้าที่ส่งมา หลัง 2 วินาที
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
@@ -86,6 +73,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmall = size.width < 600;
+    final isTablet = size.width >= 600 && size.width < 1024;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -97,57 +88,46 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         child: Stack(
           children: [
-            // Pixel Grid Background Pattern
             CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
 
-            // Floating Pixel Decorations
-            _buildFloatingPixel(
-              controller: _bounceController1,
-              top: 40,
-              left: 40,
-              size: 24,
-            ),
-            _buildFloatingPixel(
-              controller: _bounceController2,
-              top: 80,
-              right: 64,
-              size: 16,
-            ),
-            _buildFloatingPixel(
-              controller: _bounceController3,
-              bottom: 80,
-              left: 80,
-              size: 20,
-            ),
+            _buildFloatingPixel(controller: _bounceController1, top: 40, left: 40, size: isSmall ? 16 : 24),
+            _buildFloatingPixel(controller: _bounceController2, top: 80, right: 64, size: isSmall ? 12 : 16),
+            _buildFloatingPixel(controller: _bounceController3, bottom: 80, left: 80, size: isSmall ? 14 : 20),
 
-            // Main Content
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildPixelLogo(),
-                  const SizedBox(height: 24),
-                  _buildTitle(),
-                  const SizedBox(height: 8),
-                  _buildPixelDots(),
-                  const SizedBox(height: 32),
-                  _buildLoadingText(),
-                  const SizedBox(height: 24),
-                  _buildLoadingBar(),
-                  const SizedBox(height: 16),
-                ],
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 16 : 32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildPixelLogo(size: isSmall ? 80 : (isTablet ? 100 : 128)),
+                      SizedBox(height: isSmall ? 16 : 24),
+                      _buildTitle(fontSize: isSmall ? 28 : (isTablet ? 34 : 40)),
+                      const SizedBox(height: 8),
+                      _buildPixelDots(dotSize: isSmall ? 6 : 8),
+                      SizedBox(height: isSmall ? 20 : 32),
+                      _buildLoadingText(fontSize: isSmall ? 14 : 18),
+                      SizedBox(height: isSmall ? 16 : 24),
+                      _buildLoadingBar(width: isSmall ? 180 : (isTablet ? 220 : 256)),
+                    ],
+                  ),
+                ),
               ),
             ),
 
-            // Bottom hint text
-            Positioned(bottom: 40, left: 0, right: 0, child: _buildHintText()),
+            Positioned(
+              bottom: isSmall ? 20 : 40,
+              left: 0,
+              right: 0,
+              child: _buildHintText(fontSize: isSmall ? 12 : 14),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ✅ ส่วนที่เหลือเหมือนเดิมทุกอย่าง
   Widget _buildFloatingPixel({
     required AnimationController controller,
     double? top,
@@ -185,101 +165,95 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildPixelLogo() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFa8d48f), Color(0xFF8bc273)],
-        ),
-        border: Border.all(color: Colors.black, width: 6),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            offset: const Offset(8, 8),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Image.asset(
-            'assets/pic/logo.png',
-            width: 128,
-            height: 128,
-            fit: BoxFit.contain,
-          ),
-          Positioned(
-            top: -8,
-            right: -8,
-            child: AnimatedBuilder(
-              animation: _pulseController,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _pulseController.value,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    color: const Color(0xFFfde047),
+  Widget _buildPixelLogo({required double size}) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final scale = 1 + (_pulseController.value * 0.05); // ✅ tablet มี pulse เบาๆ
+        return Transform.scale(
+          scale: scale,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFa8d48f), Color(0xFF8bc273)],
+              ),
+              border: Border.all(color: Colors.black, width: 6),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  offset: const Offset(8, 8),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Image.asset(
+                  'assets/pic/logo.png',
+                  width: size,
+                  height: size,
+                  fit: BoxFit.contain,
+                ),
+                Positioned(
+                  top: -8,
+                  right: -8,
+                  child: Opacity(
+                    opacity: _pulseController.value,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: const Color(0xFFfde047),
+                    ),
                   ),
-                );
-              },
+                ),
+                Positioned(
+                  bottom: -8,
+                  left: -8,
+                  child: Opacity(
+                    opacity: 1 - _pulseController.value,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: const Color(0xFFfde047),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          Positioned(
-            bottom: -8,
-            left: -8,
-            child: AnimatedBuilder(
-              animation: _pulseController,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: 1 - _pulseController.value,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    color: const Color(0xFFfde047),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTitle({required double fontSize}) {
+    return Text(
+      'CAL-DEFICITS',
+      style: TextStyle(
+        fontSize: fontSize,
+        fontFamily: 'TA8bit',
+        fontWeight: FontWeight.bold,
+        color: const Color(0xFF1f2937),
+        letterSpacing: 4,
+        shadows: const [Shadow(offset: Offset(4, 4), color: Color(0x806fa85e))],
       ),
     );
   }
 
-  Widget _buildTitle() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: const Text(
-        'CAL-DEFICITS',
-        style: TextStyle(
-          fontSize: 40,
-          fontFamily: 'TA8bit',
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF1f2937),
-          letterSpacing: 4,
-          shadows: [Shadow(offset: Offset(4, 4), color: Color(0x806fa85e))],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPixelDots() {
+  Widget _buildPixelDots({required double dotSize}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(width: 8, height: 8, color: const Color(0xFF6fa85e)),
+        Container(width: dotSize, height: dotSize, color: const Color(0xFF6fa85e)),
         const SizedBox(width: 4),
-        Container(width: 8, height: 8, color: const Color(0xFF8bc273)),
+        Container(width: dotSize, height: dotSize, color: const Color(0xFF8bc273)),
         const SizedBox(width: 4),
-        Container(width: 8, height: 8, color: const Color(0xFFa8d48f)),
+        Container(width: dotSize, height: dotSize, color: const Color(0xFFa8d48f)),
       ],
     );
   }
 
-  Widget _buildLoadingText() {
+  Widget _buildLoadingText({required double fontSize}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       decoration: BoxDecoration(
@@ -291,10 +265,10 @@ class _SplashScreenState extends State<SplashScreen>
         builder: (context, child) {
           return Opacity(
             opacity: 0.5 + (_pulseController.value * 0.5),
-            child: const Text(
+            child: Text(
               '> LOADING...',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: fontSize,
                 fontFamily: 'TA8bit',
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -307,9 +281,9 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildLoadingBar() {
+  Widget _buildLoadingBar({required double width}) {
     return Container(
-      width: 256,
+      width: width,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.black,
@@ -321,32 +295,15 @@ class _SplashScreenState extends State<SplashScreen>
         child: AnimatedBuilder(
           animation: _progressController,
           builder: (context, child) {
-            return Stack(
-              children: [
-                FractionallySizedBox(
-                  widthFactor: _progressController.value,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF4ecdc4), Color(0xFF44a3c4)],
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 8,
-                          color: Colors.white.withOpacity(0.4),
-                        ),
-                        const Spacer(),
-                        Container(
-                          height: 8,
-                          color: Colors.black.withOpacity(0.2),
-                        ),
-                      ],
-                    ),
+            return FractionallySizedBox(
+              widthFactor: _progressController.value,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF4ecdc4), Color(0xFF44a3c4)],
                   ),
                 ),
-              ],
+              ),
             );
           },
         ),
@@ -354,24 +311,22 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildHintText() {
+  Widget _buildHintText({required double fontSize}) {
     return AnimatedBuilder(
       animation: _pulseController,
       builder: (context, child) {
         return Opacity(
           opacity: 0.5 + (_pulseController.value * 0.5),
-          child: const Center(
+          child: Center(
             child: Text(
               '▼ LOADING YOUR APP ▼',
               style: TextStyle(
                 fontFamily: 'TA8bit',
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                fontSize: 14,
+                fontSize: fontSize,
                 letterSpacing: 1,
-                shadows: [
-                  Shadow(offset: Offset(2, 2), color: Color(0x80000000)),
-                ],
+                shadows: const [Shadow(offset: Offset(2, 2), color: Color(0x80000000))],
               ),
             ),
           ),
@@ -381,7 +336,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// Custom Painter สำหรับ Pixel Grid Background
 class PixelGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import NavBarUser from '../componants/NavBarUser';
 import Kcalbar from '../componants/Kcalbar';
 import Piegraph from '../componants/Piegraph';
-import Activity from '../componants/activityfactor';
+import Activityfactor from '../componants/activityfactor';
 import Camera from '../componants/camera';
 import ListMenu from '../componants/ListMenu';
 import ListSport from '../componants/ListSport';
@@ -13,6 +13,7 @@ import RacMenu from '../componants/RecMenu';
 import RacSport from '../componants/RecSport';
 import WeeklyGraph from '../componants/WeeklyGraph';
 import { kalService } from '../services/kal_service';
+import Activity from '../componants/Activity';
 
 export default function MainPage() {
   const [hasActivityLevel, setHasActivityLevel] = useState(false);
@@ -94,7 +95,7 @@ export default function MainPage() {
           {/* 2. row1 คอลัมม์2: Controls (activityfactor etc.) (col-span-2) */}
           <div className="col-span-2 flex flex-col space-y-8 bg-white rounded-lg shadow-md py-5 px-4">
               <div className="">
-                  <Activity onCaloriesUpdated={handleActivityUpdated} />
+                  <Activityfactor onCaloriesUpdated={handleActivityUpdated} />
               </div>
 
               {/* แสดง Camera เฉพาะเมื่อมีการเลือก activity level แล้ว */}
@@ -102,7 +103,15 @@ export default function MainPage() {
                 <div className="h-10 bg-gray-200 flex items-center justify-center rounded-md">
                     <Camera autoPredictOnSelect={true} />
                 </div>
+
+
               ) : null}
+
+              <Activity onSave={(burnedCalories: number) => {
+                // อัพเดต Kcalbar และ Piegraph หลังบันทึกกิจกรรม
+                setKcalbarKey(prev => prev + 1);
+                setPieKey(prev => prev + 1);
+              }} />
 
               <div className="flex-1 border border-gray-300 p-2 rounded-md">
                   <p>ตัวนับ/เลือกกีฬาและเวลา</p>
