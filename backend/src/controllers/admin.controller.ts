@@ -37,7 +37,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
     // ดึงเฉพาะฟิลด์ที่อนุญาต (ไม่เอา password, image_profile)
     const [rows]: any = await db.query(`
-      SELECT user_id, username, email, phone_number, age, gender, height, weight, goal, role
+      SELECT user_id, username, email, phone_number, age, gender, height, weight, goal, last_login_at
       FROM users
     `);
 
