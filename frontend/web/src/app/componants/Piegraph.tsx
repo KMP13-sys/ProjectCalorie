@@ -102,16 +102,39 @@ export default function NutritionPieChart() {
   return (
     <div className="w-full h-full flex items-center justify-center">
       {/* Pie Chart */}
-      <div style={{ width: 450, height: 450 }}>
+      <div style={{ width: 500, height: 500 }}>
         <PieChart width={500} height={500}>
           <Pie
             data={data}
-            cx={230}
+            cx={240}
             cy={220}
             labelLine={false}
-            label={(entry: any) => {
-              const percent = ((entry.value / total) * 100).toFixed(0);
-              return `${entry.name} ${percent}%`;
+            label={({
+              cx,
+              cy,
+              midAngle,
+              innerRadius,
+              outerRadius,
+              percent,
+              index,
+            }: any) => {
+              const RADIAN = Math.PI / 180;
+              const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+              const x = cx + radius * Math.cos(-midAngle * RADIAN);
+              const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+              return (
+                <text
+                  x={x}
+                  y={y}
+                  fill="#000000"
+                  textAnchor={x > cx ? 'start' : 'end'}
+                  dominantBaseline="central"
+                  style={{ fontSize: 14, fontWeight: 'bold' }}
+                >
+                  {`${data[index].name} ${(percent * 100).toFixed(0)}%`}
+                </text>
+              );
             }}
             outerRadius={150}
             fill="#8884d8"
