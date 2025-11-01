@@ -23,13 +23,14 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
   console.log('[File Filter] Mimetype:', file.mimetype);
   console.log('[File Filter] Extension:', path.extname(file.originalname).toLowerCase());
 
-  // รองรับ mimetype ทั้งแบบ image/jpeg และ image/jpg
+  // รองรับ mimetype ทั้งแบบ image/* และ application/octet-stream (จาก Flutter)
   const allowedMimeTypes = [
     'image/jpeg',
     'image/jpg',
     'image/png',
     'image/gif',
-    'image/webp'
+    'image/webp',
+    'application/octet-stream' // ✅ Flutter/Mobile apps อาจส่งมาเป็น octet-stream
   ];
 
   const allowedExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
@@ -40,14 +41,15 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
   console.log('[File Filter] Has valid extension:', hasValidExtension);
   console.log('[File Filter] Has valid mimetype:', hasValidMimetype);
 
-  if (hasValidExtension && hasValidMimetype) {
-    console.log('[File Filter] ✅ File accepted');
+  // ✅ ถ้ามี extension ที่ถูกต้อง ให้ผ่านเลย (ไว้ใจ extension มากกว่า mimetype)
+  if (hasValidExtension) {
+    console.log('[File Filter] ✅ File accepted (valid extension)');
     cb(null, true);
   } else {
-    console.error('[File Filter] ❌ File rejected');
+    console.error('[File Filter] ❌ File rejected - invalid extension');
     console.error('[File Filter] Received mimetype:', file.mimetype);
     console.error('[File Filter] Received extension:', path.extname(file.originalname));
-    cb(new Error(`Invalid file type. Received: ${file.mimetype}`));
+    cb(new Error(`Invalid file type. Only image files (jpg, jpeg, png, gif, webp) are allowed.`));
   }
 };
 
