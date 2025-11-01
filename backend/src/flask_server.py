@@ -16,20 +16,19 @@ BASE_DIR = Path(__file__).resolve().parent        # backend/src
 PROJECT_ROOT = BASE_DIR.parent                   # backend/
 FLASK_DIR = BASE_DIR / "flask"
 
-# เพิ่ม path เพื่อให้ import modules ได้ทุกระดับ
+# เพิ่ม path เพื่อ import modules ของ project ได้ทุกระดับ
 sys.path.insert(0, str(BASE_DIR))
 sys.path.insert(0, str(FLASK_DIR))
 sys.path.insert(0, str(PROJECT_ROOT / "models"))
 
-# โหลด .env จาก project root
+# โหลด .env
 load_dotenv(str(PROJECT_ROOT / '.env'))
 
 # ==============================================
-# JWT & Security setup
+# JWT & Security
 # ==============================================
 JWT_SECRET = os.getenv("JWT_SECRET")
 if not JWT_SECRET:
-    print("JWT_SECRET from .env =", JWT_SECRET)
     raise RuntimeError("❌ Missing JWT_SECRET in environment (.env). Application cannot start.")
 
 # ==============================================
@@ -48,7 +47,7 @@ logger.info("✅ Flask Server starting...")
 # ==============================================
 app = Flask(__name__)
 
-# ตั้งค่า CORS (อนุญาตทุก origin ชั่วคราว, ปรับภายหลังได้)
+# ตั้งค่า CORS (อนุญาตทุก origin ชั่วคราว)
 allowed_origins = os.getenv("CORS_ORIGINS", "*")
 CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
@@ -72,7 +71,7 @@ except Exception as e:
 # ==============================================
 @app.route("/api/health", methods=["GET"])
 def health():
-    """Health check"""
+    """Health check endpoint"""
     from datetime import datetime
     return jsonify({
         "status": "ok",
@@ -85,34 +84,23 @@ def health():
 # ==============================================
 @app.errorhandler(400)
 def bad_request(error):
-    return jsonify({
-        "error": "Bad Request",
-        "message": "Invalid request parameters"
-    }), 400
+    return jsonify({"error": "Bad Request", "message": "Invalid request parameters"}), 400
 
 @app.errorhandler(401)
 def unauthorized(error):
-    return jsonify({
-        "error": "Unauthorized",
-        "message": "Please provide valid authentication credentials"
-    }), 401
+    return jsonify({"error": "Unauthorized", "message": "Please provide valid authentication credentials"}), 401
 
 @app.errorhandler(403)
 def forbidden(error):
-    return jsonify({
-        "error": "Forbidden",
-        "message": "You do not have permission to access this resource"
-    }), 403
+    return jsonify({"error": "Forbidden", "message": "You do not have permission to access this resource"}), 403
 
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({
-        "error": "Not Found",
-        "message": "The requested resource was not found"
-    }), 404
+    return jsonify({"error": "Not Found", "message": "The requested resource was not found"}), 404
 
 @app.errorhandler(500)
 def internal_error(error):
+    """Handle internal server errors"""
     logger.exception("Internal server error: %s", error)
     return jsonify({
         "error": "Internal Server Error",
@@ -121,21 +109,15 @@ def internal_error(error):
 
 @app.errorhandler(Exception)
 def handle_exception(error):
-    """Catch all unhandled exceptions"""
+    """Catch-all handler for unhandled exceptions"""
     logger.exception("Unhandled exception: %s", error)
-    return jsonify({
-        "error": "Server Error",
-        "message": str(error)
-    }), 500
+    return jsonify({"error": "Server Error", "message": str(error)}), 500
 
 # ==============================================
-#  Run Server
+# Run Flask Server
 # ==============================================
 if __name__ == "__main__":
-    # ใช้ FLASK_PORT แทน PORT เพื่อไม่ให้ทับกับ Node.js server
     port = int(os.getenv("FLASK_PORT", 5000))
     debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
-
     logger.info(f"🚀 Running Flask server on port {port} (debug={debug_mode})")
-
     app.run(host="0.0.0.0", port=port, debug=debug_mode)

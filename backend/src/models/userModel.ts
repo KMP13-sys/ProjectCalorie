@@ -1,36 +1,44 @@
 import pool from "../config/db";
 
+// =======================
+// User interface
+// =======================
 export interface User {
-  user_id: number;              // INT, Primary Key, Auto Increment
-  username: string;             // VARCHAR(50), NOT NULL, UNIQUE
-  email: string;                // VARCHAR(100), NOT NULL, UNIQUE
+  user_id: number;               // Primary Key
+  username: string;              // Unique username
+  email: string;                 // Unique email
   password: string;
-  image_profile?: string;       // VARCHAR(255), Optional
-  phone_number?: string;        // VARCHAR(15), Optional
-  age?: number;                  // INT, Optional (with CHECK 1-120)
-  gender?: 'male' | 'female';    // ENUM, Optional
-  height?: number;               // DECIMAL(5,2), Optional (50-300)
-  weight?: number;               // DECIMAL(5,2), Optional (20-300)
-  goal?: 'lose weight' | 'maintain weight' | 'gain weight';  // VARCHAR(50), Optional
-  created_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP
-  updated_at?: Date;            // TIMESTAMP, Default CURRENT_TIMESTAMP ON UPDATE
-  refresh_token?: string;     //  VARCHAR(500), Optional
-  refresh_token_expires_at?: Date; // DATETIME, Optional
-  last_login_at?: Date;        // DATETIME, Optional
+  image_profile?: string;        // Optional profile image
+  phone_number?: string;         // Optional phone
+  age?: number;                  // Optional (1-120)
+  gender?: 'male' | 'female';    // Optional
+  height?: number;               // Optional (50-300)
+  weight?: number;               // Optional (20-300)
+  goal?: 'lose weight' | 'maintain weight' | 'gain weight'; // Optional
+  created_at?: Date;             // Auto timestamp
+  updated_at?: Date;             // Auto timestamp
+  refresh_token?: string;        // Optional refresh token
+  refresh_token_expires_at?: Date; // Optional token expiry
+  last_login_at?: Date;          // Optional last login
 }
 
-// ดึงข้อมูลผู้ใช้ตาม ID
+// =======================
+// Fetch user by ID
+// =======================
 export const getUserById = async (id: number): Promise<User | null> => {
   const [rows]: any = await pool.query("SELECT * FROM users WHERE user_id = ?", [id]);
   return rows.length ? rows[0] : null;
 };
 
-// อัปเดตข้อมูลผู้ใช้
+// =======================
+// Update user by ID
+// =======================
+// รองรับการอัปเดตข้อมูลบางส่วน (Partial User)
 export const updateUserById = async (id: number, data: Partial<User>) => {
-  const fields = [];
+  const fields: string[] = [];
   const values: any[] = [];
 
-  // สร้าง query update แบบ dynamic
+  // สร้าง query dynamic จาก fields ที่ส่งมา
   for (const [key, value] of Object.entries(data)) {
     if (value !== undefined) {
       fields.push(`${key} = ?`);

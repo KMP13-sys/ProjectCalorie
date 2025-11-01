@@ -2,7 +2,7 @@
 /// เปลี่ยน URL ที่ _baseUrl และ _flaskUrl ตามสภาพแวดล้อมที่ใช้งาน
 class ApiConfig {
   // Node.js Backend (port 4000)
-  static const String _baseUrl = 'http://172.20.10.6:4000';
+  static const String _baseUrl = 'http://localhost:4000';
 
   // Flask ML Server (port 5000)
   static const String _flaskUrl = 'http://localhost:5000';
