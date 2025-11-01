@@ -160,9 +160,9 @@ class _NutritionPieChartComponentState
     double chartSize,
     bool isSmallScreen,
   ) {
-    // ✅ ปรับขนาดตัวหนังสือและ radius ตามขนาดจอ - ลดขนาดตัวหนังสือ
+    // ✅ ปรับขนาดตัวหนังสือและ radius ตามขนาดจอ - ลดขนาดตัวหนังสือให้เล็กลง
     final radius = isSmallScreen ? chartSize * 0.28 : chartSize * 0.3;
-    final fontSize = isSmallScreen ? chartSize * 0.05 : chartSize * 0.055;
+    final fontSize = isSmallScreen ? chartSize * 0.035 : chartSize * 0.04;  // ลดจาก 0.05/0.055 เป็น 0.035/0.04
 
     // ✅ คำนวณเปอร์เซ็นต์จากค่ารวมทั้งหมด
     final total = _macros!.protein + _macros!.fat + _macros!.carbohydrate;
@@ -176,7 +176,7 @@ class _NutritionPieChartComponentState
       titleStyle: TextStyle(
         fontSize: fontSize,
         fontWeight: FontWeight.bold,
-        color: const Color.fromARGB(255, 3, 0, 0),
+        color: const Color.fromARGB(255, 0, 0, 0),  // ใช้สีดำล้วน
       ),
     );
   }

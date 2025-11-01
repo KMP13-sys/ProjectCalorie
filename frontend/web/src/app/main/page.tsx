@@ -135,15 +135,15 @@ export default function MainPage() {
 
           {/* Container for Recommendations */}
           <div className="w-full lg:w-1/2 flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-6">
-            
+
             {/* 6. Recommend MENU */}
-            <div className="flex-1 bg-white rounded-lg shadow-md min-h-[250px] sm:min-h-[300px] lg:min-h-0">
-              {/* <RacMenu /> */}
+            <div className="flex-1 min-h-[250px] sm:min-h-[300px] lg:min-h-0">
+              <RacMenu remainingCalories={remainingCalories} refreshTrigger={kcalbarKey} />
             </div>
-            
+
             {/* 7. Recommend Sport */}
-            <div className="flex-1 bg-white rounded-lg shadow-md min-h-[250px] sm:min-h-[300px] lg:min-h-0">
-              {/* <RacSport /> */}
+            <div className="flex-1 min-h-[250px] sm:min-h-[300px] lg:min-h-0">
+              <RacSport refreshTrigger={listSportKey} />
             </div>
           </div>
         </div>

@@ -127,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     final double containerPadding = isMobileScreen ? 8.0 : isSmallScreen ? 12.0 : 16.0;
     final double spacing = isMobileScreen ? 30.0 : isSmallScreen ? 40.0 : 50.0;
-    final double smallSpacing = isMobileScreen ? 5.0 : 10.0;
+    final double smallSpacing = isMobileScreen ? 2.0 : 5.0;
     final double graphHeight = screenHeight * (isMobileScreen ? 0.35 : isSmallScreen ? 0.40 : 0.45);
 
     return Scaffold(
@@ -155,11 +155,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Kcalbar(key: _kcalbarKey),
-                              SizedBox(height: spacing),
+                              SizedBox(height: smallSpacing),
                               const NutritionPieChartComponent(),
-                              SizedBox(height: spacing),
+                              SizedBox(height: smallSpacing),
                               ListSportPage(key: _listSportKey),
                               SizedBox(height: smallSpacing),
+                              // ✅ RecSport ในฝั่งซ้าย
                               if (_userId != null)
                                 RacSport(
                                   key: _recSportKey,

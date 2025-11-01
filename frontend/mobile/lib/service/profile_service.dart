@@ -60,6 +60,9 @@ class ProfileService {
       }
 
       final url = Uri.parse('${ApiConfig.profileUrl}/$userId/image');
+      print('[Profile Service] Upload URL: $url');
+      print('[Profile Service] Image path: ${imageFile.path}');
+      print('[Profile Service] File exists: ${await imageFile.exists()}');
 
       // สร้าง multipart request
       var request = http.MultipartRequest('PUT', url);
@@ -71,14 +74,21 @@ class ProfileService {
         ),
       );
 
+      print('[Profile Service] Sending request...');
+
       // ส่ง request
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
+      print('[Profile Service] Response status: ${response.statusCode}');
+      print('[Profile Service] Response body: ${response.body}');
+
       // ถ้า token หมดอายุ ให้ refresh แล้วลองใหม่
       if (response.statusCode == 401 || response.statusCode == 403) {
+        print('[Profile Service] Token expired, refreshing...');
         try {
           accessToken = await AuthService.refreshAccessToken();
+          print('[Profile Service] Token refreshed, retrying upload...');
 
           // ลองอัพโหลดอีกครั้งด้วย token ใหม่
           request = http.MultipartRequest('PUT', url);
@@ -92,22 +102,39 @@ class ProfileService {
 
           streamedResponse = await request.send();
           response = await http.Response.fromStream(streamedResponse);
+
+          print('[Profile Service] Retry response status: ${response.statusCode}');
+          print('[Profile Service] Retry response body: ${response.body}');
         } catch (e) {
+          print('[Profile Service] Refresh token error: $e');
           throw Exception('Session expired. Please login again.');
         }
       }
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
+        print('[Profile Service] Upload successful!');
         return UpdateProfileImageResponse(
           message: data['message'] ?? 'Profile image updated successfully',
           imageUrl: data['image_url'],
         );
       } else {
-        final error = jsonDecode(response.body);
-        throw Exception(error['message'] ?? 'Failed to update profile image');
+        // พยายาม parse error message จาก response
+        String errorMessage = 'Failed to update profile image';
+        try {
+          final error = jsonDecode(response.body);
+          errorMessage = error['message'] ?? errorMessage;
+        } catch (e) {
+          errorMessage = 'Server error: ${response.statusCode} - ${response.body}';
+        }
+        print('[Profile Service] Upload failed: $errorMessage');
+        throw Exception(errorMessage);
       }
+    } on SocketException catch (e) {
+      print('[Profile Service] Network error: $e');
+      throw Exception('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
     } catch (e) {
+      print('[Profile Service] Error: $e');
       if (e is Exception) rethrow;
       throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
     }

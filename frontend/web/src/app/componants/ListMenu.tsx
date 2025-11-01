@@ -28,11 +28,17 @@ const ListMenu: React.FC<ListMenuProps> = () => {
     };
 
     fetchMeals();
+
+    // รีเฟรชอัตโนมัติทุก 30 วินาที
+    const intervalId = setInterval(fetchMeals, 30000);
+
+    // ทำความสะอาด interval เมื่อ component ถูก unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
     <div
-      className="h-[70vh] bg-[#fcfbc0] border-[5px] border-[#2a2a2a] shadow-[8px_8px_0_rgba(0,0,0,0.3)] p-5 flex flex-col"
+      className="h-[70vh] bg-[#DBF9FF] border-[5px] border-[#2a2a2a] shadow-[8px_8px_0_rgba(0,0,0,0.3)] p-5 flex flex-col"
       style={{ fontFamily: 'TA8bit, monospace' }}
     >
       {/* Header */}

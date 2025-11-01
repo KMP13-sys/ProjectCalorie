@@ -62,6 +62,12 @@ export default function WeeklyGraph() {
     };
 
     loadWeeklyData();
+
+    // รีเฟรชอัตโนมัติทุก 60 วินาที (เพราะเป็นข้อมูลรายสัปดาห์ไม่ต้องรีเฟรชบ่อยมาก)
+    const intervalId = setInterval(loadWeeklyData, 60000);
+
+    // ทำความสะอาด interval เมื่อ component ถูก unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   // จัดการขนาดหน้าจอ

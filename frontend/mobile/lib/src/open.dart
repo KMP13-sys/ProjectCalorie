@@ -16,40 +16,26 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late AnimationController _bounceController1;
-  late AnimationController _bounceController2;
-  late AnimationController _bounceController3;
   late AnimationController _pulseController;
   late AnimationController _progressController;
+  late AnimationController _bounceController;
 
   @override
   void initState() {
     super.initState();
 
-    _bounceController1 =
-        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
-          ..repeat(reverse: true);
-    _bounceController2 =
-        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
-          ..repeat(reverse: true);
-    _bounceController3 =
-        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
-          ..repeat(reverse: true);
-
     _pulseController =
         AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)
           ..repeat(reverse: true);
+
+    _bounceController =
+        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
+          ..repeat(reverse: true);
+
     _progressController =
         AnimationController(duration: const Duration(seconds: 2), vsync: this);
 
     _progressController.forward();
-
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) _bounceController2.forward();
-    });
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) _bounceController3.forward();
-    });
 
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
@@ -63,10 +49,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _bounceController1.dispose();
-    _bounceController2.dispose();
-    _bounceController3.dispose();
     _pulseController.dispose();
+    _bounceController.dispose();
     _progressController.dispose();
     super.dispose();
   }
@@ -90,9 +74,9 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
 
-            _buildFloatingPixel(controller: _bounceController1, top: 40, left: 40, size: isSmall ? 16 : 24),
-            _buildFloatingPixel(controller: _bounceController2, top: 80, right: 64, size: isSmall ? 12 : 16),
-            _buildFloatingPixel(controller: _bounceController3, bottom: 80, left: 80, size: isSmall ? 14 : 20),
+            // Floating pixel clouds
+            _buildPixelCloud(top: 40, left: 40, isSmall: isSmall),
+            _buildPixelCloud(top: isSmall ? 120 : 130, right: isSmall ? 60 : 80, isSmall: isSmall),
 
             Center(
               child: SingleChildScrollView(
@@ -101,63 +85,75 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildPixelLogo(size: isSmall ? 80 : (isTablet ? 100 : 128)),
-                      SizedBox(height: isSmall ? 16 : 24),
-                      _buildTitle(fontSize: isSmall ? 28 : (isTablet ? 34 : 40)),
-                      const SizedBox(height: 8),
-                      _buildPixelDots(dotSize: isSmall ? 6 : 8),
-                      SizedBox(height: isSmall ? 20 : 32),
-                      _buildLoadingText(fontSize: isSmall ? 14 : 18),
-                      SizedBox(height: isSmall ? 16 : 24),
-                      _buildLoadingBar(width: isSmall ? 180 : (isTablet ? 220 : 256)),
+                      _buildMainContainer(size: size, isSmall: isSmall, isTablet: isTablet),
                     ],
                   ),
                 ),
               ),
             ),
 
-            Positioned(
-              bottom: isSmall ? 20 : 40,
-              left: 0,
-              right: 0,
-              child: _buildHintText(fontSize: isSmall ? 12 : 14),
-            ),
+            // Floating pixel stars
+            _buildFloatingStar(top: null, bottom: null, left: size.width * 0.25, isSmall: isSmall, delay: 0),
+            _buildFloatingStar(top: null, bottom: size.height * 0.3, right: size.width * 0.25, isSmall: isSmall, delay: 300),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFloatingPixel({
-    required AnimationController controller,
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-    required double size,
-  }) {
+  Widget _buildPixelCloud({double? top, double? bottom, double? left, double? right, required bool isSmall}) {
+    final cloudSize = isSmall ? 60.0 : 96.0;
+    final pixelSize = isSmall ? 8.0 : 12.0;
+
+    return Positioned(
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right,
+      child: Opacity(
+        opacity: 0.2,
+        child: SizedBox(
+          width: cloudSize,
+          height: cloudSize * 0.66,
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 6,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+            ),
+            itemCount: 24,
+            itemBuilder: (context, index) {
+              final showPixel = [0, 1, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17].contains(index);
+              return Container(
+                width: pixelSize,
+                height: pixelSize,
+                color: showPixel ? Colors.white : Colors.transparent,
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingStar({double? top, double? bottom, double? left, double? right, required bool isSmall, required int delay}) {
+    final starSize = isSmall ? 12.0 : 16.0;
+
     return Positioned(
       top: top,
       bottom: bottom,
       left: left,
       right: right,
       child: AnimatedBuilder(
-        animation: controller,
+        animation: _bounceController,
         builder: (context, child) {
           return Transform.translate(
-            offset: Offset(0, controller.value * 10),
+            offset: Offset(0, _bounceController.value * 10),
             child: Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                color: const Color(0xFFfde047),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    offset: const Offset(2, 2),
-                  ),
-                ],
-              ),
+              width: starSize,
+              height: starSize,
+              color: const Color(0xFFfde047),
             ),
           );
         },
@@ -165,169 +161,210 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildPixelLogo({required double size}) {
+  Widget _buildMainContainer({required Size size, required bool isSmall, required bool isTablet}) {
+    final logoSize = isSmall ? 100.0 : (isTablet ? 120.0 : 128.0);
+    final titleSize = isSmall ? 32.0 : (isTablet ? 40.0 : 48.0);
+    final dotSize = isSmall ? 6.0 : 8.0;
+    final loadingTextSize = isSmall ? 14.0 : (isTablet ? 16.0 : 18.0);
+    final loadingBarWidth = isSmall ? 200.0 : (isTablet ? 240.0 : 256.0);
+
+    return Container(
+      padding: EdgeInsets.all(isSmall ? 32 : 48),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black, width: 8),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x4D000000),
+            offset: Offset(12, 12),
+          ),
+        ],
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Decorative corner pixels
+          Positioned(top: 0, left: 0, child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e))),
+          Positioned(top: 0, right: 0, child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e))),
+          Positioned(bottom: 0, left: 0, child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e))),
+          Positioned(bottom: 0, right: 0, child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e))),
+
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Logo with pixel border
+              _buildPixelLogo(size: logoSize, isSmall: isSmall),
+              SizedBox(height: isSmall ? 20 : 24),
+
+              // Title
+              Text(
+                'CAL-DEFICITS',
+                style: TextStyle(
+                  fontSize: titleSize,
+                  fontFamily: 'TA8bit',
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1f2937),
+                  letterSpacing: 4,
+                  shadows: const [
+                    Shadow(offset: Offset(4, 4), color: Color(0x806fa85e)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Pixel dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(width: dotSize, height: dotSize, color: const Color(0xFF6fa85e)),
+                  const SizedBox(width: 4),
+                  Container(width: dotSize, height: dotSize, color: const Color(0xFF8bc273)),
+                  const SizedBox(width: 4),
+                  Container(width: dotSize, height: dotSize, color: const Color(0xFFa8d48f)),
+                  const SizedBox(width: 4),
+                  Container(width: dotSize, height: dotSize, color: const Color(0xFF8bc273)),
+                  const SizedBox(width: 4),
+                  Container(width: dotSize, height: dotSize, color: const Color(0xFF6fa85e)),
+                ],
+              ),
+              SizedBox(height: isSmall ? 20 : 24),
+
+              // Loading text
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  border: Border.all(color: const Color(0xFF6fa85e), width: 4),
+                ),
+                child: AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: 0.5 + (_pulseController.value * 0.5),
+                      child: Text(
+                        '> LOADING...',
+                        style: TextStyle(
+                          fontSize: loadingTextSize,
+                          fontFamily: 'TA8bit',
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: isSmall ? 16 : 20),
+
+              // Loading bar
+              Container(
+                width: loadingBarWidth,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  border: Border.all(color: const Color(0xFF374151), width: 4),
+                ),
+                child: Container(
+                  height: isSmall ? 24 : 32,
+                  decoration: const BoxDecoration(color: Color(0xFF2d2d2d)),
+                  child: AnimatedBuilder(
+                    animation: _progressController,
+                    builder: (context, child) {
+                      return Stack(
+                        children: [
+                          FractionallySizedBox(
+                            widthFactor: _progressController.value,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF6fa85e), Color(0xFFa8d48f)],
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(height: isSmall ? 6 : 8, color: Colors.white.withValues(alpha: 0.4)),
+                                  const Spacer(),
+                                  Container(height: isSmall ? 6 : 8, color: Colors.black.withValues(alpha: 0.2)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Sparkle pixels on logo corners
+          Positioned(
+            top: -8,
+            right: -8,
+            child: AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _pulseController.value,
+                  child: Container(
+                    width: isSmall ? 12 : 16,
+                    height: isSmall ? 12 : 16,
+                    color: const Color(0xFFfde047),
+                  ),
+                );
+              },
+            ),
+          ),
+          Positioned(
+            bottom: -8,
+            left: -8,
+            child: AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: 1 - _pulseController.value,
+                  child: Container(
+                    width: isSmall ? 12 : 16,
+                    height: isSmall ? 12 : 16,
+                    color: const Color(0xFFfde047),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPixelLogo({required double size, required bool isSmall}) {
     return AnimatedBuilder(
       animation: _pulseController,
       builder: (context, child) {
-        final scale = 1 + (_pulseController.value * 0.05); // ✅ tablet มี pulse เบาๆ
+        final scale = 1 + (_pulseController.value * 0.05);
         return Transform.scale(
           scale: scale,
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isSmall ? 12 : 16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFa8d48f), Color(0xFF8bc273)],
               ),
               border: Border.all(color: Colors.black, width: 6),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  offset: const Offset(8, 8),
+                  color: Color(0x4D000000),
+                  offset: Offset(6, 6),
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                Image.asset(
-                  'assets/pic/logo.png',
-                  width: size,
-                  height: size,
-                  fit: BoxFit.contain,
-                ),
-                Positioned(
-                  top: -8,
-                  right: -8,
-                  child: Opacity(
-                    opacity: _pulseController.value,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      color: const Color(0xFFfde047),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -8,
-                  left: -8,
-                  child: Opacity(
-                    opacity: 1 - _pulseController.value,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      color: const Color(0xFFfde047),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTitle({required double fontSize}) {
-    return Text(
-      'CAL-DEFICITS',
-      style: TextStyle(
-        fontSize: fontSize,
-        fontFamily: 'TA8bit',
-        fontWeight: FontWeight.bold,
-        color: const Color(0xFF1f2937),
-        letterSpacing: 4,
-        shadows: const [Shadow(offset: Offset(4, 4), color: Color(0x806fa85e))],
-      ),
-    );
-  }
-
-  Widget _buildPixelDots({required double dotSize}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(width: dotSize, height: dotSize, color: const Color(0xFF6fa85e)),
-        const SizedBox(width: 4),
-        Container(width: dotSize, height: dotSize, color: const Color(0xFF8bc273)),
-        const SizedBox(width: 4),
-        Container(width: dotSize, height: dotSize, color: const Color(0xFFa8d48f)),
-      ],
-    );
-  }
-
-  Widget _buildLoadingText({required double fontSize}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        border: Border.all(color: const Color(0xFF6fa85e), width: 4),
-      ),
-      child: AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, child) {
-          return Opacity(
-            opacity: 0.5 + (_pulseController.value * 0.5),
-            child: Text(
-              '> LOADING...',
-              style: TextStyle(
-                fontSize: fontSize,
-                fontFamily: 'TA8bit',
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 2,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildLoadingBar({required double width}) {
-    return Container(
-      width: width,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        border: Border.all(color: const Color(0xFF374151), width: 4),
-      ),
-      child: Container(
-        height: 32,
-        decoration: const BoxDecoration(color: Color(0xFF2d2d2d)),
-        child: AnimatedBuilder(
-          animation: _progressController,
-          builder: (context, child) {
-            return FractionallySizedBox(
-              widthFactor: _progressController.value,
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF4ecdc4), Color(0xFF44a3c4)],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHintText({required double fontSize}) {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return Opacity(
-          opacity: 0.5 + (_pulseController.value * 0.5),
-          child: Center(
-            child: Text(
-              '▼ LOADING YOUR APP ▼',
-              style: TextStyle(
-                fontFamily: 'TA8bit',
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: fontSize,
-                letterSpacing: 1,
-                shadows: const [Shadow(offset: Offset(2, 2), color: Color(0x80000000))],
-              ),
+            child: Image.asset(
+              'assets/pic/logo.png',
+              width: size,
+              height: size,
+              fit: BoxFit.contain,
             ),
           ),
         );
@@ -340,7 +377,7 @@ class PixelGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withValues(alpha: 0.1)
       ..strokeWidth = 1;
 
     const spacing = 50.0;
