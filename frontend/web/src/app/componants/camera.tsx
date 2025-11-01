@@ -179,7 +179,7 @@ export default function ImageUploadButton({
           isProcessing ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         style={{
-          fontFamily: 'monospace',
+          fontFamily: 'TA8bit',
           boxShadow: '6px 6px 0px rgba(0,0,0,0.3)',
           imageRendering: 'pixelated'
         }}
@@ -224,7 +224,7 @@ export default function ImageUploadButton({
           className="bg-white border-4 border-black p-3 relative inline-block"
           style={{
             boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
-            fontFamily: 'monospace'
+            fontFamily: 'TA8bit'
           }}
         >
           <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ export default function ImageUploadButton({
         <div 
           className="bg-red-200 border-4 border-red-600 p-3 relative inline-block"
           style={{ 
-            fontFamily: 'monospace',
+            fontFamily: 'TA8bit',
             boxShadow: '4px 4px 0px rgba(220,38,38,0.3)'
           }}
         >
@@ -308,10 +308,10 @@ export default function ImageUploadButton({
 
               {/* Message */}
               <div className="bg-white border-4 border-black p-4 mb-6">
-                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'monospace' }}>
+                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
                   ANALYZING FOOD...
                 </p>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'monospace' }}>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'TA8bit' }}>
                   Please wait while we identify your meal
                 </p>
               </div>
@@ -332,7 +332,7 @@ export default function ImageUploadButton({
                 </div>
               </div>
 
-              <p className="text-xs text-white mt-3" style={{ fontFamily: 'monospace', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+              <p className="text-xs text-white mt-3" style={{ fontFamily: 'TA8bit', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
                 Predicting...
               </p>
             </div>

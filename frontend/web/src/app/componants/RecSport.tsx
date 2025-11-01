@@ -26,14 +26,14 @@ const RacSport: React.FC<RacSportProps> = ({ remainingCalories = 0, refreshTrigg
     try {
       // ดึง userId จาก localStorage
       const user = authAPI.getCurrentUser();
-      if (!user || !user.id) {
+      if (!user?.user_id) {
         setError('กรุณาเข้าสู่ระบบ');
         setLoading(false);
         return;
       }
 
       // เรียก API
-      const response = await recommendAPI.getSportRecommendations(user.id, 5);
+      const response = await recommendAPI.getSportRecommendations(user.user_id, 5);
 
       if (response.success && response.recommendations) {
         // แปลง string[] เป็น SportItem[] และแสดงแค่ 3 รายการ
@@ -61,18 +61,12 @@ const RacSport: React.FC<RacSportProps> = ({ remainingCalories = 0, refreshTrigg
 
   useEffect(() => {
     fetchRecommend();
-
-    // รีเฟรชอัตโนมัติทุก 30 วินาที
-    const intervalId = setInterval(fetchRecommend, 30000);
-
-    // ทำความสะอาด interval เมื่อ component ถูก unmount หรือ dependencies เปลี่ยน
-    return () => clearInterval(intervalId);
   }, [remainingCalories, refreshTrigger]);
 
   return (
     <div
       className="h-full bg-[#fcfbc0] border-[5px] border-[#2a2a2a] shadow-[8px_8px_0_rgba(0,0,0,0.3)] p-5 flex flex-col"
-      style={{ fontFamily: 'TA8bit, monospace' }}
+      style={{ fontFamily: 'TA8bit' }}
     >
       {/* Header */}
       <div className="text-[24px] font-bold tracking-[4px] text-[#2a2a2a] text-center mb-3">

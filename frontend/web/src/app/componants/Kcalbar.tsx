@@ -109,13 +109,13 @@ const KcalBar: React.FC<KcalBarProps> = ({
       <div className="flex justify-between items-center mb-3 px-4">
         <span 
           className="text-lg font-bold text-black"
-          style={{ fontFamily: 'monospace' }}
+          style={{ fontFamily: 'TA8bit' }}
         >
           Kcal
         </span>
         <span 
           className="text-lg font-bold text-black"
-          style={{ fontFamily: 'monospace' }}
+          style={{ fontFamily: 'TA8bit' }}
         >
           {Math.round(current)} Kcal from {Math.round(target)} Kcal
         </span>
@@ -147,7 +147,7 @@ const KcalBar: React.FC<KcalBarProps> = ({
             <span 
               className="text-xl font-bold"
               style={{ 
-                fontFamily: 'monospace',
+                fontFamily: 'TA8bit',
                 color: remaining > 0 ? '#000' : '#060606ff'
               }}
             >

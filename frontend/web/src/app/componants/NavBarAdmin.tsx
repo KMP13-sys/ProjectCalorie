@@ -84,7 +84,7 @@ export default function NavBarAdmin() {
               <span
                 className="font-bold text-white tracking-wider"
                 style={{
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   textShadow: '2px 2px 0 rgba(0, 0, 0, 0.3)',
                   fontSize: '30px',
                 }}
@@ -111,7 +111,7 @@ export default function NavBarAdmin() {
                   style={{
                     backgroundColor: '#ff6b6b',
                     border: '2px solid black',
-                    fontFamily: 'monospace',
+                    fontFamily: 'TA8bit',
                   }}
                 >
                   ADMIN
@@ -121,7 +121,7 @@ export default function NavBarAdmin() {
                 <span
                   className="text-lg font-bold text-gray-800"
                   style={{
-                    fontFamily: 'monospace',
+                    fontFamily: 'TA8bit',
                     letterSpacing: '0.05em',
                   }}
                 >

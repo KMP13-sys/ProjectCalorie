@@ -219,7 +219,7 @@ export default function RegisterPage() {
               <h2 
                 className="text-2xl font-bold text-white text-center tracking-wider"
                 style={{ 
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   textShadow: '3px 3px 0px rgba(0,0,0,0.3)'
                 }}
               >
@@ -243,7 +243,7 @@ export default function RegisterPage() {
                 </div>
                 <p 
                   className="text-xl font-bold text-gray-800 tracking-wider"
-                  style={{ fontFamily: 'monospace' }}
+                  style={{ fontFamily: 'TA8bit' }}
                 >
                   CAL-DEFICITS
                 </p>
@@ -258,7 +258,7 @@ export default function RegisterPage() {
               {error && (
                 <div 
                   className="mb-4 p-3 bg-red-200 border-4 border-red-600 text-red-800"
-                  style={{ fontFamily: 'monospace' }}
+                  style={{ fontFamily: 'TA8bit' }}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-xl">⚠</span>
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                 <div className="bg-gray-100 border-4 border-gray-800 p-4 mb-4">
                   <h3 
                     className="text-lg font-bold text-gray-800 mb-3"
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'TA8bit' }}
                   >
                     ▶ ACCOUNT INFO
                   </h3>
@@ -282,7 +282,7 @@ export default function RegisterPage() {
                     <div>
                       <label 
                         className="block text-xs font-bold text-gray-700 mb-1"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       >
                         USERNAME *
                       </label>
@@ -295,14 +295,14 @@ export default function RegisterPage() {
                         required
                         minLength={3}
                         className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       />
                     </div>
 
                     <div>
                       <label 
                         className="block text-xs font-bold text-gray-700 mb-1"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       >
                         EMAIL *
                       </label>
@@ -314,14 +314,14 @@ export default function RegisterPage() {
                         onChange={handleChange}
                         required
                         className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       />
                     </div>
 
                     <div>
                       <label 
                         className="block text-xs font-bold text-gray-700 mb-1"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       >
                         PHONE *
                       </label>
@@ -333,14 +333,14 @@ export default function RegisterPage() {
                         onChange={handleChange}
                         required
                         className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       />
                     </div>
 
                     <div>
                       <label
                         className="block text-xs font-bold text-gray-700 mb-1"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       >
                         PASSWORD * (8+ chars, letter + special)
                       </label>
@@ -353,14 +353,14 @@ export default function RegisterPage() {
                         required
                         minLength={8}
                         className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       />
                     </div>
 
                     <div>
                       <label 
                         className="block text-xs font-bold text-gray-700 mb-1"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       >
                         CONFIRM PASSWORD *
                       </label>
@@ -372,7 +372,7 @@ export default function RegisterPage() {
                         onChange={handleChange}
                         required
                         className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       />
                     </div>
                   </div>
@@ -382,7 +382,7 @@ export default function RegisterPage() {
                 <div className="bg-gray-100 border-4 border-gray-800 p-4">
                   <h3 
                     className="text-lg font-bold text-gray-800 mb-3"
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'TA8bit' }}
                   >
                     ▶ PERSONAL INFO
                   </h3>
@@ -392,7 +392,7 @@ export default function RegisterPage() {
                       <div>
                         <label 
                           className="block text-xs font-bold text-gray-700 mb-1"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         >
                           AGE *
                         </label>
@@ -406,14 +406,14 @@ export default function RegisterPage() {
                           min="13"
                           max="120"
                           className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         />
                       </div>
 
                       <div>
                         <label 
                           className="block text-xs font-bold text-gray-700 mb-1"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         >
                           GENDER *
                         </label>
@@ -423,7 +423,7 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           required
                           className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         >
                           <option value="">Select...</option>
                           <option value="male">MALE</option>
@@ -436,7 +436,7 @@ export default function RegisterPage() {
                       <div>
                         <label 
                           className="block text-xs font-bold text-gray-700 mb-1"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         >
                           HEIGHT *
                         </label>
@@ -451,14 +451,14 @@ export default function RegisterPage() {
                           max="250"
                           step="0.1"
                           className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         />
                       </div>
 
                       <div>
                         <label 
                           className="block text-xs font-bold text-gray-700 mb-1"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         >
                           WEIGHT *
                         </label>
@@ -473,7 +473,7 @@ export default function RegisterPage() {
                           max="300"
                           step="0.1"
                           className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                          style={{ fontFamily: 'monospace' }}
+                          style={{ fontFamily: 'TA8bit' }}
                         />
                       </div>
                     </div>
@@ -481,7 +481,7 @@ export default function RegisterPage() {
                     <div>
                       <label 
                         className="block text-xs font-bold text-gray-700 mb-1"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       >
                         GOAL *
                       </label>
@@ -491,7 +491,7 @@ export default function RegisterPage() {
                         onChange={handleChange}
                         required
                         className="w-full px-3 py-2 bg-white border-3 border-gray-800 text-gray-800 focus:outline-none focus:border-[#6fa85e] font-mono text-sm"
-                        style={{ fontFamily: 'monospace' }}
+                        style={{ fontFamily: 'TA8bit' }}
                       >
                         <option value="">Select goal...</option>
                         <option value="lose weight">LOSE WEIGHT</option>
@@ -516,7 +516,7 @@ export default function RegisterPage() {
                   <label 
                     htmlFor="terms" 
                     className="text-xs text-gray-700 font-bold"
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'TA8bit' }}
                   >
                     I ACCEPT TERMS AND{' '}
                     <button
@@ -535,7 +535,7 @@ export default function RegisterPage() {
                   disabled={isLoading}
                   className="w-full py-4 bg-gradient-to-r from-[#6fa85e] to-[#8bc273] hover:from-[#8bc273] hover:to-[#a8d48f] border-4 border-black text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                   style={{ 
-                    fontFamily: 'monospace',
+                    fontFamily: 'TA8bit',
                     boxShadow: '6px 6px 0px rgba(0,0,0,0.3)',
                     textShadow: '2px 2px 0px rgba(0,0,0,0.5)',
                     fontSize: '18px'
@@ -552,7 +552,7 @@ export default function RegisterPage() {
                   onClick={handleNavigateToLogin}
                   className="px-6 py-2 bg-gray-800 hover:bg-gray-700 border-3 border-black text-white text-sm font-bold transition-all"
                   style={{ 
-                    fontFamily: 'monospace',
+                    fontFamily: 'TA8bit',
                     boxShadow: '3px 3px 0px rgba(0,0,0,0.3)'
                   }}
                 >
@@ -567,7 +567,7 @@ export default function RegisterPage() {
             <p 
               className="text-white text-sm font-bold animate-pulse"
               style={{ 
-                fontFamily: 'monospace',
+                fontFamily: 'TA8bit',
                 textShadow: '2px 2px 0px rgba(0,0,0,0.5)'
               }}
             >
@@ -594,7 +594,7 @@ export default function RegisterPage() {
 
             <div className="p-8 text-center relative">
               <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
-                <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'monospace' }}>
+                <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'TA8bit' }}>
                   ★ ACCOUNT CREATED! ★
                 </h3>
               </div>
@@ -636,10 +636,10 @@ export default function RegisterPage() {
               </div>
 
               <div className="bg-white border-4 border-black p-4 mb-6">
-                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'monospace' }}>
+                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
                   ACCOUNT CREATED!
                 </p>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'monospace' }}>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'TA8bit' }}>
                   Welcome to CAL-DEFICITS!
                 </p>
               </div>
@@ -648,7 +648,7 @@ export default function RegisterPage() {
                 onClick={handleSuccessModalClose}
                 className="w-full py-3 bg-gradient-to-r from-[#6fa85e] to-[#8bc273] hover:from-[#8bc273] hover:to-[#a8d48f] border-4 border-black text-white font-bold transition-all"
                 style={{ 
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
                   textShadow: '2px 2px 0px rgba(0,0,0,0.5)'
                 }}
@@ -679,7 +679,7 @@ export default function RegisterPage() {
               <h2 
                 className="text-2xl font-bold text-white tracking-wider"
                 style={{ 
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   textShadow: '3px 3px 0px rgba(0,0,0,0.3)'
                 }}
               >
@@ -688,14 +688,14 @@ export default function RegisterPage() {
               <button
                 onClick={() => setShowPrivacyModal(false)}
                 className="text-white hover:text-gray-200 text-4xl leading-none font-bold"
-                style={{ fontFamily: 'monospace' }}
+                style={{ fontFamily: 'TA8bit' }}
               >
                 ×
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto flex-1">
-              <div className="space-y-4 text-gray-700" style={{ fontFamily: 'monospace', fontSize: '13px' }}>
+              <div className="space-y-4 text-gray-700" style={{ fontFamily: 'TA8bit', fontSize: '13px' }}>
                 <section>
                   <h3 className="text-base font-bold text-gray-800 mb-2">
                     1. ข้อมูลที่เราเก็บรวบรวม
@@ -781,7 +781,7 @@ export default function RegisterPage() {
                 onClick={() => setShowPrivacyModal(false)}
                 className="w-full py-3 bg-gradient-to-r from-[#6fa85e] to-[#8bc273] hover:from-[#8bc273] hover:to-[#a8d48f] border-4 border-black text-white font-bold transition-all"
                 style={{ 
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
                   textShadow: '2px 2px 0px rgba(0,0,0,0.5)'
                 }}

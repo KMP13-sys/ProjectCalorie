@@ -18,7 +18,7 @@ export default function NavBarUser() {
   };
 
   // แสดง username จาก backend หรือ default
-  const displayUsername = userProfile?.username || 'PLAYER';
+  const displayUsername = userProfile?.username || 'USER';
   
   // แสดงรูปโปรไฟล์จาก backend หรือ default
   const profileImageSrc = userProfile?.image_profile_url || '/pic/person.png';
@@ -92,7 +92,7 @@ export default function NavBarUser() {
               <span
                 className="font-bold text-white tracking-wider"
                 style={{
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   textShadow: '2px 2px 0 rgba(0, 0, 0, 0.3)',
                   fontSize: '30px',
                 }}
@@ -126,7 +126,7 @@ export default function NavBarUser() {
                 <span
                   className="text-lg font-bold text-gray-800"
                   style={{
-                    fontFamily: 'monospace',
+                    fontFamily: 'TA8bit',
                     letterSpacing: '0.05em',
                   }}
                 >

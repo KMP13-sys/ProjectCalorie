@@ -131,7 +131,7 @@ export default function LoginPage() {
               <h2 
                 className="text-2xl font-bold text-white text-center tracking-wider"
                 style={{ 
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   textShadow: '3px 3px 0px rgba(0,0,0,0.3)'
                 }}
               >
@@ -155,7 +155,7 @@ export default function LoginPage() {
                 </div>
                 <p 
                   className="text-xl font-bold text-gray-800 tracking-wider"
-                  style={{ fontFamily: 'monospace' }}
+                  style={{ fontFamily: 'TA8bit' }}
                 >
                   CAL-DEFICITS
                 </p>
@@ -170,7 +170,7 @@ export default function LoginPage() {
               {error && (
                 <div 
                   className="mb-4 p-3 bg-red-200 border-4 border-red-600 text-red-800"
-                  style={{ fontFamily: 'monospace' }}
+                  style={{ fontFamily: 'TA8bit' }}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-xl">⚠</span>
@@ -185,7 +185,7 @@ export default function LoginPage() {
                 <div>
                   <label 
                     className="block text-sm font-bold text-gray-700 mb-2"
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'TA8bit' }}
                   >
                     &gt; USERNAME
                   </label>
@@ -197,7 +197,7 @@ export default function LoginPage() {
                     required
                     minLength={3}
                     className="w-full px-4 py-3 bg-gray-100 border-4 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono"
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'TA8bit' }}
                   />
                 </div>
                 
@@ -205,7 +205,7 @@ export default function LoginPage() {
                 <div>
                   <label 
                     className="block text-sm font-bold text-gray-700 mb-2"
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'TA8bit' }}
                   >
                     &gt; PASSWORD
                   </label>
@@ -219,7 +219,7 @@ export default function LoginPage() {
                     }}
                     required
                     className="w-full px-4 py-3 bg-gray-100 border-4 border-gray-800 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#6fa85e] font-mono"
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'TA8bit' }}
                   />
                 </div>
 
@@ -229,7 +229,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                   className="w-full py-4 bg-gradient-to-r from-[#6fa85e] to-[#8bc273] hover:from-[#8bc273] hover:to-[#a8d48f] border-4 border-black text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                   style={{ 
-                    fontFamily: 'monospace',
+                    fontFamily: 'TA8bit',
                     boxShadow: '6px 6px 0px rgba(0,0,0,0.3)',
                     textShadow: '2px 2px 0px rgba(0,0,0,0.5)',
                     fontSize: '18px'
@@ -246,7 +246,7 @@ export default function LoginPage() {
                     onClick={handleNavigateToRegister}
                     className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border-3 border-black text-white text-sm font-bold transition-all"
                     style={{
-                      fontFamily: 'monospace',
+                      fontFamily: 'TA8bit',
                       boxShadow: '3px 3px 0px rgba(0,0,0,0.3)'
                     }}
                   >
@@ -262,7 +262,7 @@ export default function LoginPage() {
             <p 
               className="text-white text-sm font-bold animate-pulse"
               style={{ 
-                fontFamily: 'monospace',
+                fontFamily: 'TA8bit',
                 textShadow: '2px 2px 0px rgba(0,0,0,0.5)'
               }}
             >
@@ -335,10 +335,10 @@ export default function LoginPage() {
 
               {/* Message */}
               <div className="bg-white border-4 border-black p-4 mb-6">
-                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'monospace' }}>
+                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
                   LOGIN COMPLETE!
                 </p>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'monospace' }}>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'TA8bit' }}>
                   Welcome back, User!
                 </p>
               </div>
@@ -359,7 +359,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <p className="text-xs text-white mt-3" style={{ fontFamily: 'monospace', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+              <p className="text-xs text-white mt-3" style={{ fontFamily: 'TA8bit', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
                 Loading...
               </p>
             </div>

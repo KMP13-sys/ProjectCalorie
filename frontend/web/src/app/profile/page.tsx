@@ -287,7 +287,7 @@ export default function PixelProfilePage() {
       <div className="min-h-screen flex items-center justify-center" style={{ 
         background: 'linear-gradient(135deg, #6fa85e 0%, #8bc273 50%, #a8d88e 100%)',
       }}>
-        <div className="text-white text-2xl font-bold" style={{ fontFamily: 'monospace' }}>
+        <div className="text-white text-2xl font-bold" style={{ fontFamily: 'TA8bit' }}>
           LOADING...
         </div>
       </div>
@@ -307,7 +307,7 @@ export default function PixelProfilePage() {
   return (
     <div className="min-h-screen relative" style={{ 
       background: 'linear-gradient(135deg, #6fa85e 0%, #8bc273 50%, #a8d88e 100%)',
-      fontFamily: 'monospace'
+      fontFamily: 'TA8bit'
     }}>
       <PixelGridBackground />
       <FloatingPixels />
@@ -676,8 +676,8 @@ export default function PixelProfilePage() {
             </div>
 
             <div className="text-center mb-1">
-              <p className="text-center text-lg font-bold font-monospace text-gray-800" style={{ letterSpacing: '1px' }}>DO YOU WANT TO</p>
-              <p className="text-center text-lg font-bold font-monospace text-gray-800">LOGOUT?</p>
+              <p className="text-center text-lg font-bold font-TA8bit text-gray-800" style={{ letterSpacing: '1px' }}>DO YOU WANT TO</p>
+              <p className="text-center text-lg font-bold font-TA8bit text-gray-800">LOGOUT?</p>
             </div>
 
             <div className="flex gap-2 justify-center mt-2">
@@ -736,7 +736,7 @@ export default function PixelProfilePage() {
             </div>
 
             <div className="text-center mb-1">
-              <p className="text-center text-lg font-bold font-monospace text-gray-800" style={{ letterSpacing: '1px' }}>DELETE YOUR ACCOUNT?</p>
+              <p className="text-center text-lg font-bold font-TA8bit text-gray-800" style={{ letterSpacing: '1px' }}>DELETE YOUR ACCOUNT?</p>
               <p className="text-center text-sm text-gray-600 mt-2">This action cannot be undone!</p>
             </div>
 

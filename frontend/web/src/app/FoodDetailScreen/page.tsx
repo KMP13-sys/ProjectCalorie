@@ -177,7 +177,7 @@ export default function FoodDetailScreen() {
               className="mb-6 p-2 bg-white border-4 border-black hover:bg-gray-100 transition-all hover:translate-x-1 hover:translate-y-1 relative z-10"
               style={{
                 boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
-                fontFamily: 'monospace',
+                fontFamily: 'TA8bit',
                 color: '#000000'
               }}
             >
@@ -240,7 +240,7 @@ export default function FoodDetailScreen() {
                   className="bg-gradient-to-r from-[#A3EBA1] to-[#8bc273] border-4 border-black p-3 mb-4 relative"
                   style={{
                     boxShadow: '6px 6px 0px rgba(0,0,0,0.2)',
-                    fontFamily: 'monospace'
+                    fontFamily: 'TA8bit'
                   }}
                 >
                   <h2 className="text-2xl font-bold text-center text-gray-800" style={{
@@ -255,7 +255,7 @@ export default function FoodDetailScreen() {
                   className="border-6 border-black bg-gradient-to-b from-[#FFFFCC] to-[#FFFFAA] p-4 mb-6"
                   style={{
                     boxShadow: '6px 6px 0px rgba(0,0,0,0.2)',
-                    fontFamily: 'monospace',
+                    fontFamily: 'TA8bit',
                     color: '#333333',
                     fontSize: '35px'
                   }}
@@ -330,7 +330,7 @@ export default function FoodDetailScreen() {
             <div className="p-8 text-center relative">
               {/* Header */}
               <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
-                <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'monospace' }}>
+                <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'TA8bit' }}>
                   ★ MEAL SAVED! ★
                 </h3>
               </div>
@@ -374,15 +374,15 @@ export default function FoodDetailScreen() {
 
               {/* Message Box */}
               <div className="bg-white border-4 border-black p-4 mb-6">
-                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'monospace' }}>
+                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
                   MEAL SAVED!
                 </p>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'monospace' }}>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'TA8bit' }}>
                   Your meal has been recorded successfully!
                 </p>
               </div>
 
-              <p className="text-xs text-white animate-pulse" style={{ fontFamily: 'monospace', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+              <p className="text-xs text-white animate-pulse" style={{ fontFamily: 'TA8bit', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
                 Returning to main page...
               </p>
             </div>
@@ -397,7 +397,7 @@ export default function FoodDetailScreen() {
             className="bg-[#FFC1C1] border-4 border-black p-4 max-w-sm w-full"
             style={{
               boxShadow: '6px 6px 0px rgba(0,0,0,0.4)',
-              fontFamily: 'monospace'
+              fontFamily: 'TA8bit'
             }}
           >
             <div className="bg-[#FF6B6B] py-2 mb-4 -mx-4 -mt-4 px-4">

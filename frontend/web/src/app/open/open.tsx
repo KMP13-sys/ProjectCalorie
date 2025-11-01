@@ -106,7 +106,7 @@ export default function Open({ onComplete }: OpenProps) {
               <h1 
                 className="text-5xl md:text-6xl font-bold text-gray-800 tracking-wider mb-2"
                 style={{ 
-                  fontFamily: 'monospace',
+                  fontFamily: 'TA8bit',
                   textShadow: '4px 4px 0px rgba(111, 168, 94, 0.5)'
                 }}
               >
@@ -125,7 +125,7 @@ export default function Open({ onComplete }: OpenProps) {
             <div className="bg-black border-4 border-[#6fa85e] px-6 py-2">
               <p 
                 className="text-white text-lg font-bold animate-pulse"
-                style={{ fontFamily: 'monospace' }}
+                style={{ fontFamily: 'TA8bit' }}
               >
                 &gt; LOADING...
               </p>
