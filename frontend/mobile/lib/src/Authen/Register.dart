@@ -254,74 +254,122 @@ class _RegisterScreenState extends State<RegisterScreen>
 
                               const SizedBox(height: 24),
 
-                              // ACCOUNT INFO SECTION
                               Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  border: Border.all(
-                                    color: Colors.black,
-                                    width: 4,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[100],
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 4,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // ✅ แทนที่ Text ▶ ACCOUNT INFO ด้วยรูป play.png + เงา + responsive
+                                      Builder(
+                                        builder: (context) {
+                                          final screenWidth = MediaQuery.of(context).size.width;
+                                          final iconSize = screenWidth > 600
+                                              ? 28.0
+                                              : screenWidth > 400
+                                                  ? 22.0
+                                                  : 18.0;
+                                          final fontSize = screenWidth > 600
+                                              ? 20.0
+                                              : screenWidth > 400
+                                                  ? 16.0
+                                                  : 14.0;
+
+                                          return Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                margin: const EdgeInsets.only(right: 8),
+                                                decoration: BoxDecoration(
+                                                  boxShadow: [
+                                                    // BoxShadow(
+                                                    //   color: Colors.black.withOpacity(0.5),
+                                                    //   offset: const Offset(1, 1),
+                                                    // ),
+                                                  ],
+                                                ),
+                                                child: Image.asset(
+                                                  'assets/pic/play.png', // ✅ ใช้แทน ▶
+                                                  width: iconSize,
+                                                  height: iconSize,
+                                                  fit: BoxFit.contain,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              Text(
+                                                'ACCOUNT INFO',
+                                                style: TextStyle(
+                                                  fontFamily: 'TA8bit',
+                                                  fontSize: fontSize,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                  shadows: const [
+                                                    Shadow(
+                                                      offset: Offset(2, 2),
+                                                      color: Color(0x80000000),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+
+                                      const SizedBox(height: 16),
+
+                                      _buildLabeledInput(
+                                        label: 'USERNAME *',
+                                        controller: _usernameController,
+                                        hint: 'Enter username...',
+                                        allowedChars: ['a-z', 'A-Z', '0-9', '_'],
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      _buildLabeledInput(
+                                        label: 'EMAIL *',
+                                        controller: _emailController,
+                                        hint: 'Enter email...',
+                                        keyboardType: TextInputType.emailAddress,
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      _buildLabeledInput(
+                                        label: 'PHONE *',
+                                        controller: _phoneController,
+                                        hint: 'Enter phone...',
+                                        keyboardType: TextInputType.phone,
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      _buildLabeledInput(
+                                        label: 'PASSWORD *',
+                                        controller: _passwordController,
+                                        hint: 'Min 8 characters...',
+                                        isPassword: true,
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      _buildLabeledInput(
+                                        label: 'CONFIRM PASSWORD *',
+                                        controller: _confirmPasswordController,
+                                        hint: 'Re-enter password...',
+                                        isPassword: true,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      '▶ ACCOUNT INFO',
-                                      style: TextStyle(
-                                        fontFamily: 'TA8bit',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
 
-                                    _buildLabeledInput(
-                                      label: 'USERNAME *',
-                                      controller: _usernameController,
-                                      hint: 'Enter username...',
-                                      allowedChars: ['a-z', 'A-Z', '0-9', '_'],
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _buildLabeledInput(
-                                      label: 'EMAIL *',
-                                      controller: _emailController,
-                                      hint: 'Enter email...',
-                                      keyboardType: TextInputType.emailAddress,
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _buildLabeledInput(
-                                      label: 'PHONE *',
-                                      controller: _phoneController,
-                                      hint: 'Enter phone...',
-                                      keyboardType: TextInputType.phone,
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _buildLabeledInput(
-                                      label: 'PASSWORD *',
-                                      controller: _passwordController,
-                                      hint: 'Min 8 characters...',
-                                      isPassword: true,
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _buildLabeledInput(
-                                      label: 'CONFIRM PASSWORD *',
-                                      controller: _confirmPasswordController,
-                                      hint: 'Re-enter password...',
-                                      isPassword: true,
-                                    ),
-                                  ],
-                                ),
-                              ),
 
                               const SizedBox(height: 16),
 
+                              // PERSONAL INFO SECTION
                               // PERSONAL INFO SECTION
                               Container(
                                 padding: const EdgeInsets.all(16),
@@ -335,15 +383,62 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      '▶ PERSONAL INFO',
-                                      style: TextStyle(
-                                        fontFamily: 'TA8bit',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
+                                    // ✅ แทน Text ▶ PERSONAL INFO ด้วยรูป play.png + เงา + responsive
+                                    Builder(
+                                      builder: (context) {
+                                        final screenWidth = MediaQuery.of(context).size.width;
+                                        final iconSize = screenWidth > 600
+                                            ? 28.0
+                                            : screenWidth > 400
+                                                ? 22.0
+                                                : 18.0;
+                                        final fontSize = screenWidth > 600
+                                            ? 20.0
+                                            : screenWidth > 400
+                                                ? 16.0
+                                                : 14.0;
+
+                                        return Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              margin: const EdgeInsets.only(right: 8),
+                                              decoration: BoxDecoration(
+                                                boxShadow: [
+                                                  // BoxShadow(
+                                                  //   color: Colors.black.withOpacity(0.5),
+                                                  //   offset: const Offset(2, 2),
+                                                  // ),
+                                                ],
+                                              ),
+                                              child: Image.asset(
+                                                'assets/pic/play.png', // ✅ ใช้แทน ▶
+                                                width: iconSize,
+                                                height: iconSize,
+                                                fit: BoxFit.contain,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            Text(
+                                              'PERSONAL INFO',
+                                              style: TextStyle(
+                                                fontFamily: 'TA8bit',
+                                                fontSize: fontSize,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                                shadows: const [
+                                                  Shadow(
+                                                    offset: Offset(2, 2),
+                                                    color: Color(0x80000000),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     ),
+
                                     const SizedBox(height: 16),
 
                                     Row(
@@ -364,10 +459,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                             hint: 'Select...',
                                             items: const ['MALE', 'FEMALE'],
                                             onChanged: (value) {
-                                              setState(
-                                                () => _selectedGender =
-                                                    value ?? '',
-                                              );
+                                              setState(() => _selectedGender = value ?? '');
                                             },
                                           ),
                                         ),
@@ -408,14 +500,13 @@ class _RegisterScreenState extends State<RegisterScreen>
                                         'GAIN WEIGHT',
                                       ],
                                       onChanged: (value) {
-                                        setState(
-                                          () => _selectedGoal = value ?? '',
-                                        );
+                                        setState(() => _selectedGoal = value ?? '');
                                       },
                                     ),
                                   ],
                                 ),
                               ),
+
 
                               const SizedBox(height: 24),
 
@@ -481,60 +572,105 @@ class _RegisterScreenState extends State<RegisterScreen>
 
                               // Register Button
                               GestureDetector(
-                                onTap: _isLoading ? null : _handleRegister,
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF6fa85e),
-                                        Color(0xFF8bc273),
-                                      ],
-                                    ),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.3),
-                                        offset: const Offset(6, 6),
-                                      ),
+                              onTap: _isLoading ? null : _handleRegister,
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF6fa85e),
+                                      Color(0xFF8bc273),
                                     ],
                                   ),
-                                  child: _isLoading
-                                      ? const Center(
-                                          child: SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        )
-                                      : const Text(
-                                          '▶ CREATE ACCOUNT',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: 'TA8bit',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 4,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      offset: const Offset(6, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: _isLoading
+                                    ? const Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
                                             color: Colors.white,
-                                            letterSpacing: 2,
-                                            shadows: [
-                                              Shadow(
-                                                offset: Offset(2, 2),
-                                                color: Colors.black38,
-                                              ),
-                                            ],
                                           ),
                                         ),
-                                ),
+                                      )
+                                    : Builder(
+                                        builder: (context) {
+                                          final screenWidth = MediaQuery.of(context).size.width;
+                                          final iconSize = screenWidth > 600
+                                              ? 28.0
+                                              : screenWidth > 400
+                                                  ? 22.0
+                                                  : 18.0;
+                                          final fontSize = screenWidth > 600
+                                              ? 20.0
+                                              : screenWidth > 400
+                                                  ? 16.0
+                                                  : 14.0;
+                                          final spacing = screenWidth > 600
+                                              ? 12.0
+                                              : screenWidth > 400
+                                                  ? 10.0
+                                                  : 8.0;
+
+                                          return Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                margin: EdgeInsets.only(right: spacing),
+                                                decoration: BoxDecoration(
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withOpacity(0.5),
+                                                      offset: const Offset(2, 2),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Image.asset(
+                                                  'assets/pic/play.png', // ✅ แทน ▶
+                                                  width: iconSize,
+                                                  height: iconSize,
+                                                  fit: BoxFit.contain,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              Text(
+                                                'CREATE ACCOUNT',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontFamily: 'TA8bit',
+                                                  fontSize: fontSize,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  letterSpacing: screenWidth > 400 ? 2 : 1.5,
+                                                  shadows: const [
+                                                    Shadow(
+                                                      offset: Offset(2, 2),
+                                                      color: Colors.black38,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
                               ),
+                            ),
 
                               const SizedBox(height: 20),
 

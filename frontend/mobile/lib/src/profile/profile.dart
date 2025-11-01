@@ -859,7 +859,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Expanded(
           child: _buildPixelButton(
-            '◀ BACK',
+            'BACK',
             Colors.grey[800]!,
             Colors.white,
             () {
@@ -870,7 +870,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(width: 8),
         Expanded(
           child: _buildPixelButton(
-            '✎ EDIT',
+            'EDIT',
             const Color(0xFF6fa85e),
             Colors.white,
             () {
@@ -881,7 +881,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(width: 8),
         Expanded(
           child: _buildPixelButton(
-            'LOGOUT ▶',
+            'LOGOUT',
             const Color(0xFFfb7185),
             Colors.white,
             _handleLogout,

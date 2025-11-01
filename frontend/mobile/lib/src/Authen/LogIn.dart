@@ -578,59 +578,97 @@ class _LoginScreenState extends State<LoginScreen>
       ],
     );
   }
+Widget _buildLoginButton() {
+  final screenWidth = MediaQuery.of(context).size.width;
 
-  Widget _buildLoginButton() {
-    final screenWidth = getResponsiveWidth(context);
-    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
-    
-    return GestureDetector(
-      onTap: _isLoading ? null : _handleLogin,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: getSpacing(context, 16)),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
-          ),
-          border: Border.all(color: Colors.black, width: borderWidth),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              offset: Offset(
-                screenWidth > 600 ? 6 : screenWidth > 400 ? 4 : 3,
-                screenWidth > 600 ? 6 : screenWidth > 400 ? 4 : 3,
-              ),
-            ),
-          ],
+  // ปรับขนาดตามหน้าจอ
+  final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
+  final paddingY = screenWidth > 600 ? 22.0 : screenWidth > 400 ? 18.0 : 14.0;
+  final iconSize = screenWidth > 600 ? 32.0 : screenWidth > 400 ? 26.0 : 22.0;
+  final fontSize = screenWidth > 600 ? 22.0 : screenWidth > 400 ? 18.0 : 16.0;
+  final spacing = screenWidth > 600 ? 12.0 : screenWidth > 400 ? 10.0 : 8.0;
+
+  return GestureDetector(
+    onTap: _isLoading ? null : _handleLogin,
+    child: Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: paddingY),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
         ),
-        child: _isLoading
-            ? Center(
-                child: SizedBox(
-                  width: screenWidth > 400 ? 20 : 16,
-                  height: screenWidth > 400 ? 20 : 16,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
+        border: Border.all(color: Colors.black, width: borderWidth),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            offset: Offset(
+              screenWidth > 600 ? 6 : screenWidth > 400 ? 4 : 3,
+              screenWidth > 600 ? 6 : screenWidth > 400 ? 4 : 3,
+            ),
+          ),
+        ],
+      ),
+      child: _isLoading
+          ? Center(
+              child: SizedBox(
+                width: iconSize * 0.8,
+                height: iconSize * 0.8,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
-              )
-            : Text(
-                '▶ LOGIN',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'TA8bit',
-                  fontSize: getFontSize(context, 18),
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: screenWidth > 400 ? 1 : 0.5,
-                  shadows: const [
-                    Shadow(offset: Offset(2, 2), color: Color(0x80000000)),
+              ),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Stack(
+                  children: [
+                    // เงาด้านหลัง
+                    Positioned(
+                      left: 2,
+                      top: 2,
+                      child: Image.asset(
+                        'assets/pic/play.png',
+                        width: iconSize,
+                        height: iconSize,
+                        fit: BoxFit.contain,
+                        color: Colors.black.withOpacity(0.5),
+                      ),
+                    ),
+                    // รูปจริง
+                    Image.asset(
+                      'assets/pic/play.png',
+                      width: iconSize,
+                      height: iconSize,
+                      fit: BoxFit.contain,
+                      color: Colors.white,
+                    ),
                   ],
                 ),
-              ),
-      ),
-    );
-  }
+
+                SizedBox(width: spacing),
+                Text(
+                  'LOGIN',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'TA8bit',
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: screenWidth > 400 ? 1 : 0.5,
+                    shadows: const [
+                      Shadow(offset: Offset(2, 2), color: Color(0x80000000)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+    ),
+  );
+}
+
 
   Widget _buildFooterLinks() {
     final screenWidth = getResponsiveWidth(context);
