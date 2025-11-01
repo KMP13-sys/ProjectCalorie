@@ -6,7 +6,7 @@
 /// 3. Cloud Deploy: ใช้ Ngrok/Railway/Render URL
 class ApiConfig {
   // ⚙️ เปลี่ยน URL ตรงนี้เท่าน
-  static const String _baseUrl = 'http://localhost:4000';
+  static const String _baseUrl = 'http://172.20.10.6:4000';
 
   // 🔹 สำหรับ Development (ในบ้าน):
   //    - Physical Device (มือถือจริง): 'http://10.13.2.102:4000'
@@ -14,7 +14,7 @@ class ApiConfig {
   //    - Android Emulator: 'http://10.0.2.2:4000'
   //    - iOS Simulator: 'http://localhost:4000'
   //    - Web Browser: 'http://localhost:4000'
-  //10.13.2.112
+  //172.20.10.6
   // 🔹 สำหรับ Production (ใช้นอกบ้าน):
   //    - Public IP: 'http://203.158.130.254:4000' (ต้องเปิด Port Forwarding)
   //    - Ngrok: 'https://your-ngrok-url.ngrok-free.app'

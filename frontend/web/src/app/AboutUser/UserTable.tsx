@@ -1,103 +1,114 @@
-import { useState, useEffect } from "react";
-import { User } from "../services/userModel";
-import { adminAPI } from "../services/adminService";
-import UserTableRow from "./UserTableRow";
-import EditUserModal from "./EditUserModal";
+// components/admin/UserTable.tsx
+'use client';
 
-// 1. เพิ่ม function handleDelete
-const handleDelete = async (userId: number) => {
-  if (!confirm("คุณแน่ใจหรือไม่ที่จะลบผู้ใช้นี้?")) return;
+import { useState } from 'react';
+import UserTableRow from './UserTableRow';
+import DeleteUserModal from './DeleteUserModal';
+import { User } from '@/app/services/adminService';
 
-  try {
-    setLoading(true);
-    await adminAPI.deleteUser(userId); // เรียก API delete
-    onUpdate(); // รีโหลดตาราง
-  } catch (err: any) {
-    console.error("Delete Error:", err);
-    alert(err.message || "เกิดข้อผิดพลาดในการลบผู้ใช้");
-  } finally {
-    setLoading(false);
-  }
+type UserTableProps = {
+  users: User[];
+  loading: boolean;
+  onUpdate: () => void; // รีเฟรชตารางหลังแก้ไขหรือลบ
 };
 
-
-export default function UserTable() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function UserTable({ users, loading, onUpdate }: UserTableProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const data = await adminAPI.getAllUsers();
-      setUsers(data);
-    } catch (err) {
-      console.error(err);
-      alert("ไม่สามารถดึงข้อมูลผู้ใช้ได้");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const handleDelete = async (user_id: number) => {
-    if (!confirm("คุณแน่ใจว่าจะลบผู้ใช้นี้?")) return;
-    try {
-      await adminAPI.deleteUser(user_id);
-      fetchUsers();
-    } catch (err) {
-      console.error(err);
-      alert("ไม่สามารถลบผู้ใช้ได้");
-    }
-  };
-
-  const handleSave = () => {
-    fetchUsers(); // รีโหลดตารางหลังแก้ไข
-  };
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
   return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Height</th>
-            <th>Weight</th>
-            <th>Goal</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr><td colSpan={10}>Loading...</td></tr>
-          ) : users.length === 0 ? (
-            <tr><td colSpan={10}>ไม่มีผู้ใช้</td></tr>
-          ) : (
-            users.map(user => (
-              <UserTableRow
-                key={user.user_id}
-                user={user}
-                onEdit={() => setEditingUser(user)}
-                onDelete={() => handleDelete(user.user_id)}
-              />
-            ))
-          )}
-        </tbody>
-      </table>
+    <div className="w-full p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header */}
+        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <button 
+            onClick={() => window.history.back()}
+            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-3 sm:border-4 border-black bg-white hover:bg-gray-100 active:translate-y-1 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center group text-black "
+          >
+            <span className="text-2xl sm:text-3xl md:text-4xl group-hover:-translate-x-1 transition-transform">◀</span>
+          </button>
 
-      {editingUser && (
-        <EditUserModal
-          user={editingUser}
-          onClose={() => setEditingUser(null)}
-          onSave={handleSave}
+          <div className="flex-1 bg-gradient-to-r from-green-300 via-green-200 to-green-300 border-3 sm:border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4 md:p-5">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-center tracking-wider text-black">
+              Users
+            </h2>
+            <div className="flex justify-center gap-2 mt-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-600"></div>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500"></div>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-400"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white border-3 sm:border-4 md:border-[6px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+          <div className="relative">
+            {/* Corner Pixels */}
+            <div className="absolute top-0 left-0 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-green-400 z-10"></div>
+            <div className="absolute top-0 right-0 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-green-400 z-10"></div>
+            <div className="absolute bottom-0 left-0 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-green-400 z-10"></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-green-400 z-10"></div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse min-w-[640px]">
+                <thead>
+                  <tr className="bg-gradient-to-r from-green-200 via-green-300 to-green-200">
+                    <th className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl w-20 sm:w-24 md:w-28 text-black">Edit</th>
+                    <th className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl text-left text-black">Username</th>
+                    <th className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl text-center text-black">Email</th>
+                    <th className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl text-center text-black">Phone</th>
+                    <th className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl text-center text-black">Age</th>
+                    <th className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl text-center text-black">Gender</th>
+                    <th className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl text-center text-black">Goal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="text-center p-8 sm:p-12 md:p-16 bg-green-50">
+                        <div className="flex flex-col items-center justify-center gap-3 sm:gap-4">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 sm:border-[6px] border-gray-300 border-t-green-500 rounded-full animate-spin"></div>
+                          <span className="text-base sm:text-lg md:text-xl font-bold text-gray-600">Loading...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : users.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center p-8 sm:p-12 md:p-16 bg-green-50">
+                        <div className="flex flex-col items-center gap-3 sm:gap-4">
+                          <span className="text-4xl sm:text-5xl md:text-6xl">👤</span>
+                          <span className="text-base sm:text-lg md:text-xl font-bold text-gray-600">ไม่มีผู้ใช้</span>
+                          <span className="text-xs sm:text-sm md:text-base text-gray-500">กรุณาเพิ่มผู้ใช้</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((user, index) => (
+                      <UserTableRow
+                        key={user.user_id}
+                        user={user}
+                        onEdit={() => setEditingUser(user)}
+                        isEven={index % 2 === 0}
+                      />
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Delete Modal (ถ้าต้องการ) */}
+      {deletingUser && (
+        <DeleteUserModal
+          user={deletingUser}
+          onClose={() => setDeletingUser(null)}
+          onDelete={() => {
+            setDeletingUser(null);
+            onUpdate();
+          }}
         />
       )}
     </div>

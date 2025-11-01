@@ -1,29 +1,54 @@
-// src/services/adminService.ts
-import axios from "axios";
-import { User } from "../services/userModel";
+// services/adminService.ts
 
-// ดึง token จาก localStorage หรือ state ของคุณ
-const getAuthHeader = () => {
-  const token = localStorage.getItem("token"); // ปรับตามวิธีคุณเก็บ token
-  return { headers: { Authorization: `Bearer ${token}` } };
+export type User = {
+  user_id: number;
+  username: string;
+  email: string;
+  phone_number?: string;
+  age?: number;
+  gender?: 'male' | 'female';
+  height?: number;
+  weight?: number;
+  goal?: 'lose weight' | 'maintain weight' | 'gain weight';
 };
 
-export const adminAPI = {
-  // GET all users
-  getAllUsers: async (): Promise<User[]> => {
-    const res = await axios.get("/api/admin/users", getAuthHeader());
-    return res.data.users; // ต้องตรงกับ backend { users: [...] }
+const API_URL = 'http://localhost:4000/api/admin';
+
+export const adminService = {
+  getAllUsers: async (token?: string) => {
+    const response = await fetch(`${API_URL}/users`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch users');
+    return response.json();
   },
 
-  // DELETE user
-  deleteUser: async (user_id: number) => {
-    const res = await axios.delete(`/api/admin/delete-user/${user_id}`, getAuthHeader());
-    return res.data;
+  createUser: async (data: any) => {
+    const response = await fetch(`${API_URL}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to create user');
+    return response.json();
   },
-
-  // UPDATE user
-  updateUser: async (user_id: number, payload: Partial<User>) => {
-    const res = await axios.put(`/api/admin/update-user/${user_id}`, payload, getAuthHeader());
-    return res.data;
+  updateUser: async (id: string, data: any) => {
+    const response = await fetch(`${API_URL}/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to update user');
+    return response.json();
   },
+  deleteUser: async (id: string) => {
+    const response = await fetch(`${API_URL}/users/${id}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) throw new Error('Failed to delete user');
+    return response.json();
+  }
 };

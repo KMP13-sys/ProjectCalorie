@@ -29,9 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // ✅ เช็ค authentication เมื่อ mount
+  // เช็ค authentication เมื่อ mount
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       if (typeof window === 'undefined') {
         setIsLoading(false);
         return;
@@ -39,7 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const token = localStorage.getItem('accessToken');
       if (token) {
-        const currentUser = authAPI.getCurrentUser();
+        // ดึง user จาก authAPI
+        const currentUser = await authAPI.getCurrentUser();
         setUser(currentUser);
       }
       
@@ -49,18 +50,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  // ✅ Login function
+  // Login function
   const login = async (username: string, password: string) => {
     try {
-      const response = await authAPI.login(username, password);
+      // ระบุ type ของ response ให้ชัดเจน
+      const response: { token?: string; role: 'user' | 'admin' } = await authAPI.login(username, password);
 
-      // ดึงข้อมูล user จาก localStorage ที่ authAPI.login เพิ่งบันทึกไว้
-      const currentUser = authAPI.getCurrentUser();
+      // เก็บ token ใน localStorage
+      if (response.token) {
+        localStorage.setItem('accessToken', response.token);
+        localStorage.setItem('adminToken', response.token); // สำหรับหน้า admin
+      }
 
+      // ดึงข้อมูล user จาก authAPI
+      const currentUser = await authAPI.getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
       } else {
-        // Fallback: สร้าง user object
+        // fallback ถ้า authAPI.getCurrentUser() ยังว่าง
         const userData: User = {
           id: 0,
           username: username,
@@ -70,14 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userData);
       }
 
-      // ✅ ไม่ navigate ที่นี่ - ให้ component (เช่น Login page) จัดการเอง
-      // เพื่อให้สามารถแสดง Success Modal หรือ UI อื่นๆ ก่อน navigate ได้
     } catch (error) {
       throw error; // ให้ component จัดการ error
     }
   };
 
-  // ✅ Logout function
+  // Logout function
   const logout = () => {
     authAPI.logout();
     setUser(null);
@@ -96,9 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// ========================================
 // Custom Hook
-// ========================================
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

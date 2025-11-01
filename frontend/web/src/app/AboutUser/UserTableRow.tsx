@@ -1,7 +1,15 @@
 // components/admin/UserTableRow.tsx
 'use client';
 
-import { userAPI } from '../services/userService';
+type User = {
+  user_id: number;
+  username: string;
+  email: string;
+  phone_number?: string;
+  age?: number;
+  gender?: 'male' | 'female';
+  goal?: 'lose weight' | 'maintain weight' | 'gain weight';
+};
 
 type UserTableRowProps = {
   user: User;
@@ -9,11 +17,10 @@ type UserTableRowProps = {
   isEven?: boolean;
 };
 
-export default function FoodTableRow({ user, onEdit, isEven = false }: FoodTableRowProps) {
+export default function UserTableRow({ user, onEdit, isEven = false }: UserTableRowProps) {
   return (
-    <tr className={`border-2 sm:border-3 border-black transition-colors hover:bg-green-100 ${
-      isEven ? 'bg-green-50' : 'bg-white'
-    }`}>
+    <tr className={`border-2 sm:border-3 border-black transition-colors hover:bg-green-100 ${isEven ? 'bg-green-50' : 'bg-white'}`}>
+      
       {/* Edit Button */}
       <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center">
         <button
@@ -23,67 +30,43 @@ export default function FoodTableRow({ user, onEdit, isEven = false }: FoodTable
         >
           <span className="text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform">                  
             <img
-              src="/pic/edit.png"
+              src="/pic/trash.png"
               alt="Logo"
               className="w-15 h-15 object-contain"
               style={{ imageRendering: 'pixelated' }}
-            /></span>
+            />
+          </span>
         </button>
       </td>
-      
-      {/* Name */}
+
+      {/* Username */}
       <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-medium text-sm sm:text-base md:text-lg ">
-        <span className="flex items-center gap-2">
-          <span className="text-lg sm:text-xl md:text-2xl text-black"></span>
-          {user.username}
-        </span>
+        {user.username}
       </td>
 
-            {/* Calories */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg text-black">
-        <span className="inline-block px-2 py-1 text-black">
-          {user.email}
-        </span>
+      {/* Email */}
+      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
+        {user.email}
       </td>
 
-      {/* Calories */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg text-black">
-        <span className="inline-block px-2 py-1 text-black">
-          {user.phone_number}
-        </span>
-      </td>
-      
-      {/* Protein */}
+      {/* Phone Number */}
       <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        <span className="inline-block  px-2 py-1 text-black">
-          {user.age}
-        </span>
-      </td>
-      
-      {/* Carbs */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        <span className="inline-block px-2 py-1 text-black">
-          {user.gender}
-        </span>
-      </td>
-      
-      {/* Fat */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        <span className="inline-block px-2 py-1 text-black">
-          {user.height}
-        </span>
+        {user.phone_number}
       </td>
 
+      {/* Age */}
       <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        <span className="inline-block px-2 py-1 text-black">
-          {user.weight}
-        </span>
+        {user.age}
       </td>
 
+      {/* Gender */}
       <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        <span className="inline-block px-2 py-1 text-black">
-          {user.goal}
-        </span>
+        {user.gender}
+      </td>
+
+      {/* Goal */}
+      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
+        {user.goal}
       </td>
 
     </tr>

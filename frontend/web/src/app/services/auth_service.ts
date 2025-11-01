@@ -1,4 +1,4 @@
-// src/app/services/auth_service.ts
+// src/app/services/auth_service.ts 
 
 import axios from 'axios'
 
@@ -34,7 +34,7 @@ export interface User {
   id: number
   username: string
   email: string
-  role: 'user' | 'admin' // ✅ เพิ่ม role
+  role: 'user' | 'admin'
   phone_number?: string
   age?: number
   gender?: string
@@ -43,16 +43,13 @@ export interface User {
   goal?: string
 }
 
-// ✅ ตรงกับ Backend Response
 export interface LoginResponse {
   message: string
   role: 'user' | 'admin'
   accessToken: string
   expiresIn: string
-  // ไม่มี refreshToken สำหรับ web
 }
 
-// ✅ Register ไม่ส่ง token กลับมา
 export interface RegisterResponse {
   message: string
 }
@@ -68,12 +65,6 @@ export interface RegisterData {
   weight: number
   goal: string
 }
-
-// ใน src/app/services/auth_service.ts
-// ...
-export { api }; // เพิ่มบรรทัดนี้ถ้าต้องการ Named Import ด้วย
-
-
 
 // ========================================
 // Axios Instance
@@ -91,7 +82,7 @@ const api = axios.create({
 // ========================================
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken') // ✅ เปลี่ยนจาก 'token'
+    const token = localStorage.getItem('accessToken')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -108,23 +99,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Token หมดอายุ (401 Unauthorized)
     if (error.response?.status === 401 || error.response?.status === 403) {
-      // ✅ Clear session
       localStorage.removeItem('accessToken')
       localStorage.removeItem('user')
-      
-      // Redirect ไป login page
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login'
-      }
+      if (typeof window !== 'undefined') window.location.href = '/login'
     }
-
-    // Network Error
     if (!error.response) {
       console.error('Network Error:', error.message)
     }
-
     return Promise.reject(error)
   }
 )
@@ -133,94 +115,42 @@ api.interceptors.response.use(
 // Authentication API (Services)
 // ========================================
 export const authAPI = {
-  /**
-   * เข้าสู่ระบบ
-   */
+  // Login
   login: async (username: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await api.post<any>('/api/auth/login', {
-        username,
-        password,
-        platform: 'web', // ✅ เพิ่ม platform
-      })
+      const response = await api.post<any>('/api/auth/login', { username, password, platform: 'web' })
+      const { accessToken, role, userId } = response.data
 
-      console.log('🔐 Login response:', response.data);
-
-      // ✅ บันทึก accessToken และ user ลง localStorage
-      if (response.data.accessToken) {
-        localStorage.setItem('accessToken', response.data.accessToken)
-
-        // ✅ ใช้ userId จาก response โดยตรง (backend ส่งมาให้แล้ว)
-        const userId = response.data.userId || 0;
-
-        console.log('🔐 Saving user with ID:', userId);
-
-        // สร้าง user object จาก response
-        const user: User = {
-          id: userId, // ✅ ดึงจาก response.data.userId
-          username: username,
-          email: '',
-          role: response.data.role,
-        }
+      if (accessToken) {
+        localStorage.setItem('accessToken', accessToken)
+        const user: User = { id: userId || 0, username, email: '', role }
         localStorage.setItem('user', JSON.stringify(user))
-
-        console.log('✅ User saved to localStorage:', user);
       }
 
       return response.data
     } catch (error: any) {
-      console.error('❌ Login error:', error);
       const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
       throw new Error(errorMessage)
     }
   },
 
-  /**
-   * สมัครสมาชิก
-   */
+  // Register
   register: async (data: RegisterData): Promise<RegisterResponse> => {
-    try {
-      console.log('Calling API:', `${API_BASE_URL}/api/auth/register`)
-      console.log('Register data:', data)
-      
-      const response = await api.post<RegisterResponse>('/api/auth/register', data)
-
-      // ✅ Register ไม่ส่ง token กลับมา ไม่ต้อง save
-      return response.data
-    } catch (error: any) {
-      console.error('Register Error Details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      })
-      
-      const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก'
-      throw new Error(errorMessage)
-    }
+    const response = await api.post<RegisterResponse>('/api/auth/register', data)
+    return response.data
   },
 
-  /**
-   * ออกจากระบบ (Web - แค่ clear localStorage)
-   */
+  // Logout
   logout: () => {
-    // ✅ Web ไม่ต้องเรียก API logout
     localStorage.removeItem('accessToken')
     localStorage.removeItem('user')
-    
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
-    }
+    if (typeof window !== 'undefined') window.location.href = '/login'
   },
 
-  /**
-   * ดึงข้อมูล user จาก localStorage
-   */
+  // Get current user from localStorage
   getCurrentUser: (): User | null => {
-    if (typeof window === 'undefined') return null
-    
     const userStr = localStorage.getItem('user')
     if (!userStr) return null
-
     try {
       return JSON.parse(userStr) as User
     } catch {
@@ -228,53 +158,25 @@ export const authAPI = {
     }
   },
 
-  /**
-   * ตรวจสอบว่า user login อยู่หรือไม่
-   */
-  isAuthenticated: (): boolean => {
-    if (typeof window === 'undefined') return false
-    return !!localStorage.getItem('accessToken') // ✅ เปลี่ยนจาก 'token'
-  },
+  // Check if user is authenticated
+  isAuthenticated: (): boolean => !!localStorage.getItem('accessToken'),
 
-  /**
-   * ดึง token
-   */
-  getToken: (): string | null => {
-    if (typeof window === 'undefined') return null
-    return localStorage.getItem('accessToken') // ✅ เปลี่ยนจาก 'token'
-  },
+  // Get token
+  getToken: (): string | null => localStorage.getItem('accessToken'),
 
-  /**
-   * ลบบัญชีผู้ใช้
-   */
+  // Delete account
   deleteAccount: async (): Promise<void> => {
-    try {
-      await api.delete('/api/auth/delete-account')
-
-      // ลบข้อมูลออกจาก localStorage
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('user')
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาดในการลบบัญชี'
-      throw new Error(errorMessage)
-    }
+    await api.delete('/api/auth/delete-account')
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('user')
   },
 
-  /**
-   * ดึงข้อมูล user จาก API โดยใช้ userId จาก localStorage
-   */
+  // Fetch current user from backend
   fetchCurrentUser: async (): Promise<User | null> => {
     try {
       const currentUser = authAPI.getCurrentUser()
-      if (!currentUser || !currentUser.id) {
-        console.warn('No user ID found in localStorage')
-        return null
-      }
-
-      const userId = currentUser.id
-      const response = await api.get<any>(`/api/profile/${userId}`)
-
-      // แปลงข้อมูลจาก backend format เป็น User type
+      if (!currentUser?.id) return null
+      const response = await api.get<any>(`/api/profile/${currentUser.id}`)
       const userData: User = {
         id: response.data.user_id,
         username: response.data.username,
@@ -287,14 +189,22 @@ export const authAPI = {
         weight: response.data.weight,
         goal: response.data.goal,
       }
-
-      // บันทึกข้อมูล user ใหม่
       localStorage.setItem('user', JSON.stringify(userData))
-
       return userData
     } catch (error) {
       console.error('Failed to fetch user:', error)
       return null
+    }
+  },
+
+  // Fetch all users (สำหรับ admin)
+  getAllUsers: async (): Promise<User[]> => {
+    try {
+      const response = await api.get<User[]>('/api/admin/users')
+      return response.data
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้'
+      throw new Error(errorMessage)
     }
   },
 }

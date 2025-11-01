@@ -28,6 +28,8 @@ export default function LoginPage() {
       }, 2000);
       return () => clearTimeout(timer);
     }
+    console.log('Login token:', localStorage.getItem('adminToken'));
+
   }, [showSuccessModal, user, router]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +71,7 @@ export default function LoginPage() {
     try {
       // ✅ ใช้ login จาก AuthContext
       await login(username.trim(), password);
-
+      console.log('Token after login:', localStorage.getItem('adminToken'));
       console.log('Login success');
 
       // ✅ Refresh user profile หลัง login สำเร็จ
