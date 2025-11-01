@@ -7,6 +7,7 @@ type User = {
   email: string;
   phone_number?: string;
   age?: number;
+  weight?: number;
   gender?: 'male' | 'female';
   goal?: 'lose weight' | 'maintain weight' | 'gain weight';
 };
@@ -19,54 +20,57 @@ type UserTableRowProps = {
 
 export default function UserTableRow({ user, onEdit, isEven = false }: UserTableRowProps) {
   return (
-    <tr className={`border-2 sm:border-3 border-black transition-colors hover:bg-green-100 ${isEven ? 'bg-green-50' : 'bg-white'}`}>
+    <tr className={`border border-black transition-colors hover:bg-green-100 ${isEven ? 'bg-green-50' : 'bg-white'}`}>
       
       {/* Edit Button */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center">
+      <td className="border border-black p-2 sm:p-3 md:p-4 flex items-center justify-center">
         <button
           onClick={onEdit}
-          className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 border-2 sm:border-3 border-black bg-white hover:bg-green-200 active:translate-y-1 transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mx-auto group"
+          className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center mx-auto group transition-transform active:translate-y-1"
           aria-label={`แก้ไข ${user.username}`}
         >
-          <span className="text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform">                  
-            <img
-              src="/pic/trash.png"
-              alt="Logo"
-              className="w-15 h-15 object-contain"
-              style={{ imageRendering: 'pixelated' }}
-            />
-          </span>
+          <img
+            src="/pic/trash.png"
+            alt="Logo"
+            className="w-full h-full object-contain"
+            style={{ imageRendering: 'pixelated' }}
+          />
         </button>
       </td>
 
       {/* Username */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 font-medium text-sm sm:text-base md:text-lg ">
+      <td className="border border-black p-2 sm:p-3 md:p-4 font-medium text-sm sm:text-base md:text-lg text-center md:text-left">
         {user.username}
       </td>
 
       {/* Email */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
+      <td className="border border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg text-center break-words">
         {user.email}
       </td>
 
       {/* Phone Number */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        {user.phone_number}
+      <td className="border border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg text-center">
+        {user.phone_number ?? '-'}
+      </td>
+
+            {/* Age */}
+      <td className="border border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg text-center">
+        {user.weight ?? '-'}
       </td>
 
       {/* Age */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        {user.age}
+      <td className="border border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg text-center">
+        {user.age ?? '-'}
       </td>
 
       {/* Gender */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        {user.gender}
+      <td className="border border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg text-center capitalize">
+        {user.gender ?? '-'}
       </td>
 
       {/* Goal */}
-      <td className="border-2 sm:border-3 border-black p-2 sm:p-3 md:p-4 text-center font-bold text-sm sm:text-base md:text-lg">
-        {user.goal}
+      <td className="border border-black p-2 sm:p-3 md:p-4 font-bold text-sm sm:text-base md:text-lg text-center capitalize">
+        {user.goal ?? '-'}
       </td>
 
     </tr>

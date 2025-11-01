@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { authAPI, User } from '../services/auth_service'
+import UserTable from '@/app/AboutUser/UserTable'
 
 export default function AboutUserPage() {
   const [users, setUsers] = useState<User[]>([])
@@ -12,8 +13,9 @@ export default function AboutUserPage() {
     const fetchUsers = async () => {
       try {
         const data = await authAPI.getAllUsers()
-        setUsers(data)
+        setUsers(Array.isArray(data) ? data : [])
       } catch (err: any) {
+        console.error(err)
         setError(err.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้')
       } finally {
         setLoading(false)
@@ -23,32 +25,25 @@ export default function AboutUserPage() {
     fetchUsers()
   }, [])
 
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>Error: {error}</p>
+  const handleUpdate = async () => {
+    setLoading(true)
+    try {
+      const data = await authAPI.getAllUsers()
+      setUsers(Array.isArray(data) ? data : [])
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">All Users</h1>
-      <table className="border-collapse border border-black w-full">
-        <thead>
-          <tr>
-            <th className="border border-black px-2 py-1">ID</th>
-            <th className="border border-black px-2 py-1">Username</th>
-            <th className="border border-black px-2 py-1">Email</th>
-            <th className="border border-black px-2 py-1">Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
-              <td className="border border-black px-2 py-1">{u.id}</td>
-              <td className="border border-black px-2 py-1">{u.username}</td>
-              <td className="border border-black px-2 py-1">{u.email}</td>
-              <td className="border border-black px-2 py-1">{u.role}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-200 flex items-start sm:items-center justify-center py-8 sm:py-12">
+      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 bg-white border-4 border-green-400 rounded-2xl shadow-xl overflow-x-auto text-black">
+        {error && <p className="text-red-500 mb-4 text-center sm:text-left">{error}</p>}
+        <UserTable users={users} loading={loading} onUpdate={handleUpdate} />
+      </div>
     </div>
   )
 }

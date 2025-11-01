@@ -1,5 +1,4 @@
-// src/app/services/auth_service.ts 
-
+// src/app/services/auth_service.ts
 import axios from 'axios'
 
 // ========================================
@@ -31,7 +30,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 // Types (ตรงกับ Backend)
 // ========================================
 export interface User {
-  id: number
+  user_id: number
   username: string
   email: string
   role: 'user' | 'admin'
@@ -88,9 +87,7 @@ api.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 // ========================================
@@ -123,7 +120,7 @@ export const authAPI = {
 
       if (accessToken) {
         localStorage.setItem('accessToken', accessToken)
-        const user: User = { id: userId || 0, username, email: '', role }
+        const user: User = { user_id: userId || 0, username, email: '', role }
         localStorage.setItem('user', JSON.stringify(user))
       }
 
@@ -175,10 +172,10 @@ export const authAPI = {
   fetchCurrentUser: async (): Promise<User | null> => {
     try {
       const currentUser = authAPI.getCurrentUser()
-      if (!currentUser?.id) return null
-      const response = await api.get<any>(`/api/profile/${currentUser.id}`)
+      if (!currentUser?.user_id) return null
+      const response = await api.get<any>(`/api/profile/${currentUser.user_id}`)
       const userData: User = {
-        id: response.data.user_id,
+        user_id: response.data.user_id,
         username: response.data.username,
         email: response.data.email,
         role: response.data.role || 'user',
@@ -200,8 +197,8 @@ export const authAPI = {
   // Fetch all users (สำหรับ admin)
   getAllUsers: async (): Promise<User[]> => {
     try {
-      const response = await api.get<User[]>('/api/admin/users')
-      return response.data
+      const response = await api.get<{ message: string; users: User[] }>('/api/admin/users')
+      return response.data.users // ✅ แก้ตรงนี้ให้เป็น array
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้'
       throw new Error(errorMessage)

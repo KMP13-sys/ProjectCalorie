@@ -10,9 +10,10 @@ type User = {
   email: string;
   phone_number?: string;
   age?: number;
+  weight?: number;
   gender?: 'male' | 'female';
   height?: number;
-  weight?: number;
+
   goal?: 'lose weight' | 'maintain weight' | 'gain weight';
 };
 
