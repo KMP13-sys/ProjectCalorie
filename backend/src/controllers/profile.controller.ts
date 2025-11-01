@@ -80,23 +80,38 @@ const deleteOldImage = (imageName: string) => {
 export const updateProfileImage = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.params.id);
-    const authenticatedUserId = (req as any).user.id; // ✅ เปลี่ยนจาก userId เป็น id
+    const authenticatedUserId = (req as any).user?.id; // ✅ เปลี่ยนจาก userId เป็น id
 
-    console.log('[Update Profile Image] userId:', userId);
-    console.log('[Update Profile Image] authenticatedUserId:', authenticatedUserId);
-    console.log('[Update Profile Image] uploaded file:', req.file?.filename);
+    console.log('[Update Profile Image] ============ START ============');
+    console.log('[Update Profile Image] Request params.id:', req.params.id);
+    console.log('[Update Profile Image] Parsed userId:', userId);
+    console.log('[Update Profile Image] Authenticated user object:', (req as any).user);
+    console.log('[Update Profile Image] Authenticated user ID:', authenticatedUserId);
+    console.log('[Update Profile Image] Uploaded file:', req.file?.filename);
+    console.log('[Update Profile Image] File size:', req.file?.size);
+    console.log('[Update Profile Image] File mimetype:', req.file?.mimetype);
+
+    // ตรวจสอบว่ามี user object หรือไม่
+    if (!authenticatedUserId) {
+      console.error('[Update Profile Image] ERROR: No authenticated user ID found');
+      return res.status(401).json({ message: "Authentication failed - no user ID" });
+    }
 
     // ตรวจสอบสิทธิ์
     if (userId !== authenticatedUserId) {
-      console.log('[Update Profile Image] Permission denied: userId mismatch');
-      return res.status(403).json({ message: "Forbidden" });
+      console.error('[Update Profile Image] ERROR: Permission denied');
+      console.error('[Update Profile Image] Expected userId:', userId);
+      console.error('[Update Profile Image] Got authenticatedUserId:', authenticatedUserId);
+      return res.status(403).json({ message: "Forbidden - you can only update your own profile" });
     }
 
-    if (!userId) {
+    if (!userId || isNaN(userId)) {
+      console.error('[Update Profile Image] ERROR: Invalid user ID');
       return res.status(400).json({ message: "Invalid user id" });
     }
 
     if (!req.file) {
+      console.error('[Update Profile Image] ERROR: No file uploaded');
       return res.status(400).json({ message: "No image uploaded" });
     }
 

@@ -1,7 +1,6 @@
 // lib/src/home/home.dart
 import 'package:flutter/material.dart';
-import '../../service/storage_helper.dart'; // ✅ ใช้ StorageHelper แทน SharedPreferences
-
+import '../../service/storage_helper.dart';
 import '../componants/navbaruser.dart';
 import '../componants/Kcalbar.dart';
 import '../componants/camera.dart';
@@ -126,7 +125,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final bool isMobileScreen = screenWidth < 400;
 
     final double containerPadding = isMobileScreen ? 8.0 : isSmallScreen ? 12.0 : 16.0;
-    final double spacing = isMobileScreen ? 30.0 : isSmallScreen ? 40.0 : 50.0;
     final double smallSpacing = isMobileScreen ? 2.0 : 5.0;
     final double graphHeight = screenHeight * (isMobileScreen ? 0.35 : isSmallScreen ? 0.40 : 0.45);
 

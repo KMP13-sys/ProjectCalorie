@@ -634,7 +634,6 @@ class _LoginScreenState extends State<LoginScreen>
 
   Widget _buildFooterLinks() {
     final screenWidth = getResponsiveWidth(context);
-    final isSmallScreen = screenWidth < 400;
     final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
     
     return Container(
@@ -648,123 +647,41 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
       ),
-      child: isSmallScreen 
-        ? Column(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => _buildPixelDialog(
-                      title: 'FORGOT PASSWORD',
-                      content: 'กรุณาติดต่อผู้ดูแลระบบ\nเพื่อรีเซ็ตรหัสผ่าน',
-                    ),
-                  );
-                },
-                child: Text(
-                  '? Forgot Password',
-                  style: TextStyle(
-                    fontFamily: 'TA8bit',
-                    fontSize: getFontSize(context, 12),
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF4b5563),
-                  ),
+      child: Center(
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RegisterScreen()),
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: getSpacing(context, 16),
+              vertical: getSpacing(context, 8),
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1f2937),
+              border: Border.all(color: Colors.black, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  offset: const Offset(3, 3),
                 ),
+              ],
+            ),
+            child: Text(
+              '↗ SIGN UP',
+              style: TextStyle(
+                fontFamily: 'TA8bit',
+                fontSize: getFontSize(context, 12),
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              SizedBox(height: getSpacing(context, 12)),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                  );
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getSpacing(context, 16),
-                    vertical: getSpacing(context, 8),
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1f2937),
-                    border: Border.all(color: Colors.black, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        offset: const Offset(3, 3),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    '↗ SIGN UP',
-                    style: TextStyle(
-                      fontFamily: 'TA8bit',
-                      fontSize: getFontSize(context, 12),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        : Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => _buildPixelDialog(
-                      title: 'FORGOT PASSWORD',
-                      content: 'กรุณาติดต่อผู้ดูแลระบบ\nเพื่อรีเซ็ตรหัสผ่าน',
-                    ),
-                  );
-                },
-                child: Text(
-                  '? Forgot Password',
-                  style: TextStyle(
-                    fontFamily: 'TA8bit',
-                    fontSize: getFontSize(context, 12),
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF4b5563),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                  );
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getSpacing(context, 16),
-                    vertical: getSpacing(context, 8),
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1f2937),
-                    border: Border.all(color: Colors.black, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        offset: const Offset(3, 3),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    '↗ SIGN UP',
-                    style: TextStyle(
-                      fontFamily: 'TA8bit',
-                      fontSize: getFontSize(context, 12),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
+        ),
+      ),
     );
   }
 
@@ -1018,12 +935,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _pixel(Color color) {
-    final screenWidth = getResponsiveWidth(context);
-    final pixelSize = screenWidth > 600 ? 12.0 : screenWidth > 400 ? 10.0 : 9.0;
-    return Container(width: pixelSize, height: pixelSize, color: color);
-  }
-
   Widget _buildLoadingBar() {
     final screenWidth = getResponsiveWidth(context);
     final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
@@ -1079,103 +990,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildPixelDialog({required String title, required String content}) {
-    final screenWidth = getResponsiveWidth(context);
-    final borderWidth = screenWidth > 600 ? 6.0 : screenWidth > 400 ? 4.0 : 3.0;
-    
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: getSpacing(context, 16)),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.black, width: borderWidth),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              offset: Offset(
-                screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 4,
-                screenWidth > 600 ? 8 : screenWidth > 400 ? 6 : 4,
-              ),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(getSpacing(context, 16)),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
-                ),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Colors.black,
-                    width: screenWidth > 600 ? 4 : screenWidth > 400 ? 3 : 2,
-                  ),
-                ),
-              ),
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'TA8bit',
-                  fontSize: getFontSize(context, 18),
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(getSpacing(context, 24)),
-              child: Text(
-                content,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'TA8bit',
-                  fontSize: getFontSize(context, 14),
-                  color: const Color(0xFF374151),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(getSpacing(context, 16)),
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(
-                    vertical: getSpacing(context, 12),
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6fa85e), Color(0xFF8bc273)],
-                    ),
-                    border: Border.all(
-                      color: Colors.black,
-                      width: screenWidth > 600 ? 4 : screenWidth > 400 ? 3 : 2,
-                    ),
-                  ),
-                  child: Text(
-                    '◀ CLOSE',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'TA8bit',
-                      fontSize: getFontSize(context, 14),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // Pixel Grid Painter
