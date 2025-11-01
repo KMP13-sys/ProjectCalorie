@@ -22,7 +22,7 @@ interface WeeklyChartData {
 /**
  * Weekly Graph Component
  * แสดงกราฟเส้นแคลอรี่สุทธิที่รับประทานในแต่ละวันของสัปดาห์
- * รีเฟรชข้อมูลอัตโนมัติทุก 60 วินาที
+ * รีเฟรชข้อมูลอัตโนมัติทุก 30 วินาที
  */
 export default function WeeklyGraph() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -31,7 +31,7 @@ export default function WeeklyGraph() {
   const [error, setError] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Load weekly calorie data with auto-refresh every 60 seconds
+  // Load weekly calorie data with auto-refresh every 30 seconds
   useEffect(() => {
     const loadWeeklyData = async () => {
       try {
@@ -67,7 +67,7 @@ export default function WeeklyGraph() {
     };
 
     loadWeeklyData();
-    const intervalId = setInterval(loadWeeklyData, 60000);
+    const intervalId = setInterval(loadWeeklyData, 30000);
     return () => clearInterval(intervalId);
   }, []);
 

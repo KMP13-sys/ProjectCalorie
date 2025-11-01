@@ -26,7 +26,7 @@ export const deleteUserByAdmin = async (req: Request, res: Response) => {
 
     // ลบรูปโปรไฟล์ (ถ้ามี)
     if (imageProfile) {
-      const imagePath = path.join(__dirname, "../../uploads", imageProfile);
+      const imagePath = path.join(__dirname, "../uploads", imageProfile);
       if (fs.existsSync(imagePath)) {
         try { fs.unlinkSync(imagePath); } 
         catch (err) { console.error(`Failed to delete profile image: ${imagePath}`, err); }
