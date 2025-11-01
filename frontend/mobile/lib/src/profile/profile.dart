@@ -266,57 +266,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                         // Info Section
                                         Container(
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[100],
-                                            border: Border.all(
-                                              color: Colors.grey[800]!,
-                                              width: 4,
-                                            ),
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                '▶ PERSONAL INFO',
-                                                style: TextStyle(
-                                                  fontFamily: 'TA8bit',
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 16),
-
-                                              _buildInfoField(
-                                                'WEIGHT',
-                                                _weightController,
-                                                'kg',
-                                              ),
-                                              const SizedBox(height: 12),
-
-                                              _buildInfoField(
-                                                'HEIGHT',
-                                                _heightController,
-                                                'cm',
-                                              ),
-                                              const SizedBox(height: 12),
-
-                                              _buildInfoField(
-                                                'AGE',
-                                                _ageController,
-                                                'years',
-                                              ),
-                                              const SizedBox(height: 12),
-
-                                              _buildGenderField(),
-                                              const SizedBox(height: 12),
-
-                                              _buildGoalField(),
-                                            ],
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          border: Border.all(
+                                            color: Colors.grey[800]!,
+                                            width: 4,
                                           ),
                                         ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  margin: const EdgeInsets.only(right: 6),
+                                                  decoration: BoxDecoration(
+                                                  ),
+                                                  child: Image.asset(
+                                                    'assets/pic/play.png', // แทน ▶
+                                                    width: 16,
+                                                    height: 16,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                                const Text(
+                                                  'PERSONAL INFO',
+                                                  style: TextStyle(
+                                                    fontFamily: 'TA8bit',
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 16),
+
+                                            _buildInfoField(
+                                              'WEIGHT',
+                                              _weightController,
+                                              'kg',
+                                            ),
+                                            const SizedBox(height: 12),
+
+                                            _buildInfoField(
+                                              'HEIGHT',
+                                              _heightController,
+                                              'cm',
+                                            ),
+                                            const SizedBox(height: 12),
+
+                                            _buildInfoField(
+                                              'AGE',
+                                              _ageController,
+                                              'years',
+                                            ),
+                                            const SizedBox(height: 12),
+
+                                            _buildGenderField(),
+                                            const SizedBox(height: 12),
+
+                                            _buildGoalField(),
+                                          ],
+                                        ),
+                                      ),
+
 
                                         const SizedBox(height: 32),
 

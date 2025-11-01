@@ -287,12 +287,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                               Container(
                                                 margin: const EdgeInsets.only(right: 8),
                                                 decoration: BoxDecoration(
-                                                  boxShadow: [
-                                                    // BoxShadow(
-                                                    //   color: Colors.black.withOpacity(0.5),
-                                                    //   offset: const Offset(1, 1),
-                                                    // ),
-                                                  ],
+
                                                 ),
                                                 child: Image.asset(
                                                   'assets/pic/play.png', // ✅ ใช้แทน ▶
@@ -309,12 +304,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                                                   fontSize: fontSize,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.black87,
-                                                  shadows: const [
-                                                    Shadow(
-                                                      offset: Offset(2, 2),
-                                                      color: Color(0x80000000),
-                                                    ),
-                                                  ],
                                                 ),
                                               ),
                                             ],
@@ -426,12 +415,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                                                 fontSize: fontSize,
                                                 fontWeight: FontWeight.bold,
                                                 color: Colors.black87,
-                                                shadows: const [
-                                                  Shadow(
-                                                    offset: Offset(2, 2),
-                                                    color: Color(0x80000000),
-                                                  ),
-                                                ],
                                               ),
                                             ),
                                           ],
@@ -634,10 +617,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                                                 margin: EdgeInsets.only(right: spacing),
                                                 decoration: BoxDecoration(
                                                   boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black.withOpacity(0.5),
-                                                      offset: const Offset(2, 2),
-                                                    ),
+                                                    // BoxShadow(
+                                                    //   color: Colors.black.withOpacity(0.5),
+                                                    //   offset: const Offset(2, 2),
+                                                    // ),
                                                   ],
                                                 ),
                                                 child: Image.asset(
@@ -1031,7 +1014,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           label,
           style: const TextStyle(
             fontFamily: 'TA8bit',
-            fontSize: 11,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -1070,7 +1053,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               hintText: hint,
               hintStyle: TextStyle(
                 fontFamily: 'TA8bit',
-                fontSize: 12,
+                fontSize: 13,
                 color: Colors.grey[500],
               ),
               border: InputBorder.none,

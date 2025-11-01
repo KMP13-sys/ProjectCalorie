@@ -533,7 +533,7 @@ class _LoginScreenState extends State<LoginScreen>
           label,
           style: TextStyle(
             fontFamily: 'TA8bit',
-            fontSize: getFontSize(context, 14),
+            fontSize: getFontSize(context, 15),
             fontWeight: FontWeight.bold,
             color: const Color(0xFF374151),
           ),
