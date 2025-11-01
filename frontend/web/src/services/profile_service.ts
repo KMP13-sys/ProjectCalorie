@@ -1,16 +1,9 @@
-// src/app/services/profile_service.ts
-
 import axios from 'axios';
 import { getNodeApiUrl } from '@/config/api.config';
 
-// ========================================
-// Configuration
-// ========================================
 const API_BASE_URL = getNodeApiUrl();
 
-// ========================================
-// Types
-// ========================================
+// ประเภทข้อมูล Profile
 export interface UserProfile {
   user_id: number;
   username: string;
@@ -45,9 +38,7 @@ export interface UpdateProfileResponse {
   user: UserProfile;
 }
 
-// ========================================
-// Axios Instance
-// ========================================
+// สร้าง Axios Instance สำหรับ Profile API
 const profileAPI = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -56,12 +47,10 @@ const profileAPI = axios.create({
   timeout: 10000,
 });
 
-// ========================================
-// Request Interceptor (เพิ่ม token ทุก request)
-// ========================================
+// Request Interceptor - เพิ่ม token ทุก request
 profileAPI.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken'); // ✅ เปลี่ยนจาก 'token'
+    const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -72,22 +61,12 @@ profileAPI.interceptors.request.use(
   }
 );
 
-// ========================================
-// Response Interceptor (จัดการ error)
-// ========================================
+// Response Interceptor - จัดการ error และ token หมดอายุ
 profileAPI.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('[Profile API] Error:', {
-      status: error.response?.status,
-      message: error.response?.data?.message,
-      url: error.config?.url,
-    });
-
-    // Token หมดอายุ (401 Unauthorized)
     if (error.response?.status === 401 || error.response?.status === 403) {
-      console.log('[Profile API] Token expired or forbidden, redirecting to login...');
-      localStorage.removeItem('accessToken'); // ✅ เปลี่ยนจาก 'token'
+      localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
 
       if (typeof window !== 'undefined') {
@@ -95,22 +74,13 @@ profileAPI.interceptors.response.use(
       }
     }
 
-    // Network Error
-    if (!error.response) {
-      console.error('[Profile API] Network Error:', error.message);
-    }
-
     return Promise.reject(error);
   }
 );
 
-// ========================================
-// Profile API Services
-// ========================================
+// Profile Service
 export const profileService = {
-  /**
-   * ดึงข้อมูลโปรไฟล์ผู้ใช้ตาม ID
-   */
+  // ดึงข้อมูล Profile ผู้ใช้ตาม ID
   getUserProfile: async (userId: number): Promise<UserProfile> => {
     try {
       const response = await profileAPI.get<UserProfile>(`/api/profile/${userId}`);
@@ -121,34 +91,23 @@ export const profileService = {
     }
   },
 
-  /**
-   * ดึงข้อมูลโปรไฟล์ของผู้ใช้ปัจจุบัน
-   */
+  // ดึงข้อมูล Profile ของผู้ใช้ปัจจุบัน
   getCurrentUserProfile: async (): Promise<UserProfile | null> => {
     try {
       const userStr = localStorage.getItem('user');
       if (!userStr) {
-        console.warn('👤 [getCurrentUserProfile] User not found in localStorage');
         return null;
       }
 
       const user = JSON.parse(userStr);
-      console.log('👤 [getCurrentUserProfile] User from localStorage:', user);
 
-      // ตรวจสอบว่ามี id หรือไม่
       if (!user.id && !user.user_id) {
-        console.error('❌ [getCurrentUserProfile] User ID not found in localStorage');
         return null;
       }
 
       const userId = user.id || user.user_id;
-      console.log('👤 [getCurrentUserProfile] Fetching profile for user ID:', userId);
-
       const profile = await profileService.getUserProfile(userId);
 
-      console.log('✅ [getCurrentUserProfile] Profile fetched:', profile);
-
-      // อัปเดท localStorage ด้วยข้อมูลล่าสุด
       const updatedUser = {
         ...user,
         id: profile.user_id,
@@ -157,18 +116,13 @@ export const profileService = {
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
 
-      console.log('✅ [getCurrentUserProfile] Updated user in localStorage:', updatedUser);
-
       return profile;
     } catch (error) {
-      console.error('❌ [getCurrentUserProfile] Error:', error);
       return null;
     }
   },
 
-  /**
-   * อัปเดทข้อมูลโปรไฟล์
-   */
+  // อัปเดทข้อมูล Profile
   updateProfile: async (userId: number, data: UpdateProfileData): Promise<UpdateProfileResponse> => {
     try {
       const response = await profileAPI.put<UpdateProfileResponse>(
@@ -176,7 +130,6 @@ export const profileService = {
         data
       );
 
-      // ✅ อัปเดท user ใน localStorage ด้วย
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const currentUser = JSON.parse(userStr);
@@ -201,9 +154,7 @@ export const profileService = {
     }
   },
 
-  /**
-   * อัปเดทรูปโปรไฟล์
-   */
+  // อัปเดทรูปภาพ Profile
   updateProfileImage: async (userId: number, imageFile: File): Promise<UpdateProfileImageResponse> => {
     try {
       const formData = new FormData();
@@ -226,12 +177,10 @@ export const profileService = {
     }
   },
 
-  /**
-   * ดึง URL รูปโปรไฟล์เต็ม
-   */
+  // ดึง URL รูป Profile แบบเต็ม
   getProfileImageUrl: (imageName?: string): string => {
     if (!imageName) {
-      return '/pic/person.png'; // รูป default
+      return '/pic/person.png';
     }
     return `${API_BASE_URL}/uploads/${imageName}`;
   },

@@ -1,15 +1,14 @@
-// lib/services/auth_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/auth_models.dart';
 import '../config/api_config.dart';
 import 'storage_helper.dart';
 
+// Service สำหรับการจัดการ Authentication
 class AuthService {
-  // ใช้ ApiConfig แทนการ hardcode URL
   static String get baseUrl => ApiConfig.authUrl;
 
-  // ========== REGISTER ==========
+  // สมัครสมาชิกใหม่
   static Future<RegisterResponse> register({
     required String username,
     required String email,
@@ -52,7 +51,7 @@ class AuthService {
     }
   }
 
-  // ========== LOGIN ==========
+  // เข้าสู่ระบบ
   static Future<LoginResponse> login({
     required String username,
     required String password,
@@ -60,38 +59,26 @@ class AuthService {
     try {
       final url = Uri.parse('$baseUrl/login');
 
-      // ✅ Debug: แสดง URL ที่กำลังเรียก
-      print('🌐 Calling login API: $url');
-      print('📦 Request body: ${jsonEncode({
-          'username': username,
-          'password': password,
-          'platform': 'mobile',
-        })}');
-
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
           'password': password,
-          'platform': 'mobile', // ✅ บอกว่ามาจาก mobile
+          'platform': 'mobile',
         }),
       );
-
-      // ✅ Debug: แสดง response
-      print('📡 Response status: ${response.statusCode}');
-      print('📡 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final loginResponse = LoginResponse.fromJson(data);
 
-        // ✅ บันทึก tokens และข้อมูล user
+        // บันทึก tokens และข้อมูล user
         if (loginResponse.refreshToken != null) {
           await StorageHelper.saveLoginData(
             accessToken: loginResponse.accessToken,
             refreshToken: loginResponse.refreshToken!,
-            userId: loginResponse.userId ?? '', // ✅ บันทึก userId จาก response
+            userId: loginResponse.userId ?? '',
             username: username,
           );
         }
@@ -107,7 +94,7 @@ class AuthService {
     }
   }
 
-  // ========== REFRESH ACCESS TOKEN ==========
+  // รีเฟรช Access Token เมื่อหมดอายุ
   static Future<String> refreshAccessToken() async {
     try {
       final refreshToken = await StorageHelper.getRefreshToken();
@@ -128,12 +115,10 @@ class AuthService {
         final data = jsonDecode(response.body);
         final refreshResponse = RefreshTokenResponse.fromJson(data);
 
-        // ✅ บันทึก access token ใหม่
         await StorageHelper.saveAccessToken(refreshResponse.accessToken);
 
         return refreshResponse.accessToken;
       } else if (response.statusCode == 403) {
-        // Refresh token หมดอายุ - ต้อง logout
         await logout();
         throw Exception('Session expired. Please login again.');
       } else {
@@ -145,7 +130,7 @@ class AuthService {
     }
   }
 
-  // ========== LOGOUT ==========
+  // ออกจากระบบ
   static Future<void> logout() async {
     try {
       final accessToken = await StorageHelper.getAccessToken();
@@ -163,20 +148,17 @@ class AuthService {
           );
         } catch (e) {
           // ถ้า API ล้มเหลวก็ไม่เป็นไร ยังคงลบ local tokens
-          print('Logout API error: $e');
         }
       }
 
-      // ลบ tokens ใน device
       await StorageHelper.clearAll();
     } catch (e) {
-      // แม้จะ error ก็ยังต้องลบ local tokens
       await StorageHelper.clearAll();
       throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
     }
   }
 
-  // ========== DELETE ACCOUNT ==========
+  // ลบบัญชีผู้ใช้
   static Future<void> deleteAccount() async {
     try {
       final accessToken = await StorageHelper.getAccessToken();
@@ -196,9 +178,7 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        // ลบสำเร็จ - ลบ local tokens
         await StorageHelper.clearAll();
-        print('✅ Account deleted successfully');
       } else {
         final error = jsonDecode(response.body);
         throw Exception(error['message'] ?? 'Failed to delete account');
@@ -209,7 +189,7 @@ class AuthService {
     }
   }
 
-  // ========== GET CURRENT USER ==========
+  // ดึงข้อมูลผู้ใช้ปัจจุบัน
   static Future<User?> getCurrentUser() async {
     try {
       final accessToken = await StorageHelper.getAccessToken();
@@ -221,34 +201,22 @@ class AuthService {
       // แยก JWT payload เพื่อดึง userId
       final parts = accessToken.split('.');
       if (parts.length != 3) {
-        print('❌ Invalid JWT token format');
         return null;
       }
 
-      // Decode payload (Base64)
       final payload = parts[1];
       final normalized = base64Url.normalize(payload);
       final resp = utf8.decode(base64Url.decode(normalized));
       final payloadMap = json.decode(resp);
 
-      // Debug: แสดง payload
-      print('🔐 JWT Payload: $payloadMap');
-
-      // Backend ใช้ 'id' ไม่ใช่ 'userId'
       final userId = payloadMap['id']?.toString() ?? payloadMap['userId']?.toString();
 
       if (userId == null) {
-        print('❌ No id found in token payload');
         return null;
       }
 
-      print('✅ Found userId in token: $userId');
-
-      // เรียก API GET /api/profile/:id (ใช้ ApiConfig)
       final profileUrl = '${ApiConfig.profileUrl}/$userId';
       final url = Uri.parse(profileUrl);
-
-      print('🌐 Fetching profile from: $profileUrl');
 
       var response = await http.get(
         url,
@@ -268,62 +236,43 @@ class AuthService {
         final data = jsonDecode(response.body);
         final user = User.fromJson(data);
 
-        // บันทึกข้อมูล user
         await StorageHelper.saveUserId(user.userId);
         await StorageHelper.saveUsername(user.username);
         if (user.email != null) {
           await StorageHelper.saveEmail(user.email!);
         }
 
-        print('✅ User data saved to storage. userId: ${user.userId}');
-
-        // Verify ว่าบันทึกสำเร็จ
-        final savedUserId = await StorageHelper.getUserId();
-        print('✅ Verified saved userId: $savedUserId');
-
         return user;
       } else {
-        print('❌ Failed to fetch user profile. Status: ${response.statusCode}');
         throw Exception('Failed to fetch user profile: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Get current user error: $e');
       if (e is Exception) rethrow;
       throw Exception('Error getting current user: $e');
     }
   }
 
-  // ========== CHECK SESSION ==========
+  // ตรวจสอบว่ามี session ที่ใช้งานได้หรือไม่
   static Future<bool> hasValidSession() async {
     try {
       final refreshToken = await StorageHelper.getRefreshToken();
 
-      // ถ้าไม่มี refresh token = ไม่มี session
       if (refreshToken == null || refreshToken.isEmpty) {
-        // ignore: avoid_print
-        print('❌ No refresh token found');
         return false;
       }
 
-      // Decode JWT payload เพื่อเช็คอายุ
       final parts = refreshToken.split('.');
       if (parts.length != 3) {
-        // ignore: avoid_print
-        print('❌ Invalid refresh token format');
         return false;
       }
 
-      // Decode payload (Base64)
       final payload = parts[1];
       final normalized = base64Url.normalize(payload);
       final resp = utf8.decode(base64Url.decode(normalized));
       final payloadMap = json.decode(resp);
 
-      // เช็คว่า token หมดอายุหรือยัง
       final exp = payloadMap['exp'] as int?;
       if (exp == null) {
-        // ignore: avoid_print
-        print('❌ No expiration time in token');
         return false;
       }
 
@@ -331,25 +280,17 @@ class AuthService {
       final now = DateTime.now();
 
       if (now.isAfter(expiryDate)) {
-        // ignore: avoid_print
-        print('❌ Refresh token expired at $expiryDate');
-        // Token หมดอายุ - ลบ tokens ที่เก่า
         await StorageHelper.clearAll();
         return false;
       }
 
-      // ignore: avoid_print
-      print('✅ Valid session found. Token expires at $expiryDate');
       return true;
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ Error checking session: $e');
       return false;
     }
   }
 
-  // ========== HELPER: API CALL WITH AUTO REFRESH ==========
-  // ใช้สำหรับเรียก API อื่นๆ ที่ต้องการ authentication
+  // Helper สำหรับเรียก API พร้อม auto refresh token
   static Future<http.Response> authenticatedRequest({
     required String method,
     required String endpoint,

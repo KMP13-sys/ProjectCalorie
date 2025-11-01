@@ -1,9 +1,13 @@
-// components/NavBarAdmin.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/auth_context';
 
+/**
+ * NavBar Admin Component
+ * แถบนำทางสำหรับหน้าผู้ดูแลระบบ
+ * แสดงโลโก้ ชื่อแอป และข้อมูลผู้ดูแล
+ */
 export default function NavBarAdmin() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
@@ -12,11 +16,10 @@ export default function NavBarAdmin() {
     router.push('/AdminMain');
   };
 
-  // แสดง username ของผู้ดูแลจาก AuthContext
   const displayUsername = user?.username || 'ADMIN';
 
   return (
-    <nav 
+    <nav
       className="w-full relative"
       style={{
         background: 'linear-gradient(to right, #6fa85e, #8bc273)',
@@ -27,9 +30,8 @@ export default function NavBarAdmin() {
     >
       <div className="safe-area-inset px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Left Side: Logo + App Name */}
+          {/* Logo & App Name */}
           <div className="flex items-center gap-3">
-            {/* Logo */}
             <button
               onClick={handleLogoClick}
               className="relative"
@@ -50,37 +52,34 @@ export default function NavBarAdmin() {
               />
             </button>
 
-            {/* App Name */}
             <button
               onClick={handleLogoClick}
               className="flex flex-col items-start"
             >
-              {/* Pixel Dots */}
               <div className="flex gap-0.5 mb-1">
-                <div 
+                <div
                   className="w-1.5 h-1.5"
-                  style={{ 
+                  style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.8)',
                     border: '1px solid black',
                   }}
                 ></div>
-                <div 
+                <div
                   className="w-1.5 h-1.5"
-                  style={{ 
+                  style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.6)',
                     border: '1px solid black',
                   }}
                 ></div>
-                <div 
+                <div
                   className="w-1.5 h-1.5"
-                  style={{ 
+                  style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.4)',
                     border: '1px solid black',
                   }}
                 ></div>
               </div>
 
-              {/* Title */}
               <span
                 className="font-bold text-white tracking-wider"
                 style={{
@@ -94,9 +93,8 @@ export default function NavBarAdmin() {
             </button>
           </div>
 
-          {/* Right Side: Username Only (Admin) */}
+          {/* Admin Info */}
           <div className="flex items-center gap-3">
-            {/* Username Box */}
             <div
               className="px-4 py-2 bg-white"
               style={{
@@ -105,7 +103,6 @@ export default function NavBarAdmin() {
               }}
             >
               <div className="flex items-center gap-2">
-                {/* Admin Badge */}
                 <div
                   className="px-2 py-0.5 text-xs font-bold text-white"
                   style={{
@@ -117,7 +114,6 @@ export default function NavBarAdmin() {
                   ADMIN
                 </div>
 
-                {/* Username */}
                 <span
                   className="text-lg font-bold text-gray-800"
                   style={{

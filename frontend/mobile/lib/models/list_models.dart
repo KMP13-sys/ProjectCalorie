@@ -1,4 +1,4 @@
-/// Model สำหรับอาหารแต่ละรายการ
+// Model สำหรับอาหารแต่ละรายการ
 class MealItem {
   final String foodName;
   final int calories;
@@ -29,7 +29,7 @@ class MealItem {
   }
 }
 
-/// Model สำหรับกิจกรรมแต่ละรายการ
+// Model สำหรับกิจกรรมแต่ละรายการ
 class ActivityItem {
   final String sportName;
   final int time;

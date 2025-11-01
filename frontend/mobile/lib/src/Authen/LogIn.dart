@@ -25,30 +25,37 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _bounceController3;
   late AnimationController _progressController;
 
-  // ✨ Helper สำหรับ Responsive
+  // Responsive Design Helpers
+  // คำนวณขนาดหน้าจอสำหรับการปรับแต่ง UI
   double getResponsiveWidth(BuildContext context) => MediaQuery.of(context).size.width;
   double getResponsiveHeight(BuildContext context) => MediaQuery.of(context).size.height;
-  
-  // สำหรับ font size responsive
+
+  // คำนวณขนาดฟอนต์ตามขนาดหน้าจอ
+  // baseSize จะถูกเพิ่มขึ้น 30% และปรับตามความกว้างของหน้าจอ
   double getFontSize(BuildContext context, double baseSize) {
     double width = getResponsiveWidth(context);
-    if (width > 600) return baseSize; // Desktop/Tablet
-    if (width > 400) return baseSize * 0.9; // Large Phone
-    return baseSize * 0.8; // Small Phone
-  }
-  
-  // สำหรับ spacing responsive
-  double getSpacing(BuildContext context, double baseSpacing) {
-    double width = getResponsiveWidth(context);
-    if (width > 600) return baseSpacing;
-    if (width > 400) return baseSpacing * 0.85;
-    return baseSpacing * 0.7;
+    double scaledBase = baseSize * 1.3;
+
+    if (width > 600) return scaledBase * 1.2;
+    if (width > 400) return scaledBase * 1.1;
+    return scaledBase;
   }
 
+  // คำนวณระยะห่างระหว่าง elements ตามขนาดหน้าจอ
+  double getSpacing(BuildContext context, double baseSpacing) {
+    double width = getResponsiveWidth(context);
+    if (width > 600) return baseSpacing * 1.2;
+    if (width > 400) return baseSpacing;
+    return baseSpacing * 0.9;
+  }
+
+  // Lifecycle: เริ่มต้น Animation Controllers
+  // สร้าง animation controllers สำหรับ floating pixels และ progress bar
   @override
   void initState() {
     super.initState();
 
+    // Animation สำหรับ floating pixels (3 ตัว)
     _bounceController1 = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -64,11 +71,13 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
     )..repeat(reverse: true);
 
+    // Animation สำหรับ loading bar ใน success modal
     _progressController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
 
+    // เริ่ม animation แบบ stagger (ทีละตัว)
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _bounceController2.forward();
     });
@@ -77,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen>
     });
   }
 
+  // Lifecycle: ทำความสะอาด resources เมื่อออกจากหน้า
   @override
   void dispose() {
     _usernameController.dispose();
@@ -88,6 +98,9 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
+  // Validation: ตรวจสอบ username
+  // - ต้องมีตัวอักษร a-z หรือ A-Z อย่างน้อย 1 ตัว
+  // - ต้องมีความยาวอย่างน้อย 3 ตัวอักษร
   bool _validateUsername(String username) {
     if (!RegExp(r'[a-zA-Z]').hasMatch(username)) {
       setState(() {
@@ -106,6 +119,8 @@ class _LoginScreenState extends State<LoginScreen>
     return true;
   }
 
+  // Business Logic: จัดการการ Login
+  // เรียก AuthService และนำทางไปหน้า Home เมื่อสำเร็จ
   Future<void> _handleLogin() async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
@@ -162,15 +177,16 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  // UI: สร้างหน้า Login
   @override
   Widget build(BuildContext context) {
     final screenWidth = getResponsiveWidth(context);
     final isSmallScreen = screenWidth < 400;
-    
+
     return Scaffold(
       body: Stack(
         children: [
-          // Background with gradient
+          // Background: Gradient สีเขียว
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -185,10 +201,10 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
 
-          // Pixel Grid Background
+          // Background: Pixel Grid Pattern
           CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
 
-          // Floating Pixels - ซ่อนใน small screen
+          // Decoration: Floating Pixels (ซ่อนในหน้าจอเล็ก)
           if (!isSmallScreen) ...[
             _buildFloatingPixel(
               controller: _bounceController1,
@@ -210,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ],
 
-          // Main Content
+          // Main Content: Login Box
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -228,13 +244,14 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
 
-          // Success Modal
+          // Modal: แสดงเมื่อ Login สำเร็จ
           if (_showSuccessModal) _buildSuccessModal(),
         ],
       ),
     );
   }
 
+  // Widget: สร้าง Floating Pixel ที่เคลื่อนไหวขึ้นลง
   Widget _buildFloatingPixel({
     required AnimationController controller,
     double? top,
@@ -272,11 +289,12 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // Widget: สร้างกล่อง Login Box หลักพร้อม decoration
   Widget _buildLoginBox() {
     final screenWidth = getResponsiveWidth(context);
-    final maxWidth = screenWidth > 600 ? 450.0 : screenWidth * 0.95;
-    final borderWidth = screenWidth > 600 ? 8.0 : screenWidth > 400 ? 6.0 : 4.0;
-    
+    final maxWidth = screenWidth > 600 ? 500.0 : screenWidth * 0.92;
+    final borderWidth = screenWidth > 600 ? 8.0 : screenWidth > 400 ? 6.0 : 5.0;
+
     return Container(
       constraints: BoxConstraints(maxWidth: maxWidth),
       decoration: BoxDecoration(
@@ -294,13 +312,13 @@ class _LoginScreenState extends State<LoginScreen>
       ),
       child: Stack(
         children: [
-          // Corner Pixels
+          // Decoration: Pixel มุมกล่อง
           ..._buildCornerPixels(),
 
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header Bar
+              // Header: แถบหัวข้อ "LOGIN"
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(
@@ -333,9 +351,9 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
 
-              // Content
+              // Content: เนื้อหาในกล่อง Login
               Padding(
-                padding: EdgeInsets.all(getSpacing(context, 32)),
+                padding: EdgeInsets.all(getSpacing(context, 28)),
                 child: Column(
                   children: [
                     // Logo
@@ -343,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen>
 
                     SizedBox(height: getSpacing(context, 24)),
 
-                    // Title
+                    // App Name
                     Text(
                       'CAL-DEFICITS',
                       style: TextStyle(
@@ -355,26 +373,26 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                     ),
 
-                    // Pixel Dots
-                    SizedBox(height: getSpacing(context, 8)),
+                    // Decoration: Pixel ประดับ
+                    SizedBox(height: getSpacing(context, 10)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: screenWidth > 400 ? 8 : 6,
-                          height: screenWidth > 400 ? 8 : 6,
+                          width: screenWidth > 400 ? 10 : 8,
+                          height: screenWidth > 400 ? 10 : 8,
                           color: const Color(0xFF6fa85e),
                         ),
-                        SizedBox(width: screenWidth > 400 ? 4 : 3),
+                        SizedBox(width: screenWidth > 400 ? 5 : 4),
                         Container(
-                          width: screenWidth > 400 ? 8 : 6,
-                          height: screenWidth > 400 ? 8 : 6,
+                          width: screenWidth > 400 ? 10 : 8,
+                          height: screenWidth > 400 ? 10 : 8,
                           color: const Color(0xFF8bc273),
                         ),
-                        SizedBox(width: screenWidth > 400 ? 4 : 3),
+                        SizedBox(width: screenWidth > 400 ? 5 : 4),
                         Container(
-                          width: screenWidth > 400 ? 8 : 6,
-                          height: screenWidth > 400 ? 8 : 6,
+                          width: screenWidth > 400 ? 10 : 8,
+                          height: screenWidth > 400 ? 10 : 8,
                           color: const Color(0xFFa8d48f),
                         ),
                       ],
@@ -385,7 +403,7 @@ class _LoginScreenState extends State<LoginScreen>
                     // Error Message
                     if (_errorMessage.isNotEmpty) _buildErrorMessage(),
 
-                    // Username Field
+                    // Input: Username Field
                     _buildInputField(
                       label: '> USERNAME',
                       controller: _usernameController,
@@ -397,9 +415,9 @@ class _LoginScreenState extends State<LoginScreen>
                       ],
                     ),
 
-                    SizedBox(height: getSpacing(context, 16)),
+                    SizedBox(height: getSpacing(context, 20)),
 
-                    // Password Field
+                    // Input: Password Field
                     _buildInputField(
                       label: '> PASSWORD',
                       controller: _passwordController,
@@ -407,14 +425,14 @@ class _LoginScreenState extends State<LoginScreen>
                       isPassword: true,
                     ),
 
-                    SizedBox(height: getSpacing(context, 24)),
+                    SizedBox(height: getSpacing(context, 28)),
 
-                    // Login Button
+                    // Button: Login
                     _buildLoginButton(),
 
                     SizedBox(height: getSpacing(context, 24)),
 
-                    // Footer Links
+                    // Link: Sign Up
                     _buildFooterLinks(),
                   ],
                 ),
@@ -426,10 +444,11 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // Widget: สร้าง Pixel ประดับมุมกล่อง (4 มุม)
   List<Widget> _buildCornerPixels() {
     final screenWidth = getResponsiveWidth(context);
-    final pixelSize = screenWidth > 600 ? 24.0 : screenWidth > 400 ? 20.0 : 16.0;
-    
+    final pixelSize = screenWidth > 600 ? 28.0 : screenWidth > 400 ? 24.0 : 20.0;
+
     return [
       Positioned(
         top: 0,
@@ -454,11 +473,12 @@ class _LoginScreenState extends State<LoginScreen>
     ];
   }
 
+  // Widget: สร้างกล่องโลโก้แอพ
   Widget _buildLogo() {
     final screenWidth = getResponsiveWidth(context);
-    final logoSize = screenWidth > 600 ? 128.0 : screenWidth > 400 ? 100.0 : 80.0;
-    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
-    
+    final logoSize = screenWidth > 600 ? 140.0 : screenWidth > 400 ? 110.0 : 90.0;
+    final borderWidth = screenWidth > 600 ? 5.0 : screenWidth > 400 ? 4.0 : 3.0;
+
     return Container(
       padding: EdgeInsets.all(getSpacing(context, 12)),
       decoration: BoxDecoration(
@@ -484,10 +504,11 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // Widget: สร้างกล่องแสดงข้อความ Error
   Widget _buildErrorMessage() {
     final screenWidth = getResponsiveWidth(context);
-    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
-    
+    final borderWidth = screenWidth > 600 ? 5.0 : screenWidth > 400 ? 4.0 : 3.0;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(getSpacing(context, 12)),
@@ -516,6 +537,8 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // Widget: สร้างช่องกรอกข้อมูล (Input Field)
+  // รองรับทั้ง TextField ธรรมดาและ Password Field
   Widget _buildInputField({
     required String label,
     required TextEditingController controller,
@@ -524,8 +547,8 @@ class _LoginScreenState extends State<LoginScreen>
     List<TextInputFormatter>? inputFormatters,
   }) {
     final screenWidth = getResponsiveWidth(context);
-    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
-    
+    final borderWidth = screenWidth > 600 ? 5.0 : screenWidth > 400 ? 4.0 : 3.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -578,17 +601,18 @@ class _LoginScreenState extends State<LoginScreen>
       ],
     );
   }
-Widget _buildLoginButton() {
-  final screenWidth = MediaQuery.of(context).size.width;
 
-  // ปรับขนาดตามหน้าจอ
-  final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
-  final paddingY = screenWidth > 600 ? 22.0 : screenWidth > 400 ? 18.0 : 14.0;
-  final iconSize = screenWidth > 600 ? 32.0 : screenWidth > 400 ? 26.0 : 22.0;
-  final fontSize = screenWidth > 600 ? 22.0 : screenWidth > 400 ? 18.0 : 16.0;
-  final spacing = screenWidth > 600 ? 12.0 : screenWidth > 400 ? 10.0 : 8.0;
+  // Widget: สร้างปุ่ม Login
+  // แสดง loading indicator เมื่อกำลัง login
+  Widget _buildLoginButton() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final borderWidth = screenWidth > 600 ? 6.0 : screenWidth > 400 ? 5.0 : 4.0;
+    final paddingY = screenWidth > 600 ? 26.0 : screenWidth > 400 ? 22.0 : 18.0;
+    final iconSize = screenWidth > 600 ? 38.0 : screenWidth > 400 ? 32.0 : 28.0;
+    final fontSize = getFontSize(context, 18.0);
+    final spacing = screenWidth > 600 ? 14.0 : screenWidth > 400 ? 12.0 : 10.0;
 
-  return GestureDetector(
+    return GestureDetector(
     onTap: _isLoading ? null : _handleLogin,
     child: Container(
       width: double.infinity,
@@ -625,7 +649,6 @@ Widget _buildLoginButton() {
               children: [
                 Stack(
                   children: [
-                    // เงาด้านหลัง
                     Positioned(
                       left: 2,
                       top: 2,
@@ -637,7 +660,6 @@ Widget _buildLoginButton() {
                         color: Colors.black.withOpacity(0.5),
                       ),
                     ),
-                    // รูปจริง
                     Image.asset(
                       'assets/pic/play.png',
                       width: iconSize,
@@ -665,15 +687,15 @@ Widget _buildLoginButton() {
                 ),
               ],
             ),
-    ),
-  );
-}
+      ),
+    );
+  }
 
-
+  // Widget: สร้างลิงก์ไปหน้า Sign Up
   Widget _buildFooterLinks() {
     final screenWidth = getResponsiveWidth(context);
-    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
-    
+    final borderWidth = screenWidth > 600 ? 5.0 : screenWidth > 400 ? 4.0 : 3.0;
+
     return Container(
       padding: EdgeInsets.only(top: getSpacing(context, 24)),
       decoration: BoxDecoration(
@@ -723,6 +745,7 @@ Widget _buildLoginButton() {
     );
   }
 
+  // Widget: สร้างข้อความแนะนำด้านล่างกล่อง Login
   Widget _buildHintText() {
     return Center(
       child: Text(
@@ -739,11 +762,13 @@ Widget _buildLoginButton() {
     );
   }
 
+  // Widget: สร้าง Success Modal เมื่อ Login สำเร็จ
+  // แสดง loading bar และนำทางไปหน้า Home หลังจาก 2 วินาที
   Widget _buildSuccessModal() {
     final screenWidth = getResponsiveWidth(context);
-    final maxWidth = screenWidth > 600 ? 400.0 : screenWidth * 0.9;
-    final borderWidth = screenWidth > 600 ? 8.0 : screenWidth > 400 ? 6.0 : 4.0;
-    
+    final maxWidth = screenWidth > 600 ? 450.0 : screenWidth * 0.88;
+    final borderWidth = screenWidth > 600 ? 8.0 : screenWidth > 400 ? 6.0 : 5.0;
+
     return Container(
       color: Colors.black.withOpacity(0.7),
       child: Center(
@@ -769,13 +794,11 @@ Widget _buildLoginButton() {
           ),
           child: Stack(
             children: [
-              // Corner Pixels
               ..._buildCornerPixels(),
 
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Header
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(
@@ -813,12 +836,10 @@ Widget _buildLoginButton() {
                     padding: EdgeInsets.all(screenWidth * 0.08),
                     child: Column(
                       children: [
-                        // Pixel Heart Icon
                         _buildPixelHeart(),
 
                         SizedBox(height: screenWidth * 0.04),
 
-                        // Message Box
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.all(screenWidth * 0.04),
@@ -855,7 +876,6 @@ Widget _buildLoginButton() {
 
                         SizedBox(height: screenWidth * 0.04),
 
-                        // Loading Bar
                         _buildLoadingBar(),
 
                         SizedBox(height: screenWidth * 0.03),
@@ -887,12 +907,12 @@ Widget _buildLoginButton() {
     );
   }
 
-  // ✅ แก้ไขให้ใช้ Column + Row แทน GridView
+  // Widget: สร้างไอคอนหัวใจแบบ Pixel Art
   Widget _buildPixelHeart() {
     final screenWidth = getResponsiveWidth(context);
-    final heartSize = screenWidth > 600 ? 64.0 : screenWidth > 400 ? 56.0 : 48.0;
+    final heartSize = screenWidth > 600 ? 72.0 : screenWidth > 400 ? 64.0 : 56.0;
     final pixelSize = heartSize / 5;
-    
+
     return SizedBox(
       width: heartSize,
       height: heartSize,
@@ -900,7 +920,6 @@ Widget _buildLoginButton() {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Row 1
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -912,7 +931,6 @@ Widget _buildLoginButton() {
               _pixelWithSize(Colors.transparent, pixelSize),
             ],
           ),
-          // Row 2
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -924,7 +942,6 @@ Widget _buildLoginButton() {
               _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
             ],
           ),
-          // Row 3
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -936,7 +953,6 @@ Widget _buildLoginButton() {
               _pixelWithSize(const Color(0xFFff6b6b), pixelSize),
             ],
           ),
-          // Row 4
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -948,7 +964,6 @@ Widget _buildLoginButton() {
               _pixelWithSize(Colors.transparent, pixelSize),
             ],
           ),
-          // Row 5
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -965,6 +980,7 @@ Widget _buildLoginButton() {
     );
   }
 
+  // Widget Helper: สร้าง Pixel เดี่ยวตามขนาดที่กำหนด
   Widget _pixelWithSize(Color color, double size) {
     return Container(
       width: size,
@@ -973,10 +989,11 @@ Widget _buildLoginButton() {
     );
   }
 
+  // Widget: สร้าง Loading Bar พร้อม Animation
   Widget _buildLoadingBar() {
     final screenWidth = getResponsiveWidth(context);
-    final borderWidth = screenWidth > 600 ? 4.0 : screenWidth > 400 ? 3.0 : 2.0;
-    
+    final borderWidth = screenWidth > 600 ? 5.0 : screenWidth > 400 ? 4.0 : 3.0;
+
     return Container(
       padding: EdgeInsets.all(getSpacing(context, 8)),
       decoration: BoxDecoration(
@@ -1030,7 +1047,8 @@ Widget _buildLoginButton() {
 
 }
 
-// Pixel Grid Painter
+// Custom Painter: วาด Pixel Grid Pattern บนพื้นหลัง
+// สร้างเส้นตารางแนวนอนและแนวตั้งทั้งหน้าจอ
 class PixelGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -1040,10 +1058,12 @@ class PixelGridPainter extends CustomPainter {
 
     const spacing = 50.0;
 
+    // วาดเส้นแนวนอน
     for (double y = 0; y < size.height; y += spacing) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
 
+    // วาดเส้นแนวตั้ง
     for (double x = 0; x < size.width; x += spacing) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }

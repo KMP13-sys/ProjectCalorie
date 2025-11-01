@@ -1,5 +1,4 @@
-// lib/models/user_models.dart
-
+// Model ข้อมูล User Profile
 class UserProfile {
   final String userId;
   final String username;
@@ -33,10 +32,8 @@ class UserProfile {
     this.lastLoginAt,
   });
 
-  // ✅ สร้าง UserProfile จาก JSON - รองรับทั้ง snake_case และ camelCase
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      // รองรับ user_id, userId, และ id
       userId: json['user_id']?.toString() ??
               json['userId']?.toString() ??
               json['id']?.toString() ?? '',
@@ -45,10 +42,8 @@ class UserProfile {
       imageProfile: json['image_profile'],
       imageProfileUrl: json['image_profile_url'],
       phoneNumber: json['phone_number'],
-      // รองรับทั้ง int และ null
       age: json['age'] is int ? json['age'] : (json['age'] != null ? int.tryParse(json['age'].toString()) : null),
       gender: json['gender'],
-      // แปลง height และ weight เป็น double
       height: json['height'] != null
           ? double.tryParse(json['height'].toString())
           : null,
@@ -68,7 +63,6 @@ class UserProfile {
     );
   }
 
-  // แปลง UserProfile เป็น JSON
   Map<String, dynamic> toJson() {
     return {
       'user_id': userId,
@@ -88,7 +82,7 @@ class UserProfile {
     };
   }
 
-  // Copy with method สำหรับอัปเดทข้อมูลบางส่วน
+  // สำหรับอัปเดทข้อมูลบางส่วน
   UserProfile copyWith({
     String? userId,
     String? username,
@@ -124,8 +118,7 @@ class UserProfile {
   }
 }
 
-// ========== Response Models สำหรับ Profile Service ==========
-
+// Model สำหรับ Response การอัปเดทรูป Profile
 class UpdateProfileImageResponse {
   final String message;
   final String? imageUrl;
@@ -143,6 +136,7 @@ class UpdateProfileImageResponse {
   }
 }
 
+// Model สำหรับ Response การอัปเดท Profile
 class UpdateProfileResponse {
   final String message;
   final UserProfile? user;

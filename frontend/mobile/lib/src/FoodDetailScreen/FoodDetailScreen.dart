@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../service/predict_service.dart';
 import '../componants/navbaruser.dart';
 
+/// FoodDetailScreen Widget
+/// หน้าแสดงรายละเอียดอาหารที่ AI ทำนาย พร้อมปุ่มบันทึกข้อมูล
 class FoodDetailScreen extends StatefulWidget {
   final File imageFile;
   final String foodName;
@@ -30,8 +32,11 @@ class FoodDetailScreen extends StatefulWidget {
 }
 
 class _FoodDetailScreenState extends State<FoodDetailScreen> {
+  /// State Variables
   bool _isSaving = false;
 
+  /// Business Logic: บันทึกข้อมูลอาหารลง Database
+  /// เรียก PredictService.saveMeal และจัดการ UI ตาม response
   Future<void> _saveMeal() async {
     if (_isSaving) return;
 
@@ -39,7 +44,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
       _isSaving = true;
     });
 
-    // แสดง loading dialog
+    // UI: แสดง loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -82,7 +87,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     );
 
     try {
-      // บันทึกข้อมูล (ดึง userId จาก SharedPreferences อัตโนมัติ)
+      // API Call: บันทึกข้อมูล (ดึง userId จาก SharedPreferences อัตโนมัติ)
       final result = await PredictService.saveMeal(
         foodId: widget.foodId,
         confidenceScore: widget.confidence,
@@ -90,18 +95,16 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
       if (!mounted) return;
 
-      Navigator.pop(context); // ปิด loading dialog
+      Navigator.pop(context);
 
       if (result['success'] == true) {
-        // แสดง success dialog
         await _showSuccessDialog();
 
-        // กลับไปหน้าหลักอัตโนมัติ
+        // Navigation: กลับไปหน้าหลักอัตโนมัติ
         if (mounted) {
           Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
-        // แสดง error dialog
         _showErrorDialog(
           'เกิดข้อผิดพลาด',
           result['error'] ?? 'ไม่สามารถบันทึกข้อมูลได้',
@@ -110,7 +113,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      Navigator.pop(context); // ปิด loading dialog
+      Navigator.pop(context);
 
       _showErrorDialog(
         'เกิดข้อผิดพลาด',
@@ -125,12 +128,13 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     }
   }
 
+  /// UI: แสดง Success Dialog พร้อมปิดอัตโนมัติหลัง 2 วินาที
   Future<void> _showSuccessDialog() async {
     return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        // Close dialog automatically after 2 seconds
+        // Auto-close: ปิด dialog อัตโนมัติหลัง 2 วินาที
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
             Navigator.of(context).pop();
@@ -160,13 +164,13 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Main content
+                  // Section: Main content
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Header
+                        // Section: Header
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -193,14 +197,13 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Pixel Star Icon (5x5 grid)
+                        // Section: Pixel Star Icon (5x5 grid)
                         SizedBox(
                           width: 64,
                           height: 64,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Row 1
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -211,7 +214,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                   Container(width: 12, height: 12, color: Colors.transparent),
                                 ],
                               ),
-                              // Row 2
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -222,7 +224,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                   Container(width: 12, height: 12, color: Colors.transparent),
                                 ],
                               ),
-                              // Row 3 (middle)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -233,7 +234,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                   Container(width: 12, height: 12, color: const Color(0xFFFFC107)),
                                 ],
                               ),
-                              // Row 4
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -244,7 +244,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                   Container(width: 12, height: 12, color: Colors.transparent),
                                 ],
                               ),
-                              // Row 5
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -260,7 +259,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Message Box
+                        // Section: Message Box
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -294,7 +293,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Returning message
+                        // Section: Returning message
                         const Text(
                           'Returning to main page...',
                           textAlign: TextAlign.center,
@@ -314,7 +313,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     ),
                   ),
 
-                  // Decorative Corner Pixels
+                  // Decoration: Corner Pixels
                   Positioned(
                     top: -4,
                     left: -4,
@@ -360,6 +359,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     );
   }
 
+  /// UI: แสดง Error Dialog
   void _showErrorDialog(String title, String message) {
     showDialog(
       context: context,
@@ -444,7 +444,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Responsive calculations
+    // Responsive: คำนวณขนาดและ spacing ตามขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final bool isSmallScreen = screenWidth < 400;
@@ -469,10 +469,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
       backgroundColor: const Color(0xFFf0f4f0),
       body: Column(
         children: [
-          // NavBar
+          // Section: NavBar
           const NavBarUser(),
 
-          // Content
+          // Section: Content
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
@@ -489,7 +489,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     padding: EdgeInsets.symmetric(vertical: verticalPadding, horizontal: horizontalPadding),
                     child: Column(
                       children: [
-                        // Back Button with pixel art style
+                        // Section: Back Button with pixel art style
                         Align(
                           alignment: Alignment.topLeft,
                           child: InkWell(
@@ -517,7 +517,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ),
                         SizedBox(height: isSmallScreen ? 12 : 20),
 
-                        // Main Content Container with pixel art border
+                        // Section: Main Content Container with pixel art border
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -533,12 +533,11 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                           padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                           child: Column(
                             children: [
-                              // Corner Pixels Decoration
                               Stack(
                                 children: [
                                   Column(
                                     children: [
-                                      // Food Image with pixel frame
+                                      // Section: Food Image with pixel frame
                                       Container(
                                         width: double.infinity,
                                         height: imageHeight,
@@ -548,7 +547,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                         ),
                                         child: Stack(
                                           children: [
-                                            // Pixel frame corners
+                                            // Decoration: Pixel frame corners
                                             Positioned(
                                               top: -1,
                                               left: -1,
@@ -569,7 +568,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                               right: -1,
                                               child: Container(width: 12, height: 12, color: Colors.grey[800]),
                                             ),
-                                            // Image
                                             Padding(
                                               padding: const EdgeInsets.all(4),
                                               child: Image.file(
@@ -584,7 +582,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                       ),
                                       SizedBox(height: isSmallScreen ? 12 : 16),
 
-                                      // Header Box
+                                      // Section: Header Box
                                       Container(
                                         width: double.infinity,
                                         padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 8 : 12),
@@ -620,7 +618,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                       ),
                                       SizedBox(height: isSmallScreen ? 8 : 12),
 
-                                      // Info Container
+                                      // Section: Info Container
                                       Container(
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
@@ -651,7 +649,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                       ),
                                       SizedBox(height: isSmallScreen ? 12 : 20),
 
-                                      // Save Button
+                                      // Section: Save Button
                                       InkWell(
                                         onTap: _isSaving ? null : _saveMeal,
                                         child: Container(
@@ -722,7 +720,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                         ),
                                       ),
 
-                                      // Pixel decoration at bottom
+                                      // Decoration: Pixel decoration at bottom
                                       const SizedBox(height: 12),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
@@ -740,7 +738,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                       ),
                                     ],
                                   ),
-                                  // Corner pixels for main container
+                                  // Decoration: Corner pixels for main container
                                   Positioned(
                                     top: -8,
                                     left: -8,
@@ -783,6 +781,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     );
   }
 
+  /// Widget: สร้างกล่องสี่เหลี่ยมเล็กสำหรับตกแต่ง (Pixel Art)
   Widget _buildPixelSquare(Color color) {
     return Container(
       width: 12,
@@ -794,6 +793,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     );
   }
 
+  /// Widget: กล่องแสดงข้อมูลโภชนาการแต่ละรายการ
   Widget _infoBox(String text, {required double fontSize}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final bool isSmallScreen = screenWidth < 400;

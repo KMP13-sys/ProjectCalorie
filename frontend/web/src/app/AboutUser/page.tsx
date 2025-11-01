@@ -6,6 +6,10 @@ import Image from 'next/image';
 import NavBarAdmin from '../componants/NavBarAdmin';
 import { adminService, User } from '../../services/adminService';
 
+/**
+ * หน้าจัดการข้อมูลผู้ใช้ (About User)
+ * ใช้สำหรับแสดงและลบข้อมูลผู้ใช้ทั้งหมดในระบบ
+ */
 export default function AboutUserPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
@@ -13,13 +17,19 @@ export default function AboutUserPage() {
   const [deleteModal, setDeleteModal] = useState<{ show: boolean; user: User | null }>({
     show: false,
     user: null,
-  });
-  const [successModal, setSuccessModal] = useState(false);
+  }); // Modal ยืนยันการลบผู้ใช้
+  const [successModal, setSuccessModal] = useState(false); // Modal แสดงความสำเร็จ
 
+  /**
+   * โหลดข้อมูลผู้ใช้ทั้งหมดเมื่อหน้าโหลดครั้งแรก
+   */
   useEffect(() => {
     fetchUsers();
   }, []);
 
+  /**
+   * ดึงข้อมูลผู้ใช้ทั้งหมดจาก API
+   */
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
@@ -33,10 +43,17 @@ export default function AboutUserPage() {
     }
   };
 
+  /**
+   * เปิด Modal ยืนยันการลบผู้ใช้
+   * @param user - ข้อมูลผู้ใช้ที่ต้องการลบ
+   */
   const handleDeleteClick = (user: User) => {
     setDeleteModal({ show: true, user });
   };
 
+  /**
+   * ยืนยันการลบผู้ใช้และเรียก API
+   */
   const handleConfirmDelete = async () => {
     if (!deleteModal.user) return;
 
@@ -44,8 +61,7 @@ export default function AboutUserPage() {
       await adminService.deleteUser(deleteModal.user.user_id);
       setDeleteModal({ show: false, user: null });
       setSuccessModal(true);
-      // Refresh user list
-      fetchUsers();
+      fetchUsers(); // รีเฟรชข้อมูลผู้ใช้หลังจากลบสำเร็จ
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('ไม่สามารถลบผู้ใช้ได้');
@@ -53,19 +69,25 @@ export default function AboutUserPage() {
     }
   };
 
+  /**
+   * ยกเลิกการลบผู้ใช้และปิด Modal
+   */
   const handleCancelDelete = () => {
     setDeleteModal({ show: false, user: null });
   };
 
+  /**
+   * กลับไปหน้า Admin Main
+   */
   const handleBack = () => {
     router.push('/AdminMain');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f1f8e9] to-[#fff9c4] relative overflow-hidden">
-      
-      {/* Pixel Grid Background Pattern */}
-      <div 
+
+      {/* พื้นหลังแบบ Pixel Grid */}
+      <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
           backgroundImage: `
@@ -77,13 +99,13 @@ export default function AboutUserPage() {
       ></div>
         <NavBarAdmin/>
 
-      {/* Main Content */}
+      {/* เนื้อหาหลัก */}
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
-        
-        {/* Header Section */}
+
+        {/* ส่วนหัวเพจ */}
         <div className="flex items-center gap-4 mb-8">
-          
-          {/* Back Button */}
+
+          {/* ปุ่มย้อนกลับ */}
           <button
             onClick={handleBack}
             className="bg-white border-6 border-black p-4 hover:translate-x-[-2px] hover:translate-y-[-2px] transition-transform"
@@ -95,16 +117,16 @@ export default function AboutUserPage() {
             <span className="text-2xl font-bold text-[#000000]">◀</span>
           </button>
 
-          {/* Title Box */}
-          <div 
+          {/* กล่องหัวข้อหน้า */}
+          <div
             className="bg-white border-6 border-black px-12 py-4"
-            style={{ 
+            style={{
               boxShadow: '8px 8px 0px rgba(0,0,0,0.3)',
               imageRendering: 'pixelated'
             }}
           >
             <div className="relative">
-              {/* Decorative Corner Pixels */}
+              {/* จุด Pixel ประดับมุม */}
               <div className="absolute -top-6 -left-8 w-4 h-4 bg-[#8bc273]"></div>
               <div className="absolute -top-6 -right-8 w-4 h-4 bg-[#8bc273]"></div>
               <div className="absolute -bottom-6 -left-8 w-4 h-4 bg-[#8bc273]"></div>
@@ -123,7 +145,7 @@ export default function AboutUserPage() {
           </div>
         </div>
 
-        {/* Table Container */}
+        {/* กล่องตาราง */}
         <div
           className="bg-white border-8 border-[#81c784] overflow-hidden relative"
           style={{
@@ -131,13 +153,13 @@ export default function AboutUserPage() {
             imageRendering: 'pixelated'
           }}
         >
-          {/* Decorative Corner Pixels */}
+          {/* จุด Pixel ประดับมุม */}
           <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#81c784]"></div>
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#81c784]"></div>
           <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#81c784]"></div>
           <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#81c784]"></div>
 
-          {/* Table */}
+          {/* ตารางข้อมูลผู้ใช้ */}
           <div className="overflow-x-auto">
             <table className="w-full" style={{ fontFamily: 'TA8bit' }}>
               <thead>
@@ -233,7 +255,7 @@ export default function AboutUserPage() {
             </table>
           </div>
 
-          {/* Loading State */}
+          {/* สถานะกำลังโหลด */}
           {isLoading && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
               <div className="text-center">
@@ -262,7 +284,7 @@ export default function AboutUserPage() {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Modal ยืนยันการลบผู้ใช้ */}
       {deleteModal.show && deleteModal.user && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div
@@ -272,15 +294,15 @@ export default function AboutUserPage() {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
+            {/* จุด Pixel ประดับมุม */}
             <div className="absolute -top-3 -left-3 w-8 h-8 bg-[#ef5350] border-4 border-black"></div>
             <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#ef5350] border-4 border-black"></div>
             <div className="absolute -bottom-3 -left-3 w-8 h-8 bg-[#ef5350] border-4 border-black"></div>
             <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#ef5350] border-4 border-black"></div>
 
-            {/* Modal Header */}
+            {/* ส่วนหัว Modal */}
             <div className="bg-gradient-to-r from-[#f44336] to-[#d32f2f] border-b-8 border-black px-8 py-6 relative">
-              {/* Header decoration pixels */}
+              {/* จุด Pixel ประดับหัว */}
               <div className="absolute top-2 left-4 w-3 h-3 bg-[#ff5252]"></div>
               <div className="absolute top-2 right-4 w-3 h-3 bg-[#ff5252]"></div>
 
@@ -297,12 +319,12 @@ export default function AboutUserPage() {
               </h3>
             </div>
 
-            {/* Modal Body */}
+            {/* เนื้อหา Modal */}
             <div className="p-10 bg-[#fff5f5] border-b-8 border-black relative">
-              {/* Body decoration pixels */}
+              {/* จุด Pixel ประดับเนื้อหา */}
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#f44336] to-transparent opacity-30"></div>
 
-              {/* Warning icon */}
+              {/* ไอคอนคำเตือน */}
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <div className="w-24 h-24 bg-[#ff9800] border-8 border-black relative"
@@ -315,7 +337,7 @@ export default function AboutUserPage() {
                       <span className="text-6xl text-white font-bold">!</span>
                     </div>
                   </div>
-                  {/* Danger pixels */}
+                  {/* จุด Pixel อันตราย */}
                   <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#f44336] border-2 border-black"></div>
                   <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-[#f44336] border-2 border-black"></div>
                 </div>
@@ -344,7 +366,7 @@ export default function AboutUserPage() {
               </p>
             </div>
 
-            {/* Modal Footer */}
+            {/* ส่วนท้าย Modal */}
             <div className="flex gap-4 p-6 bg-[#ffebee]">
               <button
                 onClick={handleCancelDelete}
@@ -375,7 +397,7 @@ export default function AboutUserPage() {
         </div>
       )}
 
-      {/* Success Modal */}
+      {/* Modal แสดงความสำเร็จ */}
       {successModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div
@@ -385,15 +407,15 @@ export default function AboutUserPage() {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
+            {/* จุด Pixel ประดับมุม */}
             <div className="absolute -top-3 -left-3 w-8 h-8 bg-[#66bb6a] border-4 border-black"></div>
             <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#66bb6a] border-4 border-black"></div>
             <div className="absolute -bottom-3 -left-3 w-8 h-8 bg-[#66bb6a] border-4 border-black"></div>
             <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#66bb6a] border-4 border-black"></div>
 
-            {/* Modal Header */}
+            {/* ส่วนหัว Modal */}
             <div className="bg-gradient-to-r from-[#4caf50] to-[#388e3c] border-b-8 border-black px-8 py-6 relative">
-              {/* Header decoration pixels */}
+              {/* จุด Pixel ประดับหัว */}
               <div className="absolute top-2 left-4 w-3 h-3 bg-[#81c784]"></div>
               <div className="absolute top-2 right-4 w-3 h-3 bg-[#81c784]"></div>
 
@@ -408,12 +430,12 @@ export default function AboutUserPage() {
               </h3>
             </div>
 
-            {/* Modal Body */}
+            {/* เนื้อหา Modal */}
             <div className="p-10 bg-[#f1f8e9] border-b-8 border-black relative">
-              {/* Body decoration pixels */}
+              {/* จุด Pixel ประดับเนื้อหา */}
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#4caf50] to-transparent opacity-30"></div>
 
-              {/* Success icon */}
+              {/* ไอคอนสำเร็จ */}
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <div className="w-24 h-24 bg-[#4caf50] border-8 border-black relative"
@@ -423,7 +445,7 @@ export default function AboutUserPage() {
                       <span className="text-6xl text-white font-bold">✓</span>
                     </div>
                   </div>
-                  {/* Sparkle pixels */}
+                  {/* จุด Pixel ระยิบระยับ */}
                   <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#ffeb3b] border-2 border-black"></div>
                   <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-[#ffeb3b] border-2 border-black"></div>
                 </div>
@@ -446,7 +468,7 @@ export default function AboutUserPage() {
               </p>
             </div>
 
-            {/* Modal Footer */}
+            {/* ส่วนท้าย Modal */}
             <div className="p-6 bg-[#e8f5e9]">
               <button
                 onClick={() => setSuccessModal(false)}

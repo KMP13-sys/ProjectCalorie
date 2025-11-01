@@ -17,6 +17,11 @@ interface FoodDetail {
   confidence: number;
 }
 
+/**
+ * Food Detail Screen Component
+ * แสดงรายละเอียดอาหารที่ AI ทำนาย พร้อมข้อมูลโภชนาการ
+ * ผู้ใช้สามารถบันทึกอาหารเข้าสู่ระบบได้
+ */
 export default function FoodDetailScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,12 +34,11 @@ export default function FoodDetailScreen() {
   });
   const [foodDetail, setFoodDetail] = useState<FoodDetail | null>(null);
 
+  // Load food details from URL parameters and sessionStorage
   useEffect(() => {
-    // Only load data once when component mounts
-    if (foodDetail) return; // Skip if already loaded
+    if (foodDetail) return;
 
-    // Get food details from URL parameters and sessionStorage
-    const imageUrl = sessionStorage.getItem('foodImage'); // Get image from sessionStorage
+    const imageUrl = sessionStorage.getItem('foodImage');
     const foodName = searchParams.get('foodName');
     const foodId = searchParams.get('foodId');
     const carbs = searchParams.get('carbs');
@@ -54,22 +58,18 @@ export default function FoodDetailScreen() {
         calories: parseInt(calories),
         confidence: parseFloat(confidence)
       });
-
-      // Don't clear sessionStorage here - clear only when leaving the page
     } else {
-      // If no data, redirect back to main page
-      console.log('No food data found, redirecting to main page');
       router.push('/main');
     }
   }, [searchParams, router, foodDetail]);
 
+  // Save meal data to database
   const handleSaveMeal = async () => {
     if (isSaving || !foodDetail) return;
 
     setIsSaving(true);
 
     try {
-      // Get userId from localStorage (stored in user object by auth_service)
       const userStr = localStorage.getItem('user');
       let userId = 0;
 
@@ -92,10 +92,7 @@ export default function FoodDetailScreen() {
       });
 
       if (result.success) {
-        // Show success dialog
         setShowSuccessDialog(true);
-
-        // Auto redirect after 2 seconds
         setTimeout(() => {
           sessionStorage.removeItem('foodImage');
           router.push('/main');
@@ -119,7 +116,6 @@ export default function FoodDetailScreen() {
   };
 
   const handleBack = () => {
-    // Clear any remaining image data
     sessionStorage.removeItem('foodImage');
     router.push('/main');
   };
@@ -147,7 +143,7 @@ export default function FoodDetailScreen() {
         backgroundAttachment: 'fixed',
         position: 'relative'
       }}>
-        {/* Pixel Art Background Pattern */}
+        {/* Background Pattern */}
         <div style={{
           position: 'fixed',
           top: 0,
@@ -163,7 +159,6 @@ export default function FoodDetailScreen() {
           zIndex: 0
         }}></div>
 
-        {/* NavBar */}
         <div style={{ position: 'relative', zIndex: 1 }}>
           <NavBarUser />
         </div>
@@ -171,7 +166,6 @@ export default function FoodDetailScreen() {
         <div className="py-8 px-6" style={{ position: 'relative', zIndex: 1 }}>
           <div className="max-w-5xl mx-auto">
 
-            {/* Back Button */}
             <button
               onClick={handleBack}
               className="mb-6 p-2 bg-white border-4 border-black hover:bg-gray-100 transition-all hover:translate-x-1 hover:translate-y-1 relative z-10"
@@ -194,21 +188,19 @@ export default function FoodDetailScreen() {
               </svg>
             </button>
 
-          {/* Main Content Container */}
+          {/* Main Content */}
           <div className="bg-white border-8 border-black p-8 relative" style={{
             boxShadow: '12px 12px 0px rgba(0,0,0,0.3)',
             imageRendering: 'pixelated'
           }}>
-            {/* Decorative Corner Pixels */}
             <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
             <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
             <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
             <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
 
-            {/* Grid Layout: Image on left, Info on right */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 
-              {/* Left: Food Image */}
+              {/* Food Image */}
               <div className="flex flex-col items-center">
                 <div
                   className="w-full max-w-[400px] h-[350px] relative border-6 border-black bg-gray-100"
@@ -217,7 +209,6 @@ export default function FoodDetailScreen() {
                     imageRendering: 'pixelated'
                   }}
                 >
-                  {/* Pixel frame decoration */}
                   <div className="absolute -top-1 -left-1 w-3 h-3 bg-gray-800"></div>
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-800"></div>
                   <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-gray-800"></div>
@@ -233,9 +224,8 @@ export default function FoodDetailScreen() {
                 </div>
               </div>
 
-              {/* Right: Food Information */}
+              {/* Food Information */}
               <div className="flex flex-col">
-                {/* Header Box */}
                 <div
                   className="bg-gradient-to-r from-[#A3EBA1] to-[#8bc273] border-4 border-black p-3 mb-4 relative"
                   style={{
@@ -250,7 +240,6 @@ export default function FoodDetailScreen() {
                   </h2>
                 </div>
 
-                {/* Info Container */}
                 <div
                   className="border-6 border-black bg-gradient-to-b from-[#FFFFCC] to-[#FFFFAA] p-4 mb-6"
                   style={{
@@ -268,7 +257,6 @@ export default function FoodDetailScreen() {
                   <InfoBox text={`Confidence: ${(foodDetail.confidence * 100).toFixed(1)}%`} />
                 </div>
 
-                {/* Save Button */}
                 <div className="flex justify-center">
                   <button
                     onClick={handleSaveMeal}
@@ -283,7 +271,6 @@ export default function FoodDetailScreen() {
                       textShadow: '2px 2px 0px rgba(0,0,0,0.2)'
                     }}
                   >
-                    {/* Button Corner Pixels */}
                     {!isSaving && (
                       <>
                         <div className="absolute -top-1 -left-1 w-2 h-2 bg-white"></div>
@@ -297,7 +284,6 @@ export default function FoodDetailScreen() {
                   </button>
                 </div>
 
-                {/* Pixel Decoration */}
                 <div className="flex justify-center mt-4 gap-1">
                   <div className="w-3 h-3 bg-[#A3EBA1] border border-black"></div>
                   <div className="w-3 h-3 bg-[#8bc273] border border-black"></div>
@@ -321,21 +307,18 @@ export default function FoodDetailScreen() {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
             <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
 
             <div className="p-8 text-center relative">
-              {/* Header */}
               <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
                 <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'TA8bit' }}>
                   ★ MEAL SAVED! ★
                 </h3>
               </div>
 
-              {/* Pixel Star Icon */}
               <div className="flex justify-center mb-4">
                 <div className="relative w-16 h-16">
                   <div className="grid grid-cols-5 gap-0">
@@ -372,7 +355,6 @@ export default function FoodDetailScreen() {
                 </div>
               </div>
 
-              {/* Message Box */}
               <div className="bg-white border-4 border-black p-4 mb-6">
                 <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
                   MEAL SAVED!

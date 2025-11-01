@@ -15,11 +15,10 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // ✅ เมื่อ login สำเร็จและมี user แล้ว ให้แสดง modal แล้ว navigate
+  // เปลี่ยนหน้าอัตโนมัติหลัง login สำเร็จตาม role ของผู้ใช้
   useEffect(() => {
     if (showSuccessModal && user) {
       const timer = setTimeout(() => {
-        // Navigate ตาม role
         if (user.role === 'admin') {
           router.push('/AdminMain');
         } else {
@@ -28,13 +27,11 @@ export default function LoginPage() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-    console.log('Login token:', localStorage.getItem('adminToken'));
-
   }, [showSuccessModal, user, router]);
 
+  // จำกัดการกรอก username ให้เป็นตัวอักษรและตัวเลขเท่านั้น
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // อนุญาตแค่ a-z, A-Z, 0-9
     const sanitized = value.replace(/[^a-zA-Z0-9]/g, '');
     setUsername(sanitized);
     if (error) setError('');
@@ -44,13 +41,12 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    // Validation
+    // ตรวจสอบความถูกต้องของข้อมูล
     if (!username.trim()) {
       setError('กรุณากรอก Username');
       return;
     }
 
-    // Username validation
     if (!/[a-zA-Z]/.test(username)) {
       setError('Username ต้องมีตัวอักษร (a-z หรือ A-Z) อย่างน้อย 1 ตัว');
       return;
@@ -69,19 +65,10 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // ✅ ใช้ login จาก AuthContext
       await login(username.trim(), password);
-      console.log('Token after login:', localStorage.getItem('adminToken'));
-      console.log('Login success');
-
-      // ✅ Refresh user profile หลัง login สำเร็จ
       await refreshUserProfile();
-
-      // แสดง Success Modal
       setShowSuccessModal(true);
-
     } catch (err: any) {
-      console.error('Login error:', err);
       setError(err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
     } finally {
       setIsLoading(false);
@@ -95,7 +82,7 @@ export default function LoginPage() {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#6fa85e] via-[#8bc273] to-[#a8d48f] flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Pixel Grid Background Pattern */}
+        {/* พื้นหลังลาย Pixel Grid */}
         <div 
           className="absolute inset-0 opacity-10"
           style={{
@@ -107,7 +94,7 @@ export default function LoginPage() {
           }}
         ></div>
 
-        {/* Floating Pixel Decorations */}
+        {/* องค์ประกอบตะกร้าตกแต่งแบบ Pixel */}
         <div className="absolute top-10 left-10 w-6 h-6 bg-yellow-300 animate-bounce"></div>
         <div className="absolute top-20 right-16 w-4 h-4 bg-yellow-300 animate-bounce" style={{ animationDelay: '0.3s' }}></div>
         <div className="absolute bottom-20 left-20 w-5 h-5 bg-yellow-300 animate-bounce" style={{ animationDelay: '0.6s' }}></div>
@@ -120,13 +107,13 @@ export default function LoginPage() {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
+            {/* Pixel มุมกล่องตกแต่ง */}
             <div className="absolute top-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
             <div className="absolute top-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
 
-            {/* Header Bar */}
+            {/* ส่วนหัวของฟอร์ม */}
             <div className="bg-gradient-to-r from-[#6fa85e] to-[#8bc273] border-b-6 border-black py-3 px-6">
               <h2 
                 className="text-2xl font-bold text-white text-center tracking-wider"
@@ -140,7 +127,7 @@ export default function LoginPage() {
             </div>
 
             <div className="p-8">
-              {/* Logo */}
+              {/* โลโก้และชื่อแอป */}
               <div className="flex flex-col items-center mb-6">
                 <div 
                   className="bg-gradient-to-br from-[#a8d48f] to-[#8bc273] border-4 border-black p-3 mb-3"
@@ -166,7 +153,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Error Message */}
+              {/* แสดงข้อความแจ้งเตือนข้อผิดพลาด */}
               {error && (
                 <div 
                   className="mb-4 p-3 bg-red-200 border-4 border-red-600 text-red-800"
@@ -179,11 +166,10 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Login Form */}
+              {/* ฟอร์มเข้าสู่ระบบ */}
               <form onSubmit={handleLogin} className="space-y-4">
-                {/* Username Input */}
                 <div>
-                  <label 
+                  <label
                     className="block text-sm font-bold text-gray-700 mb-2"
                     style={{ fontFamily: 'TA8bit' }}
                   >
@@ -200,10 +186,9 @@ export default function LoginPage() {
                     style={{ fontFamily: 'TA8bit' }}
                   />
                 </div>
-                
-                {/* Password Input */}
+
                 <div>
-                  <label 
+                  <label
                     className="block text-sm font-bold text-gray-700 mb-2"
                     style={{ fontFamily: 'TA8bit' }}
                   >
@@ -223,12 +208,11 @@ export default function LoginPage() {
                   />
                 </div>
 
-                {/* Login Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
                   className="w-full py-4 bg-gradient-to-r from-[#6fa85e] to-[#8bc273] hover:from-[#8bc273] hover:to-[#a8d48f] border-4 border-black text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-                  style={{ 
+                  style={{
                     fontFamily: 'TA8bit',
                     boxShadow: '6px 6px 0px rgba(0,0,0,0.3)',
                     textShadow: '2px 2px 0px rgba(0,0,0,0.5)',
@@ -239,7 +223,7 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* Links */}
+              {/* ปุ่มนำไปหน้าสมัครสมาชิก */}
               <div className="mt-6 pt-6 border-t-4 border-dashed border-gray-300">
                 <div className="flex justify-center items-center">
                   <button
@@ -257,11 +241,11 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Pixel "Press Start" hint */}
+          {/* ข้อความแนะนำ */}
           <div className="text-center mt-6">
-            <p 
+            <p
               className="text-white text-sm font-bold animate-pulse"
-              style={{ 
+              style={{
                 fontFamily: 'TA8bit',
                 textShadow: '2px 2px 0px rgba(0,0,0,0.5)'
               }}
@@ -272,7 +256,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Pixel Art Success Modal */}
+      {/* Modal แสดงความสำเร็จ */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
           <div 
@@ -282,21 +266,20 @@ export default function LoginPage() {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
+            {/* Pixel มุมกล่องตกแต่ง */}
             <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
 
             <div className="p-8 text-center relative">
-              {/* Pixel Art Header Bar */}
               <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
                 <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)' }}>
                   ★ SUCCESS! ★
                 </h3>
               </div>
 
-              {/* Pixel Heart Icon */}
+              {/* ไอคอนหัวใจ Pixel Art */}
               <div className="flex justify-center mb-4">
                 <div className="relative w-16 h-16">
                   <div className="grid grid-cols-5 gap-0">
@@ -333,7 +316,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Message */}
               <div className="bg-white border-4 border-black p-4 mb-6">
                 <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
                   LOGIN COMPLETE!
@@ -343,17 +325,16 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {/* Pixel Loading Bar */}
+              {/* แถบแสดงความคืบหน้า */}
               <div className="bg-black border-4 border-[#6fa85e] p-2">
                 <div className="bg-[#2d2d2d] h-6 relative overflow-hidden">
-                  <div 
+                  <div
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#4ecdc4] to-[#44a3c4]"
                     style={{
                       animation: 'loadingBar 2s ease-in-out',
                       width: '100%'
                     }}
                   >
-                    {/* Pixel shine effect */}
                     <div className="absolute top-0 left-0 w-full h-2 bg-white opacity-30"></div>
                   </div>
                 </div>

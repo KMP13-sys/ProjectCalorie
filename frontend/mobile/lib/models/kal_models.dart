@@ -1,3 +1,4 @@
+// Model สำหรับ Response การคำนวณแคลอรี่
 class CalculateCaloriesResponse {
   final String message;
   final double activityLevel;
@@ -16,7 +17,6 @@ class CalculateCaloriesResponse {
   });
 
   factory CalculateCaloriesResponse.fromJson(Map<String, dynamic> json) {
-    // Helper function เพื่อแปลงค่าเป็น double
     double parseValue(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;
@@ -36,6 +36,7 @@ class CalculateCaloriesResponse {
   }
 }
 
+// Model สถานะแคลอรี่รายวัน
 class CalorieStatus {
   final double activityLevel;
   final double targetCalories;
@@ -54,7 +55,6 @@ class CalorieStatus {
   });
 
   factory CalorieStatus.fromJson(Map<String, dynamic> json) {
-    // Helper function เพื่อแปลงค่าเป็น double (รองรับทั้ง String และ Number)
     double parseValue(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;
@@ -85,6 +85,7 @@ class CalorieStatus {
   }
 }
 
+// Model สารอาหารรายวัน (Macros)
 class DailyMacros {
   final String message;
   final double protein;
@@ -99,7 +100,6 @@ class DailyMacros {
   });
 
   factory DailyMacros.fromJson(Map<String, dynamic> json) {
-    // Helper function เพื่อแปลงค่าเป็น double
     double parseValue(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;
@@ -117,6 +117,7 @@ class DailyMacros {
   }
 }
 
+// Model สำหรับ Response แคลอรี่รายสัปดาห์
 class WeeklyCaloriesResponse {
   final String message;
   final List<DailyCalorieData> data;
@@ -135,6 +136,7 @@ class WeeklyCaloriesResponse {
   }
 }
 
+// Model ข้อมูลแคลอรี่รายวัน
 class DailyCalorieData {
   final String date;
   final double netCalories;
@@ -142,7 +144,6 @@ class DailyCalorieData {
   DailyCalorieData({required this.date, required this.netCalories});
 
   factory DailyCalorieData.fromJson(Map<String, dynamic> json) {
-    // Helper function เพื่อแปลงค่าเป็น double
     double parseValue(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;

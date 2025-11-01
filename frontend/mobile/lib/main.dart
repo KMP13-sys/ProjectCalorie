@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'src/open.dart';
 import 'src/authen/login.dart';
@@ -9,6 +8,8 @@ void main() {
   runApp(const CalDeficitsApp());
 }
 
+/// CalDeficitsApp
+/// Root Widget ของแอปพลิเคชัน
 class CalDeficitsApp extends StatelessWidget {
   const CalDeficitsApp({super.key});
 
@@ -18,12 +19,13 @@ class CalDeficitsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Cal-Deficits',
       theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'TA8bit'),
-      home: const AuthWrapper(), // เช็ค session ก่อน
+      home: const AuthWrapper(),
     );
   }
 }
 
-// Widget สำหรับเช็ค session
+/// AuthWrapper Widget
+/// ตรวจสอบ Session และเลือก Destination (Home หรือ Login)
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({Key? key}) : super(key: key);
 
@@ -32,27 +34,27 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  /// State Variables
   Widget? _destination;
 
+  /// Lifecycle: เริ่มต้นตรวจสอบ Session
   @override
   void initState() {
     super.initState();
     _checkSession();
   }
 
-  // เช็คว่ามี session หรือไม่ (ทำงานใน background ขณะแสดง splash)
+  /// Business Logic: ตรวจสอบ Session และกำหนด Destination
   Future<void> _checkSession() async {
     try {
       final hasSession = await AuthService.hasValidSession();
 
       if (mounted) {
         setState(() {
-          // เลือก destination ตาม session
           _destination = hasSession ? const HomeScreen() : const LoginScreen();
         });
       }
     } catch (e) {
-      print('Error checking session: $e');
       if (mounted) {
         setState(() {
           _destination = const LoginScreen();
@@ -63,8 +65,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    //  ถ้ายังไม่รู้ว่าจะไปไหน ให้ส่ง LoginScreen ไปก่อน (fallback)
-    // แต่จริงๆ แล้ว _checkSession จะเสร็จก่อน animation หมด (2 วินาที)
+    // Note: ถ้ายังไม่รู้ว่าจะไปไหน ให้ส่ง LoginScreen ไปก่อน (fallback)
+    // แต่ _checkSession จะเสร็จก่อน splash animation หมด (2 วินาที)
     return SplashScreen(destination: _destination ?? const LoginScreen());
   }
 }

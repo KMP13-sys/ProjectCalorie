@@ -8,11 +8,16 @@ import { predictFood } from '../../services/predict_service';
 interface ImageUploadButtonProps {
   onImageSelect?: (file: File | null) => void;
   buttonText?: string;
-  maxSize?: number; // MB
+  maxSize?: number;
   showPreview?: boolean;
-  autoPredictOnSelect?: boolean; // New prop to enable auto prediction
+  autoPredictOnSelect?: boolean;
 }
 
+/**
+ * Image Upload Button Component
+ * อัปโหลดรูปอาหารเพื่อใช้ AI วิเคราะห์และคำนวณค่าโภชนาการ
+ * รองรับการ predict อัตโนมัติเมื่อเลือกรูป
+ */
 export default function ImageUploadButton({
   onImageSelect,
   buttonText = 'แนบรูปอาหาร',
@@ -39,21 +44,18 @@ export default function ImageUploadButton({
       return;
     }
 
-    // Validate file type
     const acceptedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
     if (!acceptedTypes.includes(file.type)) {
       setError('รูปแบบไฟล์ไม่ถูกต้อง!');
       return;
     }
 
-    // Validate file size
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxSize) {
       setError(`ไฟล์ใหญ่เกินไป! (สูงสุด ${maxSize}MB)`);
       return;
     }
 
-    // Create preview URL
     const imageDataUrl = await new Promise<string>((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -62,16 +64,12 @@ export default function ImageUploadButton({
       reader.readAsDataURL(file);
     });
 
-    // Auto predict if enabled - don't show file info or preview
     if (autoPredictOnSelect) {
-      // Don't set selectedImage to prevent showing file info
       await handlePredict(file, imageDataUrl);
-      // Reset file input after prediction attempt
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } else {
-      // Only show preview and file info if not auto predicting
       if (showPreview) {
         setPreviewUrl(imageDataUrl);
       }
@@ -83,13 +81,10 @@ export default function ImageUploadButton({
   const handlePredict = async (file: File, imageDataUrl: string) => {
     setIsProcessing(true);
     setError('');
-
-    // Clear any selected image display
     setSelectedImage(null);
     setPreviewUrl(null);
 
     try {
-      // Get userId from localStorage (stored in user object by auth_service)
       const userStr = localStorage.getItem('user');
       let userId = 0;
 
@@ -108,7 +103,6 @@ export default function ImageUploadButton({
         return;
       }
 
-      // Call predict API
       const result = await predictFood(userId, file);
 
       if (!result.success || !result.data) {
@@ -117,7 +111,6 @@ export default function ImageUploadButton({
         return;
       }
 
-      // Check for low confidence or warnings
       if (result.data.warning) {
         setError(result.data.warning + ' Please upload a clearer image!');
         setIsProcessing(false);
@@ -130,12 +123,9 @@ export default function ImageUploadButton({
         return;
       }
 
-      // Navigate to FoodDetailScreen with data
       if (result.data.food_id && result.data.nutrition) {
-        // Store image in sessionStorage to avoid URL size limit (HTTP 431)
         sessionStorage.setItem('foodImage', imageDataUrl);
 
-        // Send only metadata via URL params
         const params = new URLSearchParams({
           foodName: encodeURIComponent(result.data.predicted_food),
           foodId: result.data.food_id.toString(),
@@ -184,13 +174,11 @@ export default function ImageUploadButton({
           imageRendering: 'pixelated'
         }}
       >
-        {/* Decorative Corner Pixels */}
         <div className="absolute -top-1 -left-1 w-3 h-3 bg-[#66bb6a]"></div>
         <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#66bb6a]"></div>
         <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-[#66bb6a]"></div>
         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#66bb6a]"></div>
 
-        {/* Icon from your file */}
         <div className="relative w-10 h-10 ">
         <Image
             src="/pic/addphoto.png"
@@ -199,8 +187,7 @@ export default function ImageUploadButton({
             sizes="40px"
         />
         </div>
-        
-        {/* Button Text */}
+
         <span
           className="font-bold text-gray-900"
           style={{ textShadow: '2px 2px 0px rgba(0,0,0,0.1)' }}
@@ -208,7 +195,6 @@ export default function ImageUploadButton({
           {isProcessing ? 'Processing...' : buttonText}
         </span>
 
-        {/* Hidden Input */}
         <input
           ref={fileInputRef}
           type="file"
@@ -218,7 +204,7 @@ export default function ImageUploadButton({
         />
       </button>
 
-      {/* Selected File Info - only show when not auto predicting */}
+      {/* Selected File Info */}
       {selectedImage && !autoPredictOnSelect && (
         <div
           className="bg-white border-4 border-black p-3 relative inline-block"
@@ -243,9 +229,9 @@ export default function ImageUploadButton({
 
       {/* Error Message */}
       {error && (
-        <div 
+        <div
           className="bg-red-200 border-4 border-red-600 p-3 relative inline-block"
-          style={{ 
+          style={{
             fontFamily: 'TA8bit',
             boxShadow: '4px 4px 0px rgba(220,38,38,0.3)'
           }}
@@ -257,7 +243,7 @@ export default function ImageUploadButton({
         </div>
       )}
 
-      {/* Preview (Optional) */}
+      {/* Image Preview */}
       {showPreview && previewUrl && (
         <div
           className="bg-white border-6 border-black p-4 relative"
@@ -277,7 +263,7 @@ export default function ImageUploadButton({
         </div>
       )}
 
-      {/* Loading Popup - Pixel Art Style */}
+      {/* Processing Modal */}
       {isProcessing && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
           <div
@@ -287,26 +273,22 @@ export default function ImageUploadButton({
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
             <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
 
             <div className="p-8 text-center relative">
-              {/* Pixel Art Header Bar */}
               <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
                 <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)' }}>
                   ★ PROCESSING ★
                 </h3>
               </div>
 
-              {/* Pixel Food Icon */}
               <div className="flex justify-center mb-4">
                 <div className="text-6xl animate-bounce">🍔</div>
               </div>
 
-              {/* Message */}
               <div className="bg-white border-4 border-black p-4 mb-6">
                 <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
                   ANALYZING FOOD...
@@ -316,7 +298,6 @@ export default function ImageUploadButton({
                 </p>
               </div>
 
-              {/* Pixel Loading Bar */}
               <div className="bg-black border-4 border-[#6fa85e] p-2">
                 <div className="bg-[#2d2d2d] h-6 relative overflow-hidden">
                   <div
@@ -326,7 +307,6 @@ export default function ImageUploadButton({
                       width: '100%'
                     }}
                   >
-                    {/* Pixel shine effect */}
                     <div className="absolute top-0 left-0 w-full h-2 bg-white opacity-30"></div>
                   </div>
                 </div>

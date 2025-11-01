@@ -5,11 +5,11 @@ import 'package:image/image.dart' as img;
 import 'storage_helper.dart';
 import '../config/api_config.dart';
 
+// Service สำหรับการทำนายอาหารด้วย ML Model
 class PredictService {
-  // ใช้ Flask URL จาก ApiConfig
   static String get baseUrl => ApiConfig.flaskUrl;
 
-  /// ตรวจสอบความคมชัดของภาพ
+  // ตรวจสอบความคมชัดของภาพ
   static Future<bool> isImageClear(File imageFile) async {
     try {
       final bytes = await imageFile.readAsBytes();
@@ -17,24 +17,17 @@ class PredictService {
 
       if (image == null) return false;
 
-      // คำนวณ Laplacian variance เพื่อวัดความคมชัด
-      // ค่ายิ่งสูง = ภาพยิ่งคมชัด
       double variance = _calculateLaplacianVariance(image);
 
-      // กำหนด threshold ที่ 100 (ปรับได้ตามความเหมาะสม)
       return variance > 100;
     } catch (e) {
-      print('Error checking image clarity: $e');
       return false;
     }
   }
 
-  /// คำนวณ Laplacian variance (วัดความคมชัด)
+  // คำนวณ Laplacian variance เพื่อวัดความคมชัด
   static double _calculateLaplacianVariance(img.Image image) {
-    // แปลงเป็น grayscale
     final gray = img.grayscale(image);
-
-    // Laplacian kernel
     final laplacian = <double>[];
 
     for (int y = 1; y < gray.height - 1; y++) {
@@ -50,7 +43,6 @@ class PredictService {
       }
     }
 
-    // คำนวณ variance
     if (laplacian.isEmpty) return 0;
 
     final mean = laplacian.reduce((a, b) => a + b) / laplacian.length;
@@ -59,10 +51,9 @@ class PredictService {
     return variance;
   }
 
-  /// ส่งภาพไปทำนายที่ ML model
+  // ส่งภาพไปทำนายอาหารที่ ML Model
   static Future<Map<String, dynamic>> predictFood(File imageFile) async {
     try {
-      // ดึง token และ userId จาก StorageHelper
       final token = await StorageHelper.getAccessToken();
       final userIdStr = await StorageHelper.getUserId();
       final userId = userIdStr != null ? int.tryParse(userIdStr) : null;
@@ -81,14 +72,11 @@ class PredictService {
         };
       }
 
-      // สร้าง multipart request
       final uri = Uri.parse('$baseUrl/api/predict-food/$userId');
       final request = http.MultipartRequest('POST', uri);
 
-      // เพิ่ม headers
       request.headers['Authorization'] = 'Bearer $token';
 
-      // เพิ่มไฟล์ภาพ
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',
@@ -96,14 +84,12 @@ class PredictService {
         ),
       );
 
-      // ส่ง request
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // ตรวจสอบว่าเป็นอาหารหรือไม่ (confidence ต้องมากกว่า 0.5)
         if (data['success'] == true && data['data'] != null) {
           final confidence = data['data']['confidence'] ?? 0.0;
 
@@ -138,7 +124,6 @@ class PredictService {
         };
       }
     } catch (e) {
-      print('Error predicting food: $e');
       return {
         'success': false,
         'error': 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์',
@@ -146,14 +131,13 @@ class PredictService {
     }
   }
 
-  /// บันทึกข้อมูลมื้ออาหาร
+  // บันทึกข้อมูลมื้ออาหาร
   static Future<Map<String, dynamic>> saveMeal({
     required int foodId,
     required double confidenceScore,
     String? mealDatetime,
   }) async {
     try {
-      // ดึง token และ userId จาก StorageHelper
       final token = await StorageHelper.getAccessToken();
       final userIdStr = await StorageHelper.getUserId();
       final userId = userIdStr != null ? int.tryParse(userIdStr) : null;
@@ -207,7 +191,6 @@ class PredictService {
         };
       }
     } catch (e) {
-      print('Error saving meal: $e');
       return {
         'success': false,
         'error': 'เกิดข้อผิดพลาดในการบันทึกข้อมูล',

@@ -10,24 +10,22 @@ interface MacrosData {
   protein: number;
 }
 
+/**
+ * Nutrition Pie Chart Component
+ * แสดงกราฟวงกลมสัดส่วนสารอาหาร (Carbs, Fat, Protein) ที่รับประทานในวันนี้
+ */
 export default function NutritionPieChart() {
   const [macros, setMacros] = useState<MacrosData>({ carbs: 0, fats: 0, protein: 0 });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ดึงข้อมูล macros จาก API
   useEffect(() => {
     const fetchMacros = async () => {
       try {
-        console.log('🥧 [Piegraph] Fetching macros data...');
         setLoading(true);
         setError(null);
         const data = await kalService.getDailyMacros();
 
-        console.log('🥧 [Piegraph] Received data:', data);
-
-        // API ส่งกลับมาเป็น protein, fat, carbohydrate (อาจเป็น string หรือ number)
-        // ต้อง convert เป็น number เพื่อความปลอดภัย
         const carbs = typeof data.carbohydrate === 'string' ? parseFloat(data.carbohydrate) : data.carbohydrate;
         const fats = typeof data.fat === 'string' ? parseFloat(data.fat) : data.fat;
         const protein = typeof data.protein === 'string' ? parseFloat(data.protein) : data.protein;
@@ -37,16 +35,9 @@ export default function NutritionPieChart() {
           fats: fats || 0,
           protein: protein || 0,
         });
-
-        console.log('🥧 [Piegraph] Macros set:', {
-          carbs: carbs || 0,
-          fats: fats || 0,
-          protein: protein || 0,
-        });
       } catch (err: any) {
-        console.error('❌ [Piegraph] Error fetching macros:', err);
+        console.error('Error fetching macros:', err);
         setError(err.message || 'ไม่สามารถดึงข้อมูลได้');
-        // ตั้งค่าเริ่มต้นเมื่อเกิด error
         setMacros({ carbs: 0, fats: 0, protein: 0 });
       } finally {
         setLoading(false);
@@ -64,12 +55,7 @@ export default function NutritionPieChart() {
     { name: 'Protein', value: macros.protein, color: '#F3C767' },
   ];
 
-  console.log('🥧 [Piegraph] Render state:', { loading, error, total, macros });
-
-  // แสดง Loading
   if (loading) {
-    console.log('🥧 [Piegraph] Showing loading state');
-
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-black font-mono text-sm">Loading...</p>
@@ -77,9 +63,7 @@ export default function NutritionPieChart() {
     );
   }
 
-  // แสดง Error
   if (error) {
-    console.log('🥧 [Piegraph] Showing error state:', error);
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-red-600 font-mono text-sm text-center">{error}</p>
@@ -87,9 +71,7 @@ export default function NutritionPieChart() {
     );
   }
 
-  // แสดงข้อความเมื่อไม่มีข้อมูล
   if (total === 0) {
-    console.log('🥧 [Piegraph] Showing no data state (total = 0)');
     return (
       <div className="w-full h-full flex items-center justify-center">
         <p className="text-black font-mono text-sm text-center">ยังไม่มีข้อมูลโภชนาการวันนี้</p>
@@ -97,11 +79,8 @@ export default function NutritionPieChart() {
     );
   }
 
-  console.log('🥧 [Piegraph] Rendering chart with data:', data);
-
   return (
     <div className="w-full h-full flex items-center justify-center">
-      {/* Pie Chart */}
       <div style={{ width: 500, height: 500 }}>
         <PieChart width={500} height={500}>
           <Pie

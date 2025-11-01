@@ -1,4 +1,3 @@
-// src/components/Activity.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -8,12 +7,15 @@ type ActivityProps = {
   onSave: (caloriesBurned: number) => void;
 };
 
+/**
+ * Activity Component - ส่วนบันทึกกิจกรรมการออกกำลังกาย
+ * ให้ผู้ใช้เลือกประเภทกีฬาและระยะเวลา เพื่อคำนวณแคลอรี่ที่เผาผลาญ
+ */
 const Activity: React.FC<ActivityProps> = ({ onSave }) => {
   const [selectedActivity, setSelectedActivity] = useState("วิ่ง");
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // รายการกีฬา 20 ชนิด (ต้องตรงกับชื่อใน database ตาราง Sports)
   const sports = [
     "เต้น",
     "บาสเก็ตบอล",
@@ -41,7 +43,6 @@ const Activity: React.FC<ActivityProps> = ({ onSave }) => {
   const decreaseTime = () => setDuration((prev) => (prev > 0 ? prev - 5 : 0));
 
   const saveActivity = async () => {
-    // ตรวจสอบว่าเลือกเวลามากกว่า 0 หรือไม่
     if (duration <= 0) {
       alert("กรุณาเลือกระยะเวลาที่มากกว่า 0 นาที");
       return;
@@ -50,21 +51,16 @@ const Activity: React.FC<ActivityProps> = ({ onSave }) => {
     setIsLoading(true);
 
     try {
-      // เรียก API ผ่าน AddActivityService
       const result = await AddActivityService.logActivity(selectedActivity, duration);
-
-      // ดึงค่าแคลอรี่จาก response
       const caloriesBurned = result.calories_burned;
       const totalBurned = result.total_burned;
 
-      // เรียก callback เพื่ออัพเดท UI ของหน้า parent
       onSave(caloriesBurned);
 
       alert(
         `บันทึกแล้ว! เผาผลาญไป ${caloriesBurned} kcal\nรวมวันนี้: ${totalBurned} kcal`
       );
 
-      // รีเซ็ตค่าเวลากลับเป็น 0
       setDuration(0);
     } catch (error: any) {
       alert(`เกิดข้อผิดพลาด: ${error.message}`);
@@ -75,7 +71,7 @@ const Activity: React.FC<ActivityProps> = ({ onSave }) => {
 
   return (
     <div className="bg-white border-2 sm:border-4 border-black shadow-lg p-3 sm:p-4 md:p-6 w-[95%] sm:w-full max-w-[280px] xs:max-w-[320px] sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto text-black">
-      {/* Dropdown เลือกกิจกรรม */}
+      {/* Activity Selector */}
       <div className="mb-3 sm:mb-5">
         <select
           value={selectedActivity}
@@ -91,7 +87,7 @@ const Activity: React.FC<ActivityProps> = ({ onSave }) => {
         </select>
       </div>
 
-      {/* ช่องเวลา + ปุ่มเพิ่ม/ลด */}
+      {/* Duration Control */}
       <div className="flex justify-center items-center mb-3 sm:mb-4 space-x-2 xs:space-x-3 sm:space-x-4">
         <button
           onClick={decreaseTime}
@@ -112,7 +108,7 @@ const Activity: React.FC<ActivityProps> = ({ onSave }) => {
         </button>
       </div>
 
-      {/* ปุ่ม SAVE */}
+      {/* Save Button */}
       <div className="flex justify-center">
         <button
           onClick={saveActivity}

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../service/add_activity_service.dart';
 
+// Activity Widget
+// บันทึกการออกกำลังกาย เลือกกีฬาและระยะเวลา
 class Activity extends StatefulWidget {
   final Function(int caloriesBurned) onSave;
 
@@ -11,11 +13,12 @@ class Activity extends StatefulWidget {
 }
 
 class _ActivityState extends State<Activity> {
+  // Form State
   String selectedActivity = 'วิ่ง';
   int duration = 0;
   bool isLoading = false;
 
-  // รายการกีฬา 20 ชนิด (ต้องตรงกับชื่อใน database ตาราง Sports)
+  // รายการกีฬา 20 ชนิด (ต้องตรงกับชื่อใน database)
   final List<String> sports = [
     'เต้น',
     'บาสเก็ตบอล',
@@ -39,8 +42,10 @@ class _ActivityState extends State<Activity> {
     'สควอช',
   ];
 
+  // เพิ่มเวลา 5 นาที
   void increaseTime() => setState(() => duration += 5);
 
+  // ลดเวลา 5 นาที
   void decreaseTime() {
     setState(() {
       if (duration > 0) duration -= 5;
@@ -48,8 +53,8 @@ class _ActivityState extends State<Activity> {
     });
   }
 
-  /// Helper method เพื่อแปลงค่าจาก response เป็น int
-  /// รองรับทั้ง num และ String (เช่น "150.00")
+  // Helper: แปลงค่าจาก API response เป็น int
+  // รองรับทั้ง int, double, และ String
   int _parseToInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
@@ -61,8 +66,10 @@ class _ActivityState extends State<Activity> {
     return 0;
   }
 
+  // Business Logic: บันทึกการออกกำลังกาย
+  // เรียก API และอัปเดต UI หลังบันทึกสำเร็จ
   Future<void> saveActivity() async {
-    // ตรวจสอบว่าเลือกเวลามากกว่า 0 หรือไม่
+    // Validation: ตรวจสอบระยะเวลา
     if (duration <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -76,7 +83,7 @@ class _ActivityState extends State<Activity> {
     setState(() => isLoading = true);
 
     try {
-      // เรียก API ผ่าน AddActivityService
+      // API Call: บันทึกกิจกรรม
       final result = await AddActivityService.logActivity(
         sportName: selectedActivity,
         time: duration,
@@ -84,13 +91,14 @@ class _ActivityState extends State<Activity> {
 
       if (!mounted) return;
 
-      // ดึงค่าแคลอรี่จาก response (รองรับทั้ง num และ String)
+      // Parse response data
       final caloriesBurned = _parseToInt(result['calories_burned']);
       final totalBurned = _parseToInt(result['total_burned']);
 
-      // เรียก callback เพื่ออัพเดท UI ของหน้า parent
+      // Update parent widget
       widget.onSave(caloriesBurned);
 
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -101,7 +109,7 @@ class _ActivityState extends State<Activity> {
         ),
       );
 
-      // รีเซ็ตค่าเวลากลับเป็น 0
+      // Reset form
       setState(() {
         duration = 0;
       });
@@ -122,12 +130,13 @@ class _ActivityState extends State<Activity> {
     }
   }
 
+  // UI: สร้างหน้า Activity Form
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    // Responsive: ปรับขนาดตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final bool isUltraSmall = screenWidth < 360;
     final double scale = isUltraSmall ? 0.85 : isSmallScreen ? 0.95 : 1.0;
@@ -164,7 +173,7 @@ class _ActivityState extends State<Activity> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Dropdown
+            // Dropdown: เลือกกีฬา
             Container(
               height: dropdownHeight,
               padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -194,7 +203,7 @@ class _ActivityState extends State<Activity> {
 
             SizedBox(height: spacing),
 
-            // Time row
+            // Time Controls: ปุ่ม +/- และแสดงเวลา
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -238,7 +247,7 @@ class _ActivityState extends State<Activity> {
 
             SizedBox(height: spacing),
 
-            // Save button
+            // Button: Save
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -283,6 +292,7 @@ class _ActivityState extends State<Activity> {
     );
   }
 
+  // Widget Helper: สร้างปุ่ม + และ - สำหรับปรับเวลา
   Widget _buildTimeButton(
     String symbol,
     VoidCallback onPressed,

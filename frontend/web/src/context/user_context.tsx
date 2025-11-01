@@ -3,9 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { profileService, UserProfile } from '../services/profile_service';
 
-// ========================================
-// Types
-// ========================================
+// ประเภทข้อมูลของ User Context
 interface UserContextType {
   userProfile: UserProfile | null;
   loading: boolean;
@@ -15,71 +13,60 @@ interface UserContextType {
   clearUserProfile: () => void;
 }
 
-// ========================================
-// Create Context
-// ========================================
+// สร้าง Context สำหรับ User Profile
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// ========================================
-// Provider Component
-// ========================================
+// Provider Component - ครอบแอปเพื่อให้เข้าถึงข้อมูล User Profile ได้ทุกหน้า
 export function UserProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ฟังก์ชันดึงข้อมูล user profile
+  // ดึงข้อมูล User Profile จาก API
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // ตรวจสอบว่ามี token หรือไม่ ถ้าไม่มีก็ไม่ต้องดึงข้อมูล
       if (typeof window === 'undefined') {
         setLoading(false);
         return;
       }
 
-      const token = localStorage.getItem('accessToken'); // ✅ เปลี่ยนจาก 'token'
-      console.log('[UserContext] Token exists:', !!token);
+      const token = localStorage.getItem('accessToken');
 
       if (!token) {
-        console.log('[UserContext] No token found, skipping profile fetch');
         setUserProfile(null);
         setLoading(false);
         return;
       }
 
-      console.log('[UserContext] Fetching user profile...');
       const profile = await profileService.getCurrentUserProfile();
-      console.log('[UserContext] Profile fetched:', profile);
       setUserProfile(profile);
     } catch (err: any) {
-      console.error('[UserContext] Error fetching user profile:', err);
-      // ไม่ต้อง set error เพื่อไม่ให้กระทบกับหน้า login/register
       setUserProfile(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // ฟังก์ชัน refresh ข้อมูล (เรียกใช้เมื่อมีการอัปเดต)
+  // รีเฟรชข้อมูล User Profile (เรียกใช้เมื่อมีการอัปเดต)
   const refreshUserProfile = async () => {
     await fetchUserProfile();
   };
 
-  // ฟังก์ชันอัปเดตข้อมูลโดยตรง (ไม่ต้องเรียก API)
+  // อัปเดตข้อมูล Profile โดยตรงโดยไม่ต้องเรียก API
   const updateUserProfile = (profile: UserProfile) => {
     setUserProfile(profile);
   };
 
-  // ฟังก์ชัน clear ข้อมูล user (สำหรับ logout)
+  // ล้างข้อมูล User Profile (ใช้ตอน logout)
   const clearUserProfile = () => {
     setUserProfile(null);
     setError(null);
   };
 
-  // ดึงข้อมูลครั้งแรกตอน mount
+  // ดึงข้อมูลครั้งแรกเมื่อโหลดหน้า
   useEffect(() => {
     fetchUserProfile();
   }, []);
@@ -96,9 +83,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
-// ========================================
-// Custom Hook
-// ========================================
+// Custom Hook สำหรับใช้งาน User Context
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
