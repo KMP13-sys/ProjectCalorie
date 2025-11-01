@@ -212,10 +212,43 @@ class ProfileService {
     required File imageFile,
   }) async {
     try {
-      final userId = await StorageHelper.getUserId();
+      // ✅ ดึง userId จาก JWT token โดยตรงแทนที่จะใช้จาก storage
+      final accessToken = await StorageHelper.getAccessToken();
 
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('No access token found. Please login.');
+      }
+
+      String? userId;
+
+      try {
+        // Decode JWT payload เพื่อดึง userId
+        final parts = accessToken.split('.');
+        if (parts.length == 3) {
+          final payload = parts[1];
+          final normalized = base64Url.normalize(payload);
+          final resp = utf8.decode(base64Url.decode(normalized));
+          final payloadMap = json.decode(resp);
+
+          // Backend ใช้ field 'id' ใน JWT
+          userId = payloadMap['id']?.toString();
+
+          print('[Profile Service] Decoded userId from token: $userId');
+        }
+      } catch (e) {
+        print('[Profile Service] Error decoding token: $e');
+      }
+
+      // ถ้า decode ไม่ได้ ให้ fallback ไปใช้จาก storage
       if (userId == null || userId.isEmpty) {
-        throw Exception('No user ID found. Please login again.');
+        final userIdStr = await StorageHelper.getUserId();
+
+        if (userIdStr == null || userIdStr.isEmpty) {
+          throw Exception('User ID not found. Please login again.');
+        }
+
+        userId = userIdStr;
+        print('[Profile Service] Using userId from storage: $userId');
       }
 
       return await updateProfileImage(

@@ -241,17 +241,11 @@ export default function LoginPage() {
 
               {/* Links */}
               <div className="mt-6 pt-6 border-t-4 border-dashed border-gray-300">
-                <div className="flex justify-between items-center">
-                  <button 
-                    className="text-sm text-gray-600 hover:text-gray-800 font-bold"
-                    style={{ fontFamily: 'monospace' }}
-                  >
-                    ? Forgot Password
-                  </button>
-                  <button 
-                    onClick={handleNavigateToRegister} 
+                <div className="flex justify-center items-center">
+                  <button
+                    onClick={handleNavigateToRegister}
                     className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border-3 border-black text-white text-sm font-bold transition-all"
-                    style={{ 
+                    style={{
                       fontFamily: 'monospace',
                       boxShadow: '3px 3px 0px rgba(0,0,0,0.3)'
                     }}
