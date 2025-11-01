@@ -29,12 +29,12 @@ export const listAPI = {
     try {
       const user = authAPI.getCurrentUser();
 
-      if (!user || !user.id) {
+      if (!user || !user.user_id) {
         throw new Error('กรุณาเข้าสู่ระบบก่อนใช้งาน');
       }
 
       const response = await api.get<TodayMealsResponse>(
-        `/api/daily/meals/${user.id}`
+        `/api/daily/meals/${user.user_id}`
       );
 
       return response.data;
@@ -54,12 +54,12 @@ export const listAPI = {
     try {
       const user = authAPI.getCurrentUser();
 
-      if (!user || !user.id) {
+      if (!user || !user.user_id) {
         throw new Error('กรุณาเข้าสู่ระบบก่อนใช้งาน');
       }
 
       const response = await api.get<TodayActivitiesResponse>(
-        `/api/daily/activities/${user.id}`
+        `/api/daily/activities/${user.user_id}`
       );
 
       return response.data;

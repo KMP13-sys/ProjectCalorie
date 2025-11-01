@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { saveMeal } from '../../services/predict_service';
@@ -22,7 +22,7 @@ interface FoodDetail {
  * แสดงรายละเอียดอาหารที่ AI ทำนาย พร้อมข้อมูลโภชนาการ
  * ผู้ใช้สามารถบันทึกอาหารเข้าสู่ระบบได้
  */
-export default function FoodDetailScreen() {
+function FoodDetailScreenContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSaving, setIsSaving] = useState(false);
@@ -415,5 +415,17 @@ function InfoBox({ text, icon }: { text: string; icon?: string }) {
       {icon && <span className="text-lg mr-2">{icon}</span>}
       <span className="flex-1 text-left">{text}</span>
     </div>
+  );
+}
+
+export default function FoodDetailScreen() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center font-mono">Loading...</div>
+      </div>
+    }>
+      <FoodDetailScreenContent />
+    </Suspense>
   );
 }

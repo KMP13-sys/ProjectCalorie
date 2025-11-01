@@ -356,7 +356,7 @@ export default function AboutUserPage() {
                   textShadow: '2px 2px 0px rgba(244,67,54,0.2)'
                 }}
               >
-                "{deleteModal.user.username}"
+                &quot;{deleteModal.user.username}&quot;
               </p>
               <p
                 className="text-lg text-gray-700 text-center"

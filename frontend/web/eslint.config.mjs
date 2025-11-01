@@ -23,6 +23,7 @@ const eslintConfig = [
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "off", // suppress 'any' type warnings
+      "@typescript-eslint/no-empty-object-type": "off", // allow empty interfaces
     },
   },
 ];
