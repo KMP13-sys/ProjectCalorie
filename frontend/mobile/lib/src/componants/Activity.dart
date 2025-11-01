@@ -142,22 +142,25 @@ class _ActivityState extends State<Activity> {
     final double spacing = isSmallScreen ? 12 : 20;
 
     return Center(
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: screenWidth * 0.95,
-        ),
-        padding: EdgeInsets.all(padding),
-        margin: EdgeInsets.all(margin),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(width: borderWidth, color: Colors.black),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              offset: Offset(isSmallScreen ? 4 : 6, isSmallScreen ? 4 : 6),
-            ),
-          ],
-        ),
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: screenWidth * 0.95,
+          ),
+          padding: EdgeInsets.all(padding),
+          margin: EdgeInsets.all(margin),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(width: borderWidth, color: Colors.black),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                offset: Offset(isSmallScreen ? 4 : 6, isSmallScreen ? 4 : 6),
+                blurRadius: 0,
+              ),
+            ],
+          ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -274,6 +277,7 @@ class _ActivityState extends State<Activity> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

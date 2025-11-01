@@ -309,21 +309,54 @@ export const deleteOwnAccount = async (req: Request, res: Response) => {
 
     // ดึงข้อมูลผู้ใช้เพื่อเช็ครูปโปรไฟล์
     const [users]: any = await db.query(
-      "SELECT image_profile FROM users WHERE user_id = ?",
+      "SELECT image_profile FROM Users WHERE user_id = ?",
       [userId]
     );
 
-    if (users.length > 0 && users[0].image_profile) {
-      // ลบไฟล์รูปภาพโปรไฟล์ถ้ามี
-      deleteProfileImage(users[0].image_profile);
+    if (users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // ลบข้อมูลผู้ใช้
-    await db.query("DELETE FROM users WHERE user_id = ?", [userId]);
+    const imageProfile = users[0].image_profile;
+
+    // ลบไฟล์รูปภาพโปรไฟล์ถ้ามี
+    if (imageProfile) {
+      deleteProfileImage(imageProfile);
+    }
+
+    // ลบข้อมูลที่เกี่ยวข้องทั้งหมดก่อน (ตาม foreign key constraints)
+    // 1. ลบ MealDetails ที่เกี่ยวข้องกับ Meals ของ user
+    await db.query(`
+      DELETE md FROM MealDetails md
+      INNER JOIN Meals m ON md.meal_id = m.meal_id
+      WHERE m.user_id = ?
+    `, [userId]);
+
+    // 2. ลบ Meals
+    await db.query("DELETE FROM Meals WHERE user_id = ?", [userId]);
+
+    // 3. ลบ ActivityDetail ที่เกี่ยวข้องกับ Activity ของ user
+    await db.query(`
+      DELETE ad FROM ActivityDetail ad
+      INNER JOIN Activity a ON ad.activity_id = a.activity_id
+      WHERE a.user_id = ?
+    `, [userId]);
+
+    // 4. ลบ Activity
+    await db.query("DELETE FROM Activity WHERE user_id = ?", [userId]);
+
+    // 5. ลบ DailyCalories
+    await db.query("DELETE FROM DailyCalories WHERE user_id = ?", [userId]);
+
+    // 6. ลบ AIAnalysis (ถ้ามี)
+    await db.query("DELETE FROM AIAnalysis WHERE user_id = ?", [userId]);
+
+    // 7. สุดท้าย ลบผู้ใช้
+    await db.query("DELETE FROM Users WHERE user_id = ?", [userId]);
 
     res.json({ message: "Account deleted successfully" });
   } catch (err) {
-    console.error(err);
+    console.error("deleteOwnAccount error:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
