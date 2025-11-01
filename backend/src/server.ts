@@ -15,19 +15,23 @@ import activityRoutes from "./routes/activity.routes";
 const app = express();
 
 // ====== Middlewares ======
+
+// ตั้งค่า CORS เพื่อให้เข้าถึง API ได้จากทุกที่
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// รองรับ JSON และ form-urlencoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// เสิร์ฟไฟล์ static สำหรับรูปที่อัปโหลด
+// เสิร์ฟไฟล์ static สำหรับรูปภาพที่อัปโหลด
 app.use("/uploads", express.static("src/uploads"));
 
 // ====== Routes ======
+// แยก route ตาม module
 app.use("/api/auth", authRoutes);        
 app.use("/api/profile", profileRoutes);  
 app.use("/api/update", updateRoutes);
@@ -36,13 +40,15 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/activity", activityRoutes);
 
 // ====== Root test route ======
+// ใช้ตรวจสอบว่า server ทำงานปกติ
 app.get("/", (req, res) => {
   res.send("Server is running...");
 });
 
 // ====== Error handling middleware ======
+// จัดการ error ที่ไม่ถูกจับโดย route อื่น
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+  console.error(err.stack); // log error stack
   res.status(500).json({ message: "Something went wrong!" });
 });
 

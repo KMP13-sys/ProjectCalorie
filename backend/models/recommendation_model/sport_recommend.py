@@ -16,32 +16,32 @@ logger = logging.getLogger(__name__)
 class SportRecommendationSystem:
     """
     ระบบแนะนำกีฬา โดยใช้:
-    - ประวัติการออกกำลังกายของผู้ใช้ (sport history)
+    - ประวัติการออกกำลังกายของผู้ใช้
     - KNN + Cosine Similarity
     """
 
     def __init__(self, host='localhost', user='root', password='', database='calories_app'):
-        """Initialize database connection"""
+        """Initialize database connection และ TF-IDF vectorizer"""
         self.host = host
         self.user = user
         self.password = password
         self.database = database
 
-        # ✅ ใช้ analyzer='char_wb' ช่วยให้ภาษาไทยแยกได้ดีขึ้น
+        # TF-IDF vectorizer แบบ char-level สำหรับภาษาไทย
         self.vectorizer = TfidfVectorizer(
             analyzer='char_wb',   # เหมาะกับภาษาไทยที่ไม่มีช่องว่าง
-            ngram_range=(2, 4)    # ใช้ช่วง 2-4 ตัวอักษรเพื่อจับคำไทยยาวๆ
+            ngram_range=(2, 4)    # 2-4 ตัวอักษร เพื่อจับคำยาว
         )
 
     def _get_connection(self):
-        """Get database connection"""
+        """สร้าง connection กับฐานข้อมูล MySQL"""
         try:
             conn = mysql.connector.connect(
                 host=self.host,
                 user=self.user,
                 password=self.password,
                 database=self.database,
-                charset='utf8mb4',   # ✅ รองรับภาษาไทย
+                charset='utf8mb4',      # รองรับภาษาไทย
                 collation='utf8mb4_general_ci'
             )
             return conn
@@ -54,7 +54,7 @@ class SportRecommendationSystem:
     # ================================
 
     def get_user_sport_history(self, user_id):
-        """ดึงรายชื่อกีฬาที่ผู้ใช้เคยทำ"""
+        """ดึงรายชื่อกีฬาที่ผู้ใช้เคยทำ (เรียงตามความถี่)"""
         try:
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -68,7 +68,6 @@ class SportRecommendationSystem:
             GROUP BY s.sport_id, s.sport_name
             ORDER BY frequency DESC
             """
-
             cursor.execute(query, (user_id,))
             results = cursor.fetchall()
             cursor.close()
@@ -81,7 +80,10 @@ class SportRecommendationSystem:
             return []
 
     def get_user_profiles(self):
-        """ดึง user profile ของทุกคน"""
+        """
+        ดึง user profile ของทุกคน
+        คืนค่า dict: {user_id: [sport_name1, sport_name2, ...]}
+        """
         try:
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -93,7 +95,6 @@ class SportRecommendationSystem:
             JOIN Sports s ON ad.sport_id = s.sport_id
             ORDER BY a.user_id, s.sport_name
             """
-
             cursor.execute(query)
             results = cursor.fetchall()
             cursor.close()
@@ -115,8 +116,14 @@ class SportRecommendationSystem:
     # ================================
 
     def recommend_sports(self, user_id, top_n=3, k_neighbors=5):
-        """แนะนำชื่อกีฬา (ภาษาไทย)"""
+        """
+        แนะนำกีฬาสำหรับผู้ใช้
+        - ใช้ประวัติของ user_id
+        - KNN + Cosine similarity กับ user profiles อื่น
+        - คืนค่า top_n sports ใหม่ที่ยังไม่เคยทำ
+        """
         try:
+            # ดึงประวัติการออกกำลังกายของผู้ใช้
             user_history = self.get_user_sport_history(user_id)
             if not user_history:
                 return {
@@ -124,6 +131,7 @@ class SportRecommendationSystem:
                     'message': 'ไม่พบประวัติการออกกำลังกายของผู้ใช้นี้'
                 }
 
+            # ดึง user profiles ของทุกคน
             user_profiles = self.get_user_profiles()
             if not user_profiles or user_id not in user_profiles:
                 return {
@@ -134,19 +142,17 @@ class SportRecommendationSystem:
             user_ids = list(user_profiles.keys())
             texts = [' '.join(user_profiles[uid]) for uid in user_ids]
 
+            # TF-IDF vectorization
             tfidf_matrix = self.vectorizer.fit_transform(texts)
 
-            if user_id not in user_ids:
-                return {'success': False, 'message': 'ไม่พบผู้ใช้เป้าหมาย'}
-
             target_idx = user_ids.index(user_id)
-            similarities = cosine_similarity(
-                tfidf_matrix[target_idx], tfidf_matrix
-            ).flatten()
+            similarities = cosine_similarity(tfidf_matrix[target_idx], tfidf_matrix).flatten()
 
+            # เลือก k_neighbors ที่ใกล้เคียงที่สุด
             k_neighbors = min(k_neighbors, len(user_ids) - 1)
             similar_indices = np.argsort(-similarities)[1:k_neighbors + 1]
 
+            # เก็บจำนวนครั้งที่กีฬาปรากฏใน neighbors
             similar_sports = {}
             for idx in similar_indices:
                 uid = user_ids[idx]
@@ -157,6 +163,7 @@ class SportRecommendationSystem:
             if not similar_sports:
                 return {'success': False, 'message': 'ไม่มีกีฬาใหม่ที่แนะนำได้'}
 
+            # จัดอันดับและคืน top_n
             recommendations = sorted(
                 similar_sports.items(),
                 key=lambda x: x[1],

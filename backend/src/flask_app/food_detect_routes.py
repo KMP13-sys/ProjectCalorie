@@ -8,23 +8,22 @@ import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
 from functools import wraps
 
-# ---------------------------------------------------------------------
-# Setup
-# ---------------------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent
+# -----------------------------
+# Blueprint & Logger
+# -----------------------------
 food_detect_bp = Blueprint("food_detect", __name__)
 logger = logging.getLogger(__name__)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
-# ---------------------------------------------------------------------
-# Auth decorator
-# ---------------------------------------------------------------------
+# -----------------------------
+# Auth decorator: ตรวจสอบ JWT และใส่ user_id ลง request
+# -----------------------------
 def require_auth(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        auth_header = request.headers.get("Authorization", None)
+        auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return jsonify({"success": False, "message": "Invalid or missing token"}), 401
 
@@ -40,33 +39,36 @@ def require_auth(f):
         return f(*args, **kwargs)
     return wrapper
 
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
+# -----------------------------
+# Helper functions
+# -----------------------------
 def verify_user_access(user_id_from_token, user_id_from_path):
+    """ตรวจสอบว่า user ที่ทำ request ตรงกับ userId ใน path"""
     try:
         return int(user_id_from_token) == int(user_id_from_path)
     except (ValueError, TypeError):
         return False
 
 def allowed_file(filename: str) -> bool:
+    """ตรวจสอบนามสกุลไฟล์ที่อนุญาต"""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# ---------------------------------------------------------------------
+# -----------------------------
 # Import model functions
-# ---------------------------------------------------------------------
+# -----------------------------
 try:
     from flask_app.food_detect import predict_food_image, save_meal_to_db
 except ImportError as e:
     logger.error(f"Cannot import food_detect module: {e}")
     raise
 
-# ---------------------------------------------------------------------
+# -----------------------------
 # Routes
-# ---------------------------------------------------------------------
+# -----------------------------
 @food_detect_bp.route("/api/predict-food/<int:userId>", methods=["POST"])
 @require_auth
 def predict_food(userId):
+    """Predict ชื่ออาหารจากรูปภาพและดึงข้อมูลโภชนาการ"""
     try:
         if not verify_user_access(request.user_id, userId):
             return jsonify({"success": False, "message": "Forbidden"}), 403
@@ -77,7 +79,6 @@ def predict_food(userId):
         file = request.files["image"]
         if file.filename == "":
             return jsonify({"success": False, "message": "Uploaded file has no name"}), 400
-
         if not allowed_file(file.filename):
             return jsonify({"success": False, "message": "Allowed types: png, jpg, jpeg"}), 400
 
@@ -91,17 +92,16 @@ def predict_food(userId):
 
         result = predict_food_image(file)
         result["userId"] = userId
-
         return jsonify({"success": True, "data": result}), 200
 
     except Exception as e:
         logger.exception(f"Error in predict_food for user {userId}: {e}")
         return jsonify({"success": False, "message": "Server error"}), 500
 
-# ---------------------------------------------------------------------
 @food_detect_bp.route("/api/save-meal/<int:userId>", methods=["POST"])
 @require_auth
 def save_meal(userId):
+    """บันทึกมื้ออาหารของผู้ใช้ลงฐานข้อมูล"""
     try:
         if not verify_user_access(request.user_id, userId):
             return jsonify({"success": False, "message": "Forbidden"}), 403
@@ -110,7 +110,7 @@ def save_meal(userId):
         if not data:
             return jsonify({"success": False, "message": "No JSON body provided"}), 400
 
-        logger.info(f"Saving meal for user {userId}: {data}")
+        logger.info(f"Saving meal for user {userId}")
         result = save_meal_to_db(userId, data)
 
         if isinstance(result, dict) and "error" in result:

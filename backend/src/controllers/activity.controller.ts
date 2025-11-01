@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 import db from "../config/db";
 import { RowDataPacket } from "mysql2";
 
+// ==============================
+// Log user's sport activity
+// ==============================
 export const logActivity = async (req: Request, res: Response) => {
-  
   const user = (req as any).user;
   const userId = user?.user_id || user?.id;
 
-  console.log("User from JWT:", user);
-
+  // ตรวจสอบ JWT
   if (!userId) {
     return res.status(401).json({ message: "Unauthorized: user_id missing in token" });
   }
@@ -23,7 +24,7 @@ export const logActivity = async (req: Request, res: Response) => {
   try {
     await connection.beginTransaction();
 
-    // หา sport ในตาราง Sports
+    // ดึงข้อมูลกีฬาจากตาราง Sports
     const [sports] = await connection.query<RowDataPacket[]>(
       "SELECT sport_id, burn_out FROM Sports WHERE sport_name = ?",
       [sport_name]
@@ -37,7 +38,7 @@ export const logActivity = async (req: Request, res: Response) => {
     const { sport_id, burn_out } = sports[0];
     const calories_burned = time * burn_out;
 
-    // ตรวจสอบว่ามี Activity วันนี้ไหม
+    // ตรวจสอบ Activity ของผู้ใช้วันนี้
     const [activities] = await connection.query<RowDataPacket[]>(
       "SELECT activity_id FROM Activity WHERE user_id = ? AND date = CURDATE()",
       [userId]
@@ -61,17 +62,16 @@ export const logActivity = async (req: Request, res: Response) => {
       [activity_id, sport_id, time, calories_burned]
     );
 
-    // รวมการเผาผลาญแคลอรี่ของวันนั้นทั้งหมด
+    // รวมการเผาผลาญแคลอรี่ของวัน
     const [sumResult] = await connection.query<RowDataPacket[]>(
       `SELECT SUM(calories_burned) AS total_burned
        FROM ActivityDetail
        WHERE activity_id = ?`,
       [activity_id]
     );
-
     const total_burned = sumResult[0].total_burned || 0;
 
-    // ตรวจ DailyCalories วันนี้
+    // ตรวจสอบ DailyCalories ของวันนี้
     const [daily] = await connection.query<RowDataPacket[]>(
       "SELECT daily_calorie_id FROM DailyCalories WHERE user_id = ? AND date = CURDATE()",
       [userId]
@@ -91,8 +91,9 @@ export const logActivity = async (req: Request, res: Response) => {
     }
 
     await connection.commit();
+
     return res.status(201).json({
-      message: "Activity logged successfully ! เย้",
+      message: "Activity logged successfully",
       data: { sport_name, time, calories_burned, total_burned },
     });
   } catch (error) {

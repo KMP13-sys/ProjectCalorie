@@ -3,7 +3,9 @@ import db from "../config/db";
 import fs from "fs";
 import path from "path";
 
-// === DELETE USER by ADMIN ===
+// ==============================
+// DELETE USER by Admin
+// ==============================
 export const deleteUserByAdmin = async (req: Request, res: Response) => {
   try {
     const adminRole = (req as any).user?.role;
@@ -13,74 +15,47 @@ export const deleteUserByAdmin = async (req: Request, res: Response) => {
 
     const { id } = req.params;
 
-    // ตรวจสอบว่าผู้ใช้มีอยู่จริงไหม และดึงข้อมูลรูปโปรไฟล์
-    const [rows]: any = await db.query("SELECT user_id, image_profile FROM users WHERE user_id = ?", [id]);
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    // ดึงข้อมูลผู้ใช้และรูปโปรไฟล์
+    const [rows]: any = await db.query(
+      "SELECT user_id, image_profile FROM users WHERE user_id = ?",
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ message: "User not found" });
 
-    const user = rows[0];
-    const imageProfile = user.image_profile;
+    const imageProfile = rows[0].image_profile;
 
     // ลบรูปโปรไฟล์ (ถ้ามี)
     if (imageProfile) {
       const imagePath = path.join(__dirname, "../../uploads", imageProfile);
       if (fs.existsSync(imagePath)) {
-        try {
-          fs.unlinkSync(imagePath);
-          console.log(`Deleted profile image: ${imagePath}`);
-        } catch (err) {
-          console.error(`Failed to delete profile image: ${imagePath}`, err);
-        }
+        try { fs.unlinkSync(imagePath); } 
+        catch (err) { console.error(`Failed to delete profile image: ${imagePath}`, err); }
       }
     }
 
-    // ลบข้อมูลที่เกี่ยวข้องทั้งหมดก่อน (ตาม foreign key constraints)
-    // 1. ลบ MealDetails ที่เกี่ยวข้องกับ Meals ของ user
-    await db.query(`
-      DELETE md FROM MealDetails md
-      INNER JOIN Meals m ON md.meal_id = m.meal_id
-      WHERE m.user_id = ?
-    `, [id]);
-
-    // 2. ลบ Meals
+    // ลบข้อมูลที่เกี่ยวข้องทั้งหมดก่อนลบผู้ใช้
+    await db.query(`DELETE md FROM MealDetails md INNER JOIN Meals m ON md.meal_id = m.meal_id WHERE m.user_id = ?`, [id]);
     await db.query("DELETE FROM Meals WHERE user_id = ?", [id]);
-
-    // 3. ลบ ActivityDetail ที่เกี่ยวข้องกับ Activity ของ user
-    await db.query(`
-      DELETE ad FROM ActivityDetail ad
-      INNER JOIN Activity a ON ad.activity_id = a.activity_id
-      WHERE a.user_id = ?
-    `, [id]);
-
-    // 4. ลบ Activity
+    await db.query(`DELETE ad FROM ActivityDetail ad INNER JOIN Activity a ON ad.activity_id = a.activity_id WHERE a.user_id = ?`, [id]);
     await db.query("DELETE FROM Activity WHERE user_id = ?", [id]);
-
-    // 5. ลบ DailyCalories
     await db.query("DELETE FROM DailyCalories WHERE user_id = ?", [id]);
-
-    // 6. ลบ AIAnalysis (ถ้ามี)
     await db.query("DELETE FROM AIAnalysis WHERE user_id = ?", [id]);
-
-    // 7. สุดท้าย ลบผู้ใช้
     await db.query("DELETE FROM Users WHERE user_id = ?", [id]);
 
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     console.error("deleteUserByAdmin error:", err);
-    res.status(500).json({ message: "Internal server error", error: err });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// === GET ALL USERS (without image and password) ===
+// ==============================
+// GET ALL USERS (exclude password & image)
+// ==============================
 export const getAllUsersByAdmin = async (req: Request, res: Response) => {
   try {
-    const role = (req as any).user?.role;
-    if (role !== "admin") {
-      return res.status(403).json({ message: "Admin only" });
-    }
+    if ((req as any).user?.role !== "admin") return res.status(403).json({ message: "Admin only" });
 
-    // ดึงเฉพาะฟิลด์ที่อนุญาต (ไม่เอา password, image_profile)
     const [rows]: any = await db.query(`
       SELECT user_id, username, email, phone_number, age, gender, height, weight, goal, last_login_at
       FROM users
@@ -88,18 +63,17 @@ export const getAllUsersByAdmin = async (req: Request, res: Response) => {
 
     res.json({ users: rows });
   } catch (err) {
-    console.error("getAllUsers error:", err);
+    console.error("getAllUsersByAdmin error:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// === GET ALL FOODS (for Admin only) ===
+// ==============================
+// GET ALL FOODS (Admin only)
+// ==============================
 export const getAllFoodsByAdmin = async (req: Request, res: Response) => {
   try {
-    const role = (req as any).user?.role;
-    if (role !== "admin") {
-      return res.status(403).json({ message: "Forbidden: Admin only" });
-    }
+    if ((req as any).user?.role !== "admin") return res.status(403).json({ message: "Forbidden: Admin only" });
 
     const [foods]: any = await db.query(`
       SELECT food_id, food_name, protein_gram, fat_gram, carbohydrate_gram, calories
@@ -107,9 +81,7 @@ export const getAllFoodsByAdmin = async (req: Request, res: Response) => {
       ORDER BY food_id ASC
     `);
 
-    if (!foods.length) {
-      return res.status(404).json({ message: "No foods found" });
-    }
+    if (!foods.length) return res.status(404).json({ message: "No foods found" });
 
     res.status(200).json({
       message: "Foods fetched successfully",
@@ -122,34 +94,23 @@ export const getAllFoodsByAdmin = async (req: Request, res: Response) => {
   }
 };
 
-// === UPDATE FOOD (for Admin only) ===
+// ==============================
+// UPDATE FOOD (Admin only)
+// ==============================
 export const updateFoodByAdmin = async (req: Request, res: Response) => {
   try {
-    const role = (req as any).user?.role;
+    if ((req as any).user?.role !== "admin") return res.status(403).json({ message: "Forbidden: Admin only" });
     const adminId = (req as any).user?.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({ message: "Forbidden: Admin only" });
-    }
-
     const { id } = req.params;
     const { food_name, protein_gram, fat_gram, carbohydrate_gram, calories } = req.body;
 
     // ตรวจสอบว่ามีอาหารนี้หรือไม่
     const [existing]: any = await db.query("SELECT * FROM Foods WHERE food_id = ?", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: "Food not found" });
-    }
+    if (existing.length === 0) return res.status(404).json({ message: "Food not found" });
 
     // Validation เบื้องต้น
-    if (calories && calories <= 0) {
-      return res.status(400).json({ message: "Calories must be greater than 0" });
-    }
-    if (
-      (protein_gram && protein_gram < 0) ||
-      (fat_gram && fat_gram < 0) ||
-      (carbohydrate_gram && carbohydrate_gram < 0)
-    ) {
+    if (calories && calories <= 0) return res.status(400).json({ message: "Calories must be greater than 0" });
+    if ((protein_gram && protein_gram < 0) || (fat_gram && fat_gram < 0) || (carbohydrate_gram && carbohydrate_gram < 0)) {
       return res.status(400).json({ message: "Macronutrient values cannot be negative" });
     }
 
@@ -172,5 +133,3 @@ export const updateFoodByAdmin = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
