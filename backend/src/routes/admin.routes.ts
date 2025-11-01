@@ -4,12 +4,14 @@ import { validateToken } from "../middlewares/validateToken";
 
 const router = express.Router();
 
-// ลบผู้ใช้โดยแอดมิน
-router.delete("/delete-user/:id", validateToken, deleteUserByAdmin);
-
+// ========== USER MANAGEMENT ==========
 // ดึงผู้ใช้ทั้งหมด (ไม่เอารูป/พาสเวิด)
 router.get("/users", validateToken, getAllUsersByAdmin);
 
+// ลบผู้ใช้โดยแอดมิน
+router.delete("/users/:id", validateToken, deleteUserByAdmin);
+
+// ========== FOOD MANAGEMENT ==========
 // ดึงข้อมูลอาหารทั้งหมด (สำหรับแอดมิน)
 router.get("/foods", validateToken, getAllFoodsByAdmin);
 

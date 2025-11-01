@@ -1,15 +1,7 @@
 // components/admin/UserTableRow.tsx
 'use client';
 
-type User = {
-  user_id: number;
-  username: string;
-  email: string;
-  phone_number?: string;
-  age?: number;
-  gender?: 'male' | 'female';
-  goal?: 'lose weight' | 'maintain weight' | 'gain weight';
-};
+import { User } from '@/app/services/adminService';
 
 type UserTableRowProps = {
   user: User;

@@ -46,6 +46,7 @@ export interface User {
 export interface LoginResponse {
   message: string
   role: 'user' | 'admin'
+  userId: number
   accessToken: string
   expiresIn: string
 }
@@ -118,7 +119,7 @@ export const authAPI = {
   // Login
   login: async (username: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await api.post<any>('/api/auth/login', { username, password, platform: 'web' })
+      const response = await api.post<LoginResponse>('/api/auth/login', { username, password, platform: 'web' })
       const { accessToken, role, userId } = response.data
 
       if (accessToken) {

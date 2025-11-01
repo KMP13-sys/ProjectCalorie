@@ -2,19 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { adminService } from '@/app/services/adminService';
-
-type User = {
-  user_id: number;
-  username: string;
-  email: string;
-  phone_number?: string;
-  age?: number;
-  gender?: 'male' | 'female';
-  height?: number;
-  weight?: number;
-  goal?: 'lose weight' | 'maintain weight' | 'gain weight';
-};
+import { adminService, User } from '@/app/services/adminService';
 
 type DeleteUserModalProps = {
   user: User;
@@ -30,12 +18,13 @@ export default function DeleteUserModal({ user, onClose, onDelete }: DeleteUserM
 
     try {
       setDeleting(true);
-      await adminService.deleteUser(user.user_id.toString());
+      await adminService.deleteUser(user.user_id); // ส่งเป็น number ตรงๆ
       alert('ลบผู้ใช้สำเร็จ!');
       onDelete();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('เกิดข้อผิดพลาดในการลบผู้ใช้!');
+      const errorMessage = error.message || 'เกิดข้อผิดพลาดในการลบผู้ใช้!';
+      alert(errorMessage);
     } finally {
       setDeleting(false);
     }

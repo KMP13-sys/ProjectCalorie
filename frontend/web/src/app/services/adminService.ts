@@ -1,5 +1,10 @@
 // services/adminService.ts
 
+import api from './auth_service';
+
+// ========================================
+// Types (ตรงกับ Backend Response)
+// ========================================
 export type User = {
   user_id: number;
   username: string;
@@ -10,45 +15,81 @@ export type User = {
   height?: number;
   weight?: number;
   goal?: 'lose weight' | 'maintain weight' | 'gain weight';
+  last_login_at?: string;
 };
 
-const API_URL = 'http://localhost:4000/api/admin';
+export type Food = {
+  food_id: number;
+  food_name: string;
+  protein_gram: number;
+  fat_gram: number;
+  carbohydrate_gram: number;
+  calories: number;
+};
 
+export type GetUsersResponse = {
+  users: User[];
+};
+
+export type GetFoodsResponse = {
+  message: string;
+  count: number;
+  data: Food[];
+};
+
+export type DeleteUserResponse = {
+  message: string;
+};
+
+export type UpdateFoodResponse = {
+  message: string;
+};
+
+// ========================================
+// Admin Service (ใช้ axios จาก auth_service)
+// ========================================
 export const adminService = {
-  getAllUsers: async (token?: string) => {
-    const response = await fetch(`${API_URL}/users`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      }
-    });
-    if (!response.ok) throw new Error('Failed to fetch users');
-    return response.json();
+  // ดึงผู้ใช้ทั้งหมด
+  getAllUsers: async (): Promise<User[]> => {
+    try {
+      const response = await api.get<GetUsersResponse>('/api/admin/users');
+      return response.data.users; // Backend ส่งมาในรูป { users: [...] }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to fetch users';
+      throw new Error(errorMessage);
+    }
   },
 
-  createUser: async (data: any) => {
-    const response = await fetch(`${API_URL}/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to create user');
-    return response.json();
+  // ลบผู้ใช้
+  deleteUser: async (id: number): Promise<DeleteUserResponse> => {
+    try {
+      const response = await api.delete<DeleteUserResponse>(`/api/admin/users/${id}`);
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to delete user';
+      throw new Error(errorMessage);
+    }
   },
-  updateUser: async (id: string, data: any) => {
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to update user');
-    return response.json();
+
+  // ดึงข้อมูลอาหารทั้งหมด
+  getAllFoods: async (): Promise<Food[]> => {
+    try {
+      const response = await api.get<GetFoodsResponse>('/api/admin/foods');
+      return response.data.data; // Backend ส่งมาในรูป { data: [...] }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to fetch foods';
+      throw new Error(errorMessage);
+    }
   },
-  deleteUser: async (id: string) => {
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'DELETE'
-    });
-    if (!response.ok) throw new Error('Failed to delete user');
-    return response.json();
+
+  // แก้ไขข้อมูลอาหาร
+  updateFood: async (id: number, data: Partial<Food>): Promise<UpdateFoodResponse> => {
+    try {
+      const response = await api.put<UpdateFoodResponse>(`/api/admin/foods/${id}`, data);
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to update food';
+      throw new Error(errorMessage);
+    }
   }
 };

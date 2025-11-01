@@ -53,23 +53,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login function
   const login = async (username: string, password: string) => {
     try {
-      // ระบุ type ของ response ให้ชัดเจน
-      const response: { token?: string; role: 'user' | 'admin' } = await authAPI.login(username, password);
+      // authAPI.login() จะเก็บ token และ user ไว้ใน localStorage แล้ว
+      const response = await authAPI.login(username, password);
 
-      // เก็บ token ใน localStorage
-      if (response.token) {
-        localStorage.setItem('accessToken', response.token);
-        localStorage.setItem('adminToken', response.token); // สำหรับหน้า admin
-      }
-
-      // ดึงข้อมูล user จาก authAPI
-      const currentUser = await authAPI.getCurrentUser();
+      // ดึงข้อมูล user จาก localStorage (ที่ authAPI.login เก็บไว้แล้ว)
+      const currentUser = authAPI.getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
       } else {
-        // fallback ถ้า authAPI.getCurrentUser() ยังว่าง
+        // fallback ถ้า getCurrentUser() ยังว่าง
         const userData: User = {
-          id: 0,
+          id: response.userId || 0,
           username: username,
           email: '',
           role: response.role,

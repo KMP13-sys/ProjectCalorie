@@ -2,17 +2,9 @@
 'use client';
 
 import { useState } from 'react';
+import { Food } from '@/app/services/adminService';
 import FoodTableRow from './FoodTableRow';
 import EditFoodModal from './EditFoodModal';
-
-type Food = {
-  id: number;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-};
 
 type FoodTableProps = {
   foods: Food[];
@@ -111,7 +103,7 @@ export default function FoodTable({ foods, loading, onUpdate }: FoodTableProps) 
                   ) : (
                     foods.map((food, index) => (
                       <FoodTableRow
-                        key={food.id}
+                        key={food.food_id}
                         food={food}
                         onEdit={() => setEditingFood(food)}
                         isEven={index % 2 === 0}
