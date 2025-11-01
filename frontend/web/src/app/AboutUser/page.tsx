@@ -14,6 +14,7 @@ export default function AboutUserPage() {
         const data = await adminService.getAllUsers()
         setUsers(data)
       } catch (err: any) {
+        console.error(err)
         setError(err.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้')
       } finally {
         setLoading(false)
@@ -23,8 +24,18 @@ export default function AboutUserPage() {
     fetchUsers()
   }, [])
 
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>Error: {error}</p>
+  const handleUpdate = async () => {
+    setLoading(true)
+    try {
+      const data = await authAPI.getAllUsers()
+      setUsers(Array.isArray(data) ? data : [])
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="p-4">
