@@ -1,9 +1,10 @@
-// nutrition_pie_chart_component.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../service/kal_service.dart';
 import '../../models/kal_models.dart';
 
+// NutritionPieChartComponent Widget
+// แสดงกราฟวงกลมแสดงสัดส่วนสารอาหาร (โปรตีน, ไขมัน, คาร์โบไฮเดรต)
 class NutritionPieChartComponent extends StatefulWidget {
   const NutritionPieChartComponent({super.key});
 
@@ -14,17 +15,19 @@ class NutritionPieChartComponent extends StatefulWidget {
 
 class _NutritionPieChartComponentState
     extends State<NutritionPieChartComponent> {
+  // State Variables
   DailyMacros? _macros;
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Lifecycle: โหลดข้อมูล Macros เมื่อเริ่มต้น
   @override
   void initState() {
     super.initState();
     _loadMacros();
   }
 
-  /// ดึงข้อมูล Macros จาก API
+  // Business Logic: ดึงข้อมูล Macros (โปรตีน, ไขมัน, คาร์โบไฮเดรต) จาก API
   Future<void> _loadMacros() async {
     setState(() {
       _isLoading = true;
@@ -45,18 +48,20 @@ class _NutritionPieChartComponentState
     }
   }
 
+  // UI: สร้างกราฟวงกลมสารอาหาร
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    // Responsive: ปรับขนาดตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double containerHeight = isSmallScreen
         ? screenWidth * 0.35
         : screenWidth * 0.4;
     final double fontSize = isSmallScreen ? 12 : 14;
 
+    // State: Loading
     if (_isLoading) {
       return SizedBox(
         height: containerHeight,
@@ -68,6 +73,7 @@ class _NutritionPieChartComponentState
       );
     }
 
+    // State: Error
     if (_errorMessage != null || _macros == null) {
       return SizedBox(
         height: containerHeight,
@@ -84,6 +90,7 @@ class _NutritionPieChartComponentState
       );
     }
 
+    // State: No data
     if (_macros!.protein == 0 &&
         _macros!.fat == 0 &&
         _macros!.carbohydrate == 0) {
@@ -105,8 +112,9 @@ class _NutritionPieChartComponentState
     return _buildPieChart(screenWidth, isSmallScreen);
   }
 
+  // Widget: สร้างกราฟวงกลม Pie Chart
   Widget _buildPieChart(double screenWidth, bool isSmallScreen) {
-    // ✅ ปรับขนาด Pie Chart ให้เหมาะกับจอ - เพิ่มขนาดกราฟ
+    // Responsive: ปรับขนาด Pie Chart ตามหน้าจอ
     final chartSize = isSmallScreen
         ? screenWidth * 0.7
         : screenWidth * 0.75;
@@ -126,6 +134,7 @@ class _NutritionPieChartComponentState
     );
   }
 
+  // Helper: สร้าง sections สำหรับกราฟวงกลม (Carbs, Fat, Protein)
   List<PieChartSectionData> _buildSections(
       double chartSize, bool isSmallScreen) {
     return [
@@ -153,6 +162,7 @@ class _NutritionPieChartComponentState
     ];
   }
 
+  // Helper: สร้าง section เดี่ยวสำหรับแต่ละสารอาหาร
   PieChartSectionData _buildSection(
     double value,
     Color color,
@@ -160,11 +170,11 @@ class _NutritionPieChartComponentState
     double chartSize,
     bool isSmallScreen,
   ) {
-    // ✅ ปรับขนาดตัวหนังสือและ radius ตามขนาดจอ - ลดขนาดตัวหนังสือให้เล็กลง
+    // Responsive: ปรับขนาด radius และฟอนต์ตามหน้าจอ
     final radius = isSmallScreen ? chartSize * 0.28 : chartSize * 0.3;
-    final fontSize = isSmallScreen ? chartSize * 0.035 : chartSize * 0.04;  // ลดจาก 0.05/0.055 เป็น 0.035/0.04
+    final fontSize = isSmallScreen ? chartSize * 0.035 : chartSize * 0.04;
 
-    // ✅ คำนวณเปอร์เซ็นต์จากค่ารวมทั้งหมด
+    // Data: คำนวณเปอร์เซ็นต์จากค่ารวมทั้งหมด
     final total = _macros!.protein + _macros!.fat + _macros!.carbohydrate;
     final percent = total > 0 ? ((value / total) * 100).toStringAsFixed(0) : '0';
 
@@ -176,7 +186,7 @@ class _NutritionPieChartComponentState
       titleStyle: TextStyle(
         fontSize: fontSize,
         fontWeight: FontWeight.bold,
-        color: const Color.fromARGB(255, 0, 0, 0),  // ใช้สีดำล้วน
+        color: const Color.fromARGB(255, 0, 0, 0),
       ),
     );
   }

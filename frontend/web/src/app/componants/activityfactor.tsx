@@ -5,9 +5,12 @@ import { kalService } from '../../services/kal_service';
 
 interface ActivityFactorButtonProps {
   onSaved?: (level: number, label: string) => void;
-  onCaloriesUpdated?: () => void; // Callback เมื่ออัปเดตแคลอรี่สำเร็จ
+  onCaloriesUpdated?: () => void;
 }
 
+/**
+ * ระดับกิจกรรมประจำวัน - ใช้ในการคำนวณ TDEE (Total Daily Energy Expenditure)
+ */
 const ACTIVITY_LEVELS = [
   { level: 1, label: 'น้อยมาก', description: 'นอนเฉยๆ', factor: 1.2 },
   { level: 2, label: 'น้อย', description: 'ทำงานเบาๆ เดินเล่น', factor: 1.4 },
@@ -16,7 +19,9 @@ const ACTIVITY_LEVELS = [
   { level: 5, label: 'มากที่สุด', description: 'นักกีฬา', factor: 1.9 },
 ];
 
-// แปลง activity factor (1.2-1.9) เป็น level (1-5) และ label
+/**
+ * แปลง activity factor เป็น level และ label
+ */
 function getLevelFromActivityFactor(factor: number): { level: number; label: string } {
   if (factor === 1.2) return { level: 1, label: 'น้อยมาก' };
   if (factor === 1.4) return { level: 2, label: 'น้อย' };
@@ -26,6 +31,11 @@ function getLevelFromActivityFactor(factor: number): { level: number; label: str
   return { level: 0, label: 'ไม่ทราบ' };
 }
 
+/**
+ * Activity Factor Button Component
+ * ปุ่มเลือกระดับกิจกรรมประจำวัน - เลือกได้ 1 ครั้งต่อวัน
+ * ใช้คำนวณแคลอรี่ที่ควรได้รับต่อวัน (TDEE)
+ */
 export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: ActivityFactorButtonProps) {
   const [savedLevel, setSavedLevel] = useState<number | null>(null);
   const [savedLabel, setSavedLabel] = useState<string | null>(null);
@@ -38,41 +48,29 @@ export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: Act
     loadSavedData();
   }, []);
 
-  // โหลดข้อมูลจาก API
   const loadSavedData = async () => {
     try {
-      // เช็คจาก API ว่ามีข้อมูลวันนี้หรือไม่
       const status = await kalService.getCalorieStatus();
 
-      console.log('🔍 Activity Level Check:');
-      console.log('  - API activityLevel:', status.activity_level);
-      console.log('  - API targetCalories:', status.target_calories);
-
       if (status.target_calories > 0 && status.activity_level > 0) {
-        // มีข้อมูลใน API - ดึง activity level จาก DB
         const levelData = getLevelFromActivityFactor(status.activity_level);
         const level = levelData.level;
         const label = levelData.label;
-
-        console.log(`✅ Found in API - Level ${level}: ${label} (factor: ${status.activity_level})`);
 
         setSavedLevel(level);
         setSavedLabel(label);
         setIsLocked(true);
 
-        // บันทึกลง localStorage สำหรับ fallback
         localStorage.setItem('activity_level', level.toString());
         localStorage.setItem('activity_label', label);
         localStorage.setItem('activity_timestamp', new Date().toISOString());
       } else {
-        // ยังไม่มีข้อมูล - ปลดล็อค
         setIsLocked(false);
         setSavedLevel(null);
         setSavedLabel(null);
       }
     } catch (e) {
       console.error('Error loading activity level status:', e);
-      // ถ้า error ให้เช็คจาก localStorage แทน
       const storedLevel = localStorage.getItem('activity_level');
       const storedLabel = localStorage.getItem('activity_label');
       const storedTimestamp = localStorage.getItem('activity_timestamp');
@@ -101,19 +99,12 @@ export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: Act
     const levelData = ACTIVITY_LEVELS.find((item) => item.level === selectedLevel)!;
     const activityFactor = levelData.factor;
 
-    // แสดง loading
     setIsLoading(true);
 
     try {
-      // คำนวณและบันทึก BMR, TDEE, Target Calories ทีเดียว
-      console.log('🔢 Calculating and saving calories with factor:', activityFactor);
-      const result = await kalService.calculateAndSaveCalories(activityFactor);
-      console.log(`✅ Successfully calculated: BMR=${result.bmr}, TDEE=${result.tdee}, Target=${result.target_calories}`);
-
-      // รอสักครู่เพื่อให้ DB commit เสร็จ
+      await kalService.calculateAndSaveCalories(activityFactor);
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // บันทึก localStorage
       localStorage.setItem('activity_level', levelData.level.toString());
       localStorage.setItem('activity_label', levelData.label);
       localStorage.setItem('activity_timestamp', new Date().toISOString());
@@ -125,10 +116,10 @@ export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: Act
       setIsLoading(false);
 
       onSaved?.(levelData.level, levelData.label);
-      onCaloriesUpdated?.(); // เรียก callback เพื่ออัปเดต Kcalbar
+      onCaloriesUpdated?.();
       alert(`✨ บันทึก LV.${levelData.level}: ${levelData.label} แล้ว!`);
     } catch (e: any) {
-      console.error('❌ Error in calculateCalories:', e);
+      console.error('Error in calculateCalories:', e);
       setIsLoading(false);
       alert(`❌ เกิดข้อผิดพลาด: ${e.message}`);
     }
@@ -144,14 +135,13 @@ export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: Act
 
   return (
     <>
-      {/* ปุ่มหลัก */}
+      {/* Activity Button */}
       <div
         onClick={handleClick}
         className={`cursor-pointer flex items-center h-15 px-4 border-4 border-black
           ${savedLevel ? 'bg-[#FFD6BA]' : 'bg-gray-200'}
           text-black shadow-[3px_3px_0_0_black]`}
       >
-        {/* LV Box */}
         <div className="w-10 h-10 border-2 border-black bg-transparent flex items-center justify-center mr-2 text-white">
           {savedLevel ? (
             <div className="text-center text-[#000000]">
@@ -163,7 +153,6 @@ export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: Act
           )}
         </div>
 
-        {/* Activity Text */}
         <div className="flex-1 flex flex-col justify-center">
           <span className="text-[11px] font-bold font-mono tracking-wider">ACTIVITY</span>
           <span className="text-[14px] font-bold font-mono">{savedLabel ?? 'กดเพื่อเลือก'}</span>
@@ -172,7 +161,7 @@ export default function ActivityFactorButton({ onSaved, onCaloriesUpdated }: Act
         <span className="text-sm ml-2">▶</span>
       </div>
 
-      {/* Modal */}
+      {/* Activity Selection Modal */}
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
           <div className="bg-white border-4 border-black max-w-md w-full p-4 text-black">

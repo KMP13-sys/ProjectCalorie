@@ -1,11 +1,6 @@
-// File: frontend/web/src/app/services/predict_service.ts
-// Purpose: Service to interact with the Flask API for food prediction and meal saving
-
 import { getFlaskApiUrl } from '@/config/api.config';
 
-// ============================================
-// Types & Interfaces
-// ============================================
+// ประเภทข้อมูลและ Interface
 
 export interface NutritionData {
   calories: number;
@@ -55,33 +50,18 @@ export interface ApiErrorResponse {
   error?: string;
 }
 
-// ============================================
-// Configuration
-// ============================================
-
 const FLASK_API_BASE_URL = getFlaskApiUrl();
 
-// ============================================
-// Helper Functions
-// ============================================
-
+// ดึง Auth Token จาก localStorage
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') {
-    console.log('⚠️ [getAuthToken] Window is undefined (SSR)');
     return null;
   }
-  // Check for accessToken (used by auth_service.ts)
   const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
-
-  if (!token) {
-    console.error('❌ [getAuthToken] No token found in localStorage');
-  } else {
-    console.log('✅ [getAuthToken] Token found');
-  }
-
   return token;
 }
 
+// สร้าง Headers สำหรับ Authentication
 function getAuthHeaders(): HeadersInit {
   const token = getAuthToken();
   if (!token) {
@@ -92,9 +72,9 @@ function getAuthHeaders(): HeadersInit {
   };
 }
 
+// จัดการ Error จาก API
 function handleApiError(error: any): never {
   if (error.response) {
-
     const message = error.response.data?.message || error.response.data?.error || 'Server error occurred';
     throw new Error(message);
   } else if (error.request) {
@@ -104,40 +84,30 @@ function handleApiError(error: any): never {
   }
 }
 
-// ============================================
-// API Service Functions
-// ============================================
+// ฟังก์ชัน Service สำหรับทำนายอาหารและบันทึกมื้ออาหาร
 
+// ทำนายอาหารจากรูปภาพ
 export async function predictFood(
   userId: number,
   imageFile: File
 ): Promise<PredictFoodResponse> {
   try {
-    console.log('🔮 [predictFood] Starting prediction for user ID:', userId);
-
-    // Validate userId
     if (!userId || userId === 0) {
-      console.error('❌ [predictFood] Invalid userId:', userId);
       throw new Error('Invalid user ID. Please login again.');
     }
 
-    // Validate file type
     const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
     if (!allowedTypes.includes(imageFile.type)) {
       throw new Error('Invalid file type. Only PNG, JPG, and JPEG are allowed.');
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     if (imageFile.size > maxSize) {
       throw new Error('File size too large. Maximum size is 5MB.');
     }
 
-    // Prepare form data
     const formData = new FormData();
     formData.append('image', imageFile);
-
-    console.log('🔮 [predictFood] Calling Flask API:', `${FLASK_API_BASE_URL}/api/predict-food/${userId}`);
 
     const response = await fetch(
       `${FLASK_API_BASE_URL}/api/predict-food/${userId}`,
@@ -148,11 +118,8 @@ export async function predictFood(
       }
     );
 
-    console.log('🔮 [predictFood] Response status:', response.status);
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('❌ [predictFood] API error:', errorData);
       throw {
         response: {
           status: response.status,
@@ -161,45 +128,34 @@ export async function predictFood(
       };
     }
 
-    // Parse response
     const data: PredictFoodResponse = await response.json();
-    console.log('✅ [predictFood] Success:', data);
     return data;
 
   } catch (error: any) {
-    console.error('❌ [predictFood] Error:', error);
     handleApiError(error);
   }
 }
 
+// บันทึกมื้ออาหาร
 export async function saveMeal(
   userId: number,
   mealData: SaveMealRequest
 ): Promise<SaveMealResponse> {
   try {
-    console.log('💾 [saveMeal] Starting save meal for user ID:', userId);
-    console.log('💾 [saveMeal] Meal data:', mealData);
-
-    // Validate userId
     if (!userId || userId === 0) {
-      console.error('❌ [saveMeal] Invalid userId:', userId);
       throw new Error('Invalid user ID. Please login again.');
     }
 
-    // Validate required fields
     if (!mealData.food_id) {
       throw new Error('food_id is required');
     }
 
-    // Validate confidence_score if provided
     if (
       mealData.confidence_score !== undefined &&
       (mealData.confidence_score < 0 || mealData.confidence_score > 1)
     ) {
       throw new Error('confidence_score must be between 0 and 1');
     }
-
-    console.log('💾 [saveMeal] Calling Flask API:', `${FLASK_API_BASE_URL}/api/save-meal/${userId}`);
 
     const response = await fetch(
       `${FLASK_API_BASE_URL}/api/save-meal/${userId}`,
@@ -213,11 +169,8 @@ export async function saveMeal(
       }
     );
 
-    console.log('💾 [saveMeal] Response status:', response.status);
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('❌ [saveMeal] API error:', errorData);
       throw {
         response: {
           status: response.status,
@@ -226,17 +179,15 @@ export async function saveMeal(
       };
     }
 
-    // Parse response
     const data: SaveMealResponse = await response.json();
-    console.log('✅ [saveMeal] Success:', data);
     return data;
 
   } catch (error: any) {
-    console.error('❌ [saveMeal] Error:', error);
     handleApiError(error);
   }
 }
 
+// ทำนายและบันทึกอาหารอัตโนมัติ
 export async function predictAndSaveFood(
   userId: number,
   imageFile: File,
@@ -265,11 +216,11 @@ export async function predictAndSaveFood(
     return { prediction };
 
   } catch (error: any) {
-    console.error('Error in predictAndSaveFood:', error);
     throw error;
   }
 }
 
+// ตรวจสอบสถานะ Flask API
 export async function checkFlaskApiHealth(): Promise<boolean> {
   try {
     const response = await fetch(`${FLASK_API_BASE_URL}/api/health`, {
@@ -277,14 +228,9 @@ export async function checkFlaskApiHealth(): Promise<boolean> {
     });
     return response.ok;
   } catch (error) {
-    console.error('Flask API health check failed:', error);
     return false;
   }
 }
-
-// ============================================
-// Export default object
-// ============================================
 
 const PredictService = {
   predictFood,

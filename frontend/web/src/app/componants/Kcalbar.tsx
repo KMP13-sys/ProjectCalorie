@@ -9,6 +9,11 @@ interface KcalBarProps {
   onRefresh?: () => void;
 }
 
+/**
+ * Kcal Bar Component
+ * แสดง Progress Bar แคลอรี่ที่กินได้ต่อวัน
+ * คำนวณจาก: แคลอรี่ที่กิน - แคลอรี่ที่เผาผลาญ = Net Calories
+ */
 const KcalBar: React.FC<KcalBarProps> = ({
   progressColor = '#8bc273',
   backgroundColor = '#d1d5db',
@@ -27,25 +32,21 @@ const KcalBar: React.FC<KcalBarProps> = ({
     setErrorMessage(null);
 
     try {
-      console.log('📊 Loading calorie status...');
       const status = await kalService.getCalorieStatus();
-      console.log('✅ Loaded calorie status:', status);
       setCalorieStatus(status);
       setIsLoading(false);
     } catch (e: any) {
-      console.error('❌ Error loading calorie status:', e);
+      console.error('Error loading calorie status:', e);
       setErrorMessage(e.message);
       setIsLoading(false);
     }
   };
 
-  // ฟังก์ชันสำหรับ refresh จากภายนอก
   const refresh = () => {
     loadCalorieStatus();
     onRefresh?.();
   };
 
-  // แสดง loading
   if (isLoading) {
     return (
       <div className="w-full h-24 flex items-center justify-center">
@@ -54,7 +55,6 @@ const KcalBar: React.FC<KcalBarProps> = ({
     );
   }
 
-  // แสดง error
   if (errorMessage) {
     return (
       <div className="w-full p-4 bg-red-100 border-4 border-red-600">
@@ -75,7 +75,6 @@ const KcalBar: React.FC<KcalBarProps> = ({
     );
   }
 
-  // ไม่มีข้อมูล หรือ targetCalories = 0
   if (!calorieStatus || calorieStatus.target_calories === 0) {
     return (
       <div className="w-full p-4 bg-[#FFF9BD] border-4 border-black">
@@ -94,8 +93,7 @@ const KcalBar: React.FC<KcalBarProps> = ({
     );
   }
 
-  // คำนวณค่าต่างๆ
-  const current = calorieStatus.net_calories; // ใช้ net_calories (consumed - burned)
+  const current = calorieStatus.net_calories;
   const target = calorieStatus.target_calories;
   const remaining = calorieStatus.remaining_calories;
 
@@ -105,15 +103,15 @@ const KcalBar: React.FC<KcalBarProps> = ({
 
   return (
     <div className="w-full">
-      {/* หัวข้อด้านบน */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-3 px-4">
-        <span 
+        <span
           className="text-lg font-bold text-black"
           style={{ fontFamily: 'TA8bit' }}
         >
           Kcal
         </span>
-        <span 
+        <span
           className="text-lg font-bold text-black"
           style={{ fontFamily: 'TA8bit' }}
         >
@@ -127,26 +125,23 @@ const KcalBar: React.FC<KcalBarProps> = ({
           className="h-12 rounded-full relative overflow-hidden"
           style={{ border: '4px solid black' }}
         >
-          {/* Background (สีเทา) */}
-          <div 
+          <div
             className="absolute inset-0"
             style={{ backgroundColor }}
           />
-          
-          {/* Progress Bar (สีเขียวหรือแดง) */}
-          <div 
+
+          <div
             className="absolute inset-0 transition-all duration-500 ease-out"
             style={{
               backgroundColor: barColor,
               width: `${displayProgress}%`
             }}
           />
-          
-          {/* ข้อความคงเหลือด้านขวา */}
+
           <div className="absolute inset-0 flex items-center justify-end pr-8">
-            <span 
+            <span
               className="text-xl font-bold"
-              style={{ 
+              style={{
                 fontFamily: 'TA8bit',
                 color: remaining > 0 ? '#000' : '#060606ff'
               }}

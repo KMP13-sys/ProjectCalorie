@@ -4,11 +4,11 @@ import 'storage_helper.dart';
 import 'auth_service.dart';
 import '../config/api_config.dart';
 
+// Service สำหรับดึงคำแนะนำอาหารและกีฬา
 class RecommendationService {
-  // ✅ ใช้ Flask URL จาก ApiConfig
   static String get baseUrl => ApiConfig.flaskUrl;
 
-  /// 🍱 ฟังก์ชันดึงข้อมูลแนะนำอาหาร
+  // ดึงคำแนะนำอาหาร
   static Future<List<Map<String, dynamic>>> getFoodRecommendations({
     required int userId,
     String? date,
@@ -52,18 +52,14 @@ class RecommendationService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // ✅ สมมติว่า API ส่งกลับมาเป็น {"recommendations": [{...}, {...}]}
         if (data is Map && data.containsKey('recommendations')) {
           final recs = data['recommendations'];
           if (recs is List) {
-            // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
             return _convertToMapList(recs);
           }
         }
 
-        // ✅ ถ้า API ส่งกลับมาเป็น list โดยตรง
         if (data is List) {
-          // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
           return _convertToMapList(data);
         }
 
@@ -72,13 +68,11 @@ class RecommendationService {
         throw Exception(_parseError(response));
       }
     } catch (e) {
-      // ignore: avoid_print
-      print("❌ Error fetching food recommendations: $e");
       rethrow;
     }
   }
 
-  /// 🏃‍♂️ ฟังก์ชันดึงข้อมูลแนะนำกีฬา
+  // ดึงคำแนะนำกีฬา
   static Future<List<Map<String, dynamic>>> getSportRecommendations({
     required int userId,
     int topN = 3,
@@ -125,13 +119,11 @@ class RecommendationService {
         if (data is Map && data.containsKey('recommendations')) {
           final recs = data['recommendations'];
           if (recs is List) {
-            // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
             return _convertToMapList(recs);
           }
         }
 
         if (data is List) {
-          // ✅ แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
           return _convertToMapList(data);
         }
 
@@ -140,27 +132,22 @@ class RecommendationService {
         throw Exception(_parseError(response));
       }
     } catch (e) {
-      // ignore: avoid_print
-      print("❌ Error fetching sport recommendations: $e");
       rethrow;
     }
   }
 
-  /// 🧰 Helper แปลง List ของ String หรือ Map ให้เป็น List<Map<String, dynamic>>
+  // แปลง List ให้เป็น List<Map<String, dynamic>>
   static List<Map<String, dynamic>> _convertToMapList(List data) {
     return data.map((item) {
       if (item is Map<String, dynamic>) {
-        // ✅ ถ้าเป็น Map แล้ว ส่งกลับไปเลย
         return item;
       } else if (item is String) {
-        // ✅ ถ้าเป็น String ให้แปลงเป็น Map ที่มี name
         return {
           'id': 0,
           'name': item,
-          'calories': 0, // ไม่มีข้อมูล calories จาก API
+          'calories': 0,
         };
       } else {
-        // ✅ กรณีอื่นๆ (ไม่น่าจะเกิด)
         return {
           'id': 0,
           'name': item.toString(),
@@ -170,7 +157,7 @@ class RecommendationService {
     }).toList();
   }
 
-  /// 🧰 Helper แปลงข้อความ error
+  // แปลง error message จาก response
   static String _parseError(http.Response response) {
     try {
       final body = json.decode(response.body);

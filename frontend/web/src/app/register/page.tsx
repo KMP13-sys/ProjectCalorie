@@ -25,43 +25,40 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // จัดการการเปลี่ยนแปลงค่าในฟอร์ม และตรวจสอบข้อมูลแบบ real-time
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
-    // Validate username real-time
+
     if (name === 'username') {
-      // อนุญาตแค่ a-z, A-Z, 0-9
       const sanitized = value.replace(/[^a-zA-Z0-9]/g, '');
       setFormData(prev => ({
         ...prev,
         [name]: sanitized
       }));
-    } 
-    // Validate email real-time (ลบช่องว่าง)
+    }
     else if (name === 'email') {
-      const sanitized = value.replace(/\s/g, ''); // ลบช่องว่างทั้งหมด
+      const sanitized = value.replace(/\s/g, '');
       setFormData(prev => ({
         ...prev,
         [name]: sanitized
       }));
-    } 
+    }
     else {
       setFormData(prev => ({
         ...prev,
         [name]: type === 'checkbox' ? checked : value
       }));
     }
-    
-    // Clear error when user types
+
     if (error) setError('');
   };
 
+  // จัดการการสมัครสมาชิกและตรวจสอบความถูกต้องของข้อมูล
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    // Username validation
     const username = formData.username.trim();
 
     if (!/[a-zA-Z]/.test(username)) {
@@ -74,7 +71,6 @@ export default function RegisterPage() {
       return;
     }
 
-    // Email validation
     const email = formData.email.trim();
     
     if (!email) {
@@ -82,39 +78,33 @@ export default function RegisterPage() {
       return;
     }
 
-    // ตรวจสอบรูปแบบอีเมลด้วย Regular Expression
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       setError('รูปแบบอีเมลไม่ถูกต้อง (ตัวอย่าง: example@email.com)');
       return;
     }
 
-    // ตรวจสอบว่าไม่มีช่องว่างในอีเมล
     if (email.includes(' ')) {
       setError('อีเมลต้องไม่มีช่องว่าง');
       return;
     }
 
-    // Phone validation (ต้องเป็นตัวเลข 0-9 และ 10 หลัก)
     if (!/^[0-9]{10}$/.test(formData.phone.trim())) {
       setError('กรุณากรอกหมายเลขโทรศัพท์ 10 หลัก');
       return;
     }
 
-    // Validation password
     if (formData.password !== formData.confirmPassword) {
       setError('Password ไม่ตรงกัน!');
       return;
     }
 
-    // Password validation (ตรงกับ Backend: ต้องมีตัวอักษร + อักขระพิเศษ + ความยาว 8+)
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(formData.password)) {
       setError('Password ต้องมีอย่างน้อย 8 ตัวอักษร และมีทั้งตัวอักษรและอักขระพิเศษ');
       return;
     }
 
-    // Validate numbers
     const age = parseInt(formData.age);
     const height = parseFloat(formData.height);
     const weight = parseFloat(formData.weight);
@@ -142,7 +132,6 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // เตรียมข้อมูลสำหรับส่ง API
       const registerData: RegisterData = {
         username: formData.username.trim(),
         email: formData.email.trim(),
@@ -155,27 +144,23 @@ export default function RegisterPage() {
         goal: formData.goal,
       };
 
-      // เรียก API
-      const response = await authAPI.register(registerData);
-      
-      console.log('Register success:', response);
-      
-      // แสดง Success Modal
+      await authAPI.register(registerData);
       setShowSuccessModal(true);
-      
+
     } catch (err: any) {
-      console.error('Register error:', err);
       setError(err.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ปิด modal และไปหน้า login
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     router.push('/login');
   };
 
+  // ไปหน้า login
   const handleNavigateToLogin = () => {
     router.push('/login');
   };
@@ -183,7 +168,7 @@ export default function RegisterPage() {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#6fa85e] via-[#8bc273] to-[#a8d48f] flex items-center justify-center p-8 relative overflow-hidden">
-        {/* Pixel Grid Background Pattern */}
+        {/* พื้นหลังลาย Pixel Grid */}
         <div 
           className="absolute inset-0 opacity-10"
           style={{
@@ -195,7 +180,7 @@ export default function RegisterPage() {
           }}
         ></div>
 
-        {/* Floating Pixel Decorations */}
+        {/* องค์ประกอบตกแต่งแบบ Pixel */}
         <div className="absolute top-10 left-10 w-6 h-6 bg-yellow-300 animate-bounce"></div>
         <div className="absolute top-20 right-16 w-4 h-4 bg-yellow-300 animate-bounce" style={{ animationDelay: '0.3s' }}></div>
         <div className="absolute bottom-20 left-20 w-5 h-5 bg-yellow-300 animate-bounce" style={{ animationDelay: '0.6s' }}></div>
@@ -208,13 +193,13 @@ export default function RegisterPage() {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
+            {/* Pixel มุมกล่องตกแต่ง */}
             <div className="absolute top-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
             <div className="absolute top-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
             <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
 
-            {/* Header Bar */}
+            {/* ส่วนหัวของฟอร์ม */}
             <div className="bg-gradient-to-r from-[#6fa85e] to-[#8bc273] border-b-6 border-black py-3 px-6">
               <h2 
                 className="text-2xl font-bold text-white text-center tracking-wider"
@@ -228,7 +213,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="p-8">
-              {/* Logo */}
+              {/* โลโก้และชื่อแอป */}
               <div className="flex flex-col items-center mb-6">
                 <div 
                   className="bg-gradient-to-br from-[#a8d48f] to-[#8bc273] border-4 border-black p-3 mb-3"
@@ -254,7 +239,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Error Message */}
+              {/* แสดงข้อความแจ้งเตือนข้อผิดพลาด */}
               {error && (
                 <div 
                   className="mb-4 p-3 bg-red-200 border-4 border-red-600 text-red-800"
@@ -267,9 +252,9 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Register Form */}
+              {/* ฟอร์มสมัครสมาชิก */}
               <form onSubmit={handleRegister} className="space-y-4">
-                {/* Account Information Section */}
+                {/* ส่วนข้อมูลบัญชี */}
                 <div className="bg-gray-100 border-4 border-gray-800 p-4 mb-4">
                   <h3 
                     className="text-lg font-bold text-gray-800 mb-3"
@@ -378,7 +363,7 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Personal Information Section */}
+                {/* ส่วนข้อมูลส่วนตัว */}
                 <div className="bg-gray-100 border-4 border-gray-800 p-4">
                   <h3 
                     className="text-lg font-bold text-gray-800 mb-3"
@@ -502,7 +487,7 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Terms and Conditions */}
+                {/* ข้อกำหนดและเงื่อนไข */}
                 <div className="flex items-start gap-2 mt-4 bg-gray-100 border-4 border-gray-800 p-3">
                   <input
                     type="checkbox"
@@ -529,7 +514,7 @@ export default function RegisterPage() {
                   </label>
                 </div>
 
-                {/* Register Button */}
+                {/* ปุ่มสมัครสมาชิก */}
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -545,7 +530,7 @@ export default function RegisterPage() {
                 </button>
               </form>
 
-              {/* Link to Login - แสดงเสมอ */}
+              {/* ปุ่มกลับไปหน้า Login */}
               <div className="mt-6 pt-6 border-t-4 border-dashed border-gray-300 text-center">
                 <button
                   type="button"
@@ -562,7 +547,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Pixel "Info" hint */}
+          {/* ข้อความแนะนำ */}
           <div className="text-center mt-6">
             <p 
               className="text-white text-sm font-bold animate-pulse"
@@ -577,7 +562,7 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Success Modal - เหมือนเดิม */}
+      {/* Modal แสดงความสำเร็จ */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
           <div 
@@ -660,7 +645,7 @@ export default function RegisterPage() {
         </div>
       )}
 
-      {/* Privacy Policy Modal - ไม่แก้ไข ยาวมาก ตัดออก */}
+      {/* Modal นโยบายความเป็นส่วนตัว */}
       {showPrivacyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
           <div 

@@ -1,10 +1,7 @@
-// src/app/services/auth_service.ts
 import axios from 'axios'
 import { getNodeApiUrl } from '@/config/api.config'
 
-// ========================================
-// Helper: Decode JWT
-// ========================================
+// ฟังก์ชัน Decode JWT Token
 function decodeJWT(token: string): any {
   try {
     const base64Url = token.split('.')[1]
@@ -17,19 +14,13 @@ function decodeJWT(token: string): any {
     )
     return JSON.parse(jsonPayload)
   } catch (error) {
-    console.error('Error decoding JWT:', error)
     return null
   }
 }
 
-// ========================================
-// Configuration
-// ========================================
 const API_BASE_URL = getNodeApiUrl()
 
-// ========================================
-// Types (ตรงกับ Backend)
-// ========================================
+// ประเภทข้อมูลผู้ใช้
 export interface User {
   user_id: number
   username: string
@@ -67,9 +58,7 @@ export interface RegisterData {
   goal: string
 }
 
-// ========================================
-// Axios Instance
-// ========================================
+// สร้าง Axios Instance พร้อม Config
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -78,9 +67,7 @@ const api = axios.create({
   timeout: 10000,
 })
 
-// ========================================
-// Request Interceptor (เพิ่ม token ทุก request)
-// ========================================
+// Request Interceptor - เพิ่ม token ทุก request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken')
@@ -92,9 +79,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// ========================================
-// Response Interceptor (จัดการ error)
-// ========================================
+// Response Interceptor - จัดการ error และ token หมดอายุ
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -103,18 +88,13 @@ api.interceptors.response.use(
       localStorage.removeItem('user')
       if (typeof window !== 'undefined') window.location.href = '/login'
     }
-    if (!error.response) {
-      console.error('Network Error:', error.message)
-    }
     return Promise.reject(error)
   }
 )
 
-// ========================================
-// Authentication API (Services)
-// ========================================
+// Authentication API Services
 export const authAPI = {
-  // Login
+  // เข้าสู่ระบบ
   login: async (username: string, password: string): Promise<LoginResponse> => {
     try {
       const response = await api.post<LoginResponse>('/api/auth/login', { username, password, platform: 'web' })
@@ -133,20 +113,20 @@ export const authAPI = {
     }
   },
 
-  // Register
+  // สมัครสมาชิก
   register: async (data: RegisterData): Promise<RegisterResponse> => {
     const response = await api.post<RegisterResponse>('/api/auth/register', data)
     return response.data
   },
 
-  // Logout
+  // ออกจากระบบ
   logout: () => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('user')
     if (typeof window !== 'undefined') window.location.href = '/login'
   },
 
-  // Get current user from localStorage
+  // ดึงข้อมูลผู้ใช้จาก localStorage
   getCurrentUser: (): User | null => {
     const userStr = localStorage.getItem('user')
     if (!userStr) return null
@@ -157,20 +137,20 @@ export const authAPI = {
     }
   },
 
-  // Check if user is authenticated
+  // ตรวจสอบสถานะการเข้าสู่ระบบ
   isAuthenticated: (): boolean => !!localStorage.getItem('accessToken'),
 
-  // Get token
+  // ดึง Token
   getToken: (): string | null => localStorage.getItem('accessToken'),
 
-  // Delete account
+  // ลบบัญชีผู้ใช้
   deleteAccount: async (): Promise<void> => {
     await api.delete('/api/auth/delete-account')
     localStorage.removeItem('accessToken')
     localStorage.removeItem('user')
   },
 
-  // Fetch current user from backend
+  // ดึงข้อมูลผู้ใช้จาก Backend
   fetchCurrentUser: async (): Promise<User | null> => {
     try {
       const currentUser = authAPI.getCurrentUser()
@@ -191,16 +171,15 @@ export const authAPI = {
       localStorage.setItem('user', JSON.stringify(userData))
       return userData
     } catch (error) {
-      console.error('Failed to fetch user:', error)
       return null
     }
   },
 
-  // Fetch all users (สำหรับ admin)
+  // ดึงรายชื่อผู้ใช้ทั้งหมด (สำหรับ Admin)
   getAllUsers: async (): Promise<User[]> => {
     try {
       const response = await api.get<{ message: string; users: User[] }>('/api/admin/users')
-      return response.data.users // ✅ แก้ตรงนี้ให้เป็น array
+      return response.data.users
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'ไม่สามารถดึงข้อมูลผู้ใช้ได้'
       throw new Error(errorMessage)

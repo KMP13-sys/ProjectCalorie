@@ -8,7 +8,7 @@ import { authAPI } from '../../services/auth_service';
 import { useRouter } from 'next/navigation';
 import { useUser } from '../../context/user_context';
 
-// Pixel Grid Background Component
+// Component พื้นหลังลาย Pixel Grid
 const PixelGridBackground = () => (
   <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -22,7 +22,7 @@ const PixelGridBackground = () => (
   </div>
 );
 
-// Corner Pixels Component
+// Component Pixel มุมกล่อง
 const CornerPixels = () => (
   <>
     <div className="absolute top-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
@@ -32,7 +32,7 @@ const CornerPixels = () => (
   </>
 );
 
-// Pixel Heart Icon
+// Component ไอคอนหัวใจ Pixel Art
 const PixelHeart = () => (
   <div className="w-20 h-20 mx-auto">
     <div className="grid grid-cols-5 gap-0">
@@ -69,7 +69,7 @@ const PixelHeart = () => (
   </div>
 );
 
-// Floating Pixels Animation Component
+// Component Pixel ลอยเคลื่อนไหว
 const FloatingPixels = () => {
   const pixels = Array.from({ length: 15 }, (_, i) => ({
     id: i,
@@ -132,7 +132,7 @@ export default function PixelProfilePage() {
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
 
-  // ตั้งค่าข้อมูลเมื่อ userProfile เปลี่ยน
+  // โหลดข้อมูล profile เข้า form เมื่อ userProfile เปลี่ยน
   useEffect(() => {
     if (userProfile) {
       setEditData({
@@ -145,10 +145,9 @@ export default function PixelProfilePage() {
     }
   }, [userProfile]);
 
-  // ถ้าไม่มี profile ให้ redirect ไปหน้า login (เฉพาะเมื่อ loading เสร็จแล้ว)
+  // ตรวจสอบและเปลี่ยนเส้นทางไปหน้า login หากไม่มี profile
   useEffect(() => {
     if (!loading && !userProfile) {
-      // ตรวจสอบว่ามี accessToken หรือไม่
       const token = localStorage.getItem('accessToken');
       if (!token) {
         router.push('/login');
@@ -156,6 +155,7 @@ export default function PixelProfilePage() {
     }
   }, [loading, userProfile, router]);
 
+  // เปิดโหมดแก้ไข
   const handleEdit = () => {
     if (userProfile) {
       setEditData({
@@ -171,6 +171,7 @@ export default function PixelProfilePage() {
     setSelectedImagePreview(null);
   };
 
+  // ยกเลิกการแก้ไขและคืนค่าเดิม
   const handleCancel = () => {
     setEditData({
       weight: userProfile?.weight?.toString() || '',
@@ -185,6 +186,7 @@ export default function PixelProfilePage() {
     setError(null);
   };
 
+  // บันทึกข้อมูล profile และรูปภาพ
   const handleSave = async () => {
     if (!userProfile) return;
 
@@ -192,7 +194,6 @@ export default function PixelProfilePage() {
       setSaving(true);
       setError(null);
 
-      // อัปเดทข้อมูลโปรไฟล์
       const updateData = {
         age: editData.age ? parseInt(editData.age) : undefined,
         gender: editData.gender,
@@ -203,12 +204,10 @@ export default function PixelProfilePage() {
 
       await profileService.updateProfile(userProfile.user_id, updateData);
 
-      // อัปโหลดรูปถ้ามีการเลือกรูปใหม่
       if (selectedImageFile) {
         await profileService.updateProfileImage(userProfile.user_id, selectedImageFile);
       }
 
-      // ⭐ Refresh ข้อมูล user ใน Context เพื่อให้ NavBar อัปเดตด้วย
       await refreshUserProfile();
       
       setIsEditing(false);
@@ -223,47 +222,44 @@ export default function PixelProfilePage() {
     }
   };
 
+  // แสดง popup ยืนยันออกจากระบบ
   const handleLogout = () => {
     setShowLogoutPopup(true);
   };
 
+  // ออกจากระบบและเคลียร์ข้อมูล
   const confirmLogout = () => {
     authAPI.logout();
-    clearUserProfile(); // Clear user profile from context
-    router.push('/login'); // Redirect to login page
+    clearUserProfile();
+    router.push('/login');
   };
 
+  // แสดง popup ยืนยันลบบัญชี
   const handleDeleteAccount = () => {
     setShowDeletePopup(true);
   };
 
+  // ลบบัญชีและเคลียร์ข้อมูล
   const confirmDelete = async () => {
     try {
-      // เรียก API ลบบัญชี
       await authAPI.deleteAccount();
-
-      // Clear user profile from context
       clearUserProfile();
-
-      // Redirect to login page
       router.push('/login');
     } catch (error: any) {
-      console.error('Error deleting account:', error);
       setError(error.message || 'ไม่สามารถลบบัญชีได้');
       setShowDeletePopup(false);
     }
   };
 
+  // จัดการอัปโหลดรูปภาพ profile
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // ตรวจสอบขนาดไฟล์ (ไม่เกิน 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('ขนาดไฟล์ต้องไม่เกิน 5MB');
         return;
       }
 
-      // ตรวจสอบประเภทไฟล์
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         setError('รองรับเฉพาะไฟล์ภาพ (JPEG, PNG, GIF, WebP)');
@@ -281,7 +277,7 @@ export default function PixelProfilePage() {
     }
   };
 
-  // แสดง loading
+  // แสดงหน้า loading
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ 
@@ -294,12 +290,11 @@ export default function PixelProfilePage() {
     );
   }
 
-  // ถ้าไม่มี profile
   if (!userProfile) {
     return null;
   }
 
-  // แสดงรูปโปรไฟล์
+  // กำหนด URL รูป profile (ใช้รูปใหม่ที่เลือก หรือรูปเดิม หรือรูป default)
   const profileImageSrc = selectedImagePreview || 
     (userProfile.image_profile_url) || 
     '/pic/person.png';
@@ -326,7 +321,6 @@ export default function PixelProfilePage() {
             </h2>
           </div>
 
-          {/* แสดง Error */}
           {error && (
             <div className="mx-8 mt-6 p-4 bg-red-100 border-4 border-red-500 text-red-700 font-bold text-sm">
               ⚠ {error}
@@ -334,7 +328,6 @@ export default function PixelProfilePage() {
           )}
 
           {!isEditing ? (
-            // View Mode
             <div className="p-8">
               <div className="flex flex-col items-center mb-8">
                 <div className="relative">
@@ -433,7 +426,6 @@ export default function PixelProfilePage() {
               </div>
             </div>
           ) : (
-            // Edit Mode
             <div className="p-8">
               <div className="flex justify-between items-start mb-8">
                 <div className="w-24"></div>
@@ -609,7 +601,7 @@ export default function PixelProfilePage() {
         </div>
       </div>
 
-      {/* Success Popup */}
+      {/* Modal แสดงความสำเร็จ */}
       {showSuccessPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
           <div className="w-full max-w-md relative" style={{
@@ -650,7 +642,7 @@ export default function PixelProfilePage() {
         </div>
       )}
 
-      {/* Logout Popup */}
+      {/* Modal ออกจากระบบ */}
       {showLogoutPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
           <div className="bg-white border-8 border-black w-full max-w-md relative" style={{ boxShadow: '8px 8px 0 rgba(0,0,0,0.5)' }}>
@@ -710,7 +702,7 @@ export default function PixelProfilePage() {
         </div>
       )}
 
-      {/* Delete Account Popup */}
+      {/* Modal ลบบัญชี */}
       {showDeletePopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
           <div className="bg-white border-8 border-black w-full max-w-md relative" style={{ boxShadow: '8px 8px 0 rgba(0,0,0,0.5)' }}>

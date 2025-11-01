@@ -1,14 +1,14 @@
-// lib/src/profile/profile.dart
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../componants/navbaruser.dart';
 import '../authen/login.dart';
-//import '../../service/storage_helper.dart';
 import '../../service/profile_service.dart';
 import '../../models/profile_models.dart';
 import '../../service/auth_service.dart';
 
+/// ProfileScreen Widget
+/// หน้าโปรไฟล์ผู้ใช้ - แสดงและแก้ไขข้อมูลส่วนตัว
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -17,29 +17,29 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // ข้อมูลผู้ใช้
+  /// State Variables: User Profile Data
   UserProfile? userProfile;
   bool isLoadingProfile = true;
 
-  // Controllers สำหรับแก้ไขข้อมูล
+  /// State Variables: Form Controllers
   late TextEditingController _weightController;
   late TextEditingController _heightController;
   late TextEditingController _ageController;
   String _selectedGender = 'male';
   String _selectedGoal = 'lose weight';
 
-  // State สำหรับ toggle edit mode
+  /// State Variables: UI State
   bool _isEditing = false;
   bool _isLoading = false;
 
-  // สำหรับอัปโหลดรูป
+  /// State Variables: Image Upload
   File? _selectedImage;
   final ImagePicker _imagePicker = ImagePicker();
 
+  /// Lifecycle: เริ่มต้น Controllers และโหลดข้อมูล
   @override
   void initState() {
     super.initState();
-    // Initialize controllers
     _weightController = TextEditingController();
     _heightController = TextEditingController();
     _ageController = TextEditingController();
@@ -47,6 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserProfile();
   }
 
+  /// Lifecycle: ทำความสะอาด Controllers
   @override
   void dispose() {
     _weightController.dispose();
@@ -55,9 +56,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  // โหลดข้อมูล User จาก API
+  /// Business Logic: โหลดข้อมูลโปรไฟล์จาก API
   Future<void> _loadUserProfile() async {
     try {
+      // API Call: ดึงข้อมูลโปรไฟล์
       final profile = await ProfileService.getMyProfile();
 
       if (mounted) {
@@ -70,23 +72,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _selectedGoal = profile.goal ?? 'lose weight';
           isLoadingProfile = false;
         });
-
-        // Debug: แสดง URL ของรูป
-        // ignore: avoid_print
-        print(
-          '🖼️ Profile loaded. Image URL: ${profile.imageProfileUrl}',
-        );
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ Error loading profile: $e');
       if (mounted) {
         setState(() => isLoadingProfile = false);
       }
     }
   }
 
-  // เลือกรูปจาก Gallery
+  /// Business Logic: เลือกรูปจาก Gallery
   Future<void> _pickImage() async {
     try {
       final XFile? image = await _imagePicker.pickImage(
@@ -101,7 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _selectedImage = File(image.path);
         });
 
-        // อัปโหลดรูปทันที
         await _uploadProfileImage();
       }
     } catch (e) {
@@ -109,21 +102,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // อัปโหลดรูปโปรไฟล์
+  /// Business Logic: อัปโหลดรูปโปรไฟล์ไปยัง Server
   Future<void> _uploadProfileImage() async {
     if (_selectedImage == null) return;
 
     setState(() => _isLoading = true);
 
     try {
+      // API Call: อัปโหลดรูปโปรไฟล์
       await ProfileService.updateMyProfileImage(imageFile: _selectedImage!);
 
-      // อัปโหลดสำเร็จ - โหลดข้อมูลใหม่
       await _loadUserProfile();
 
       setState(() {
         _isLoading = false;
-        _selectedImage = null; // Clear cache image after successful upload
+        _selectedImage = null;
       });
 
       if (mounted) {
@@ -132,7 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _selectedImage = null; // Clear cache image on error
+        _selectedImage = null;
       });
       _showErrorDialog('เกิดข้อผิดพลาด: ${e.toString()}');
     }
@@ -140,6 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // UI: Loading State
     if (isLoadingProfile) {
       return Scaffold(
         body: Container(
@@ -160,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background with gradient
+          // Section: Background with gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -175,15 +169,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          // Pixel Grid Background
+          // Section: Pixel Grid Background
           CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
 
           Column(
             children: [
-              // Navbar
+              // Section: Navbar
               const NavBarUser(),
 
-              // เนื้อหาหน้า Profile
+              // Section: Profile Content
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
@@ -192,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         const SizedBox(height: 16),
 
-                        // Profile Card
+                        // Section: Profile Card
                         Container(
                           constraints: const BoxConstraints(maxWidth: 500),
                           decoration: BoxDecoration(
@@ -208,12 +202,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Stack(
                             children: [
-                              // Corner Pixels
+                              // Decoration: Corner Pixels
                               ..._buildCornerPixels(),
 
                               Column(
                                 children: [
-                                  // Header Bar
+                                  // Section: Header Bar
                                   Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
@@ -252,19 +246,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
 
-                                  // Content
+                                  // Section: Content
                                   Padding(
                                     padding: const EdgeInsets.all(32.0),
                                     child: Column(
                                       children: [
-                                        // Avatar Section - เปลี่ยน layout ตาม Edit Mode
+                                        // Section: Avatar (เปลี่ยน layout ตาม Edit Mode)
                                         _isEditing
                                             ? _buildEditModeAvatar()
                                             : _buildNormalModeAvatar(),
 
                                         const SizedBox(height: 32),
 
-                                        // Info Section
+                                        // Section: Info Fields
                                         Container(
                                         padding: const EdgeInsets.all(16),
                                         decoration: BoxDecoration(
@@ -336,7 +330,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                         const SizedBox(height: 32),
 
-                                        // Buttons (เปลี่ยนตาม state)
+                                        // Section: Action Buttons (เปลี่ยนตาม state)
                                         _isEditing
                                             ? _buildEditModeButtons()
                                             : _buildNormalModeButtons(),
@@ -364,11 +358,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Normal Mode Avatar - แสดงกลางหน้าจอ
+  /// Widget: Avatar สำหรับ Normal Mode (แสดงกลางหน้าจอ)
   Widget _buildNormalModeAvatar() {
     return Column(
       children: [
-        // Avatar
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -391,7 +384,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         const SizedBox(height: 24),
 
-        // Username
         Text(
           (userProfile?.username ?? 'USER').toUpperCase(),
           style: const TextStyle(
@@ -405,7 +397,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         const SizedBox(height: 8),
 
-        // Pixel Dots
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -420,21 +411,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Edit Mode Avatar - มีปุ่มลบบัญชีทางขวา
+  /// Widget: Avatar สำหรับ Edit Mode (มีปุ่มกล้องและปุ่มลบบัญชี)
   Widget _buildEditModeAvatar() {
     return Column(
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Spacer ซ้าย
             const SizedBox(width: 48),
 
-            // Avatar + Username (ตรงกลาง)
+            // Section: Avatar + Username (กลาง)
             Expanded(
               child: Column(
                 children: [
-                  // Avatar พร้อมปุ่มกล้อง
                   Stack(
                     children: [
                       Container(
@@ -456,7 +445,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: _buildProfileAvatar(),
                       ),
-                      // ปุ่มกล้อง
+                      // UI: ปุ่มกล้อง
                       Positioned(
                         bottom: 0,
                         right: 0,
@@ -496,7 +485,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Username
                   Text(
                     (userProfile?.username ?? 'USER').toUpperCase(),
                     style: const TextStyle(
@@ -510,7 +498,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 8),
 
-                  // Pixel Dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -537,7 +524,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            // ปุ่มลบบัญชีทางขวา
+            // Section: ปุ่มลบบัญชี (ขวา)
             GestureDetector(
               onTap: _handleDeleteAccount,
               child: Container(
@@ -574,9 +561,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget แสดงรูปโปรไฟล์
+  /// Widget: แสดงรูปโปรไฟล์ (จาก Gallery, Backend, หรือ Default)
   Widget _buildProfileAvatar() {
-    // ถ้ามีรูปที่เลือกจาก gallery
+    // Data: รูปจาก Gallery (ชั่วคราว)
     if (_selectedImage != null) {
       return ClipRect(
         child: Image.file(
@@ -588,7 +575,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // ถ้ามีรูปจาก backend
+    // Data: รูปจาก Backend
     if (userProfile?.imageProfileUrl != null &&
         userProfile!.imageProfileUrl!.isNotEmpty) {
       return ClipRect(
@@ -626,7 +613,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // ไม่มีรูป - ใช้ person.png
+    // Data: Default Image
     return Container(
       width: 100,
       height: 100,
@@ -642,6 +629,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Widget: สร้าง Corner Pixels สำหรับตกแต่ง
   List<Widget> _buildCornerPixels() {
     return [
       Positioned(
@@ -667,7 +655,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ];
   }
 
-  // Widget Info Field (รองรับทั้ง read-only และ editable)
+  /// Widget: ช่องข้อมูล (รองรับทั้ง read-only และ editable)
   Widget _buildInfoField(
     String label,
     TextEditingController controller,
@@ -739,7 +727,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget Gender Field
+  /// Widget: ช่องเลือกเพศ
   Widget _buildGenderField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -803,7 +791,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget Goal Field
+  /// Widget: ช่องเลือกเป้าหมาย
   Widget _buildGoalField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -869,7 +857,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Normal Mode Buttons
+  /// Widget: ปุ่มสำหรับ Normal Mode (Back, Edit, Logout)
   Widget _buildNormalModeButtons() {
     return Row(
       children: [
@@ -907,7 +895,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Edit Mode Buttons
+  /// Widget: ปุ่มสำหรับ Edit Mode (Cancel, Save)
   Widget _buildEditModeButtons() {
     return Row(
       children: [
@@ -950,7 +938,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Handle Cancel
+  /// Business Logic: ยกเลิกการแก้ไข (คืนค่าเดิม)
   void _handleCancel() {
     setState(() {
       if (userProfile != null) {
@@ -960,16 +948,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _selectedGender = userProfile!.gender ?? 'male';
         _selectedGoal = userProfile!.goal ?? 'lose weight';
       }
-      _selectedImage = null; // Clear any cached image
+      _selectedImage = null;
       _isEditing = false;
     });
   }
 
-  // Handle Save
+  /// Business Logic: บันทึกข้อมูลโปรไฟล์
   Future<void> _handleSave() async {
     if (userProfile == null) return;
 
-    // Validation
+    // Validation: ตรวจสอบข้อมูล
     final weight = double.tryParse(_weightController.text);
     final height = double.tryParse(_heightController.text);
     final age = int.tryParse(_ageController.text);
@@ -992,6 +980,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // API Call: บันทึกข้อมูลโปรไฟล์
       await ProfileService.updateMyProfile(
         weight: weight,
         height: height,
@@ -1002,7 +991,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() => _isLoading = false);
 
-      // บันทึกสำเร็จ - โหลดข้อมูลใหม่
       await _loadUserProfile();
 
       setState(() => _isEditing = false);
@@ -1016,7 +1004,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Handle Delete Account
+  /// Business Logic: ลบบัญชีผู้ใช้
   void _handleDeleteAccount() {
     showDialog(
       context: context,
@@ -1111,7 +1099,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
                         children: [
-                          // Danger Icon
+                          // Section: Danger Icon
                           Container(
                             width: 64,
                             height: 64,
@@ -1166,7 +1154,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Pixel decoration
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -1232,7 +1219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   () async {
                                     Navigator.of(context).pop();
 
-                                    // แสดง loading
+                                    // UI: แสดง loading
                                     if (mounted) {
                                       showDialog(
                                         context: context,
@@ -1246,15 +1233,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     }
 
                                     try {
-                                      // เรียก API ลบบัญชี
+                                      // API Call: ลบบัญชี
                                       await AuthService.deleteAccount();
 
-                                      // ปิด loading dialog
                                       if (mounted) {
                                         Navigator.of(context).pop();
                                       }
 
-                                      // ลบสำเร็จ - กลับไปหน้า Login
+                                      // Navigation: กลับไปหน้า Login
                                       if (mounted) {
                                         Navigator.of(
                                           context,
@@ -1266,7 +1252,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           (route) => false,
                                         );
 
-                                        // แสดง snackbar แจ้งเตือน
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
@@ -1279,12 +1264,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         );
                                       }
                                     } catch (e) {
-                                      // ปิด loading dialog
                                       if (mounted) {
                                         Navigator.of(context).pop();
                                       }
 
-                                      // แสดง error dialog
                                       if (mounted) {
                                         _showErrorDialog(
                                           'Failed to delete account: ${e.toString().replaceAll('Exception: ', '')}',
@@ -1309,7 +1292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Show Error Dialog
+  /// UI: แสดง Error Dialog
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -1322,7 +1305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Show Success Dialog
+  /// UI: แสดง Success Dialog
   void _showSuccessDialog(String message) {
     showDialog(
       context: context,
@@ -1335,7 +1318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Message Dialog
+  /// Widget: Message Dialog (Success/Error)
   Widget _buildMessageDialog({
     required String title,
     required String message,
@@ -1366,7 +1349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Stack(
           children: [
-            // Corner Pixels
+            // Decoration: Corner Pixels
             Positioned(
               top: 0,
               left: 0,
@@ -1391,7 +1374,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
+                // Section: Header
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1421,12 +1404,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.all(32.0),
                   child: Column(
                     children: [
-                      // Pixel Icon
+                      // Section: Pixel Icon
                       isSuccess ? _buildPixelHeart() : _buildPixelWarning(),
 
                       const SizedBox(height: 24),
 
-                      // Message Box
+                      // Section: Message Box
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -1463,7 +1446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Continue Button
+                      // Section: Continue Button
                       SizedBox(
                         width: double.infinity,
                         child: GestureDetector(
@@ -1522,7 +1505,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Pixel Heart Icon
+  /// Widget: Pixel Heart Icon (สำหรับ Success)
   Widget _buildPixelHeart() {
     return SizedBox(
       width: 80,
@@ -1584,7 +1567,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Pixel Warning Icon
+  /// Widget: Pixel Warning Icon (สำหรับ Error)
   Widget _buildPixelWarning() {
     return SizedBox(
       width: 80,
@@ -1646,7 +1629,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget Button แบบ Pixel Art
+  /// Widget: ปุ่มแบบ Pixel Art
   Widget _buildPixelButton(
     String text,
     Color bgColor,
@@ -1686,7 +1669,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ฟังก์ชัน Logout
+  /// Business Logic: ออกจากระบบ
   void _handleLogout() {
     showDialog(
       context: context,
@@ -1781,7 +1764,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
                         children: [
-                          // Warning Icon
+                          // Section: Warning Icon
                           Container(
                             width: 64,
                             height: 64,
@@ -1817,7 +1800,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Pixel decoration
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -1881,13 +1863,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const Color(0xFFfb7185),
                                   Colors.white,
                                   () async {
-                                    // เรียก API logout และลบข้อมูล
+                                    // API Call: ออกจากระบบ
                                     try {
                                       await AuthService.logout();
                                     } catch (e) {
-                                      // ถ้า API logout ล้มเหลว ก็ยังคงล้างข้อมูล local
-                                      // ignore: avoid_print
-                                      print('Logout API error: $e');
+                                      // Note: ถ้า API ล้มเหลว ก็ยังคงล้างข้อมูล local
                                     }
 
                                     if (mounted) {
@@ -1919,7 +1899,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-// Pixel Grid Painter
+/// PixelGridPainter Class
+/// วาดตาราง Pixel เป็น Background
 class PixelGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

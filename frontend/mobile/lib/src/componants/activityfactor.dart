@@ -1,11 +1,9 @@
-// ============================================
-// activity_factor.dart - Responsive Activity Factor Component
-// ============================================
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../service/kal_service.dart';
 
+// Activity Factor Button Widget
+// ปุ่มเลือกระดับกิจกรรมประจำวัน (เลือกได้ครั้งเดียวต่อวัน)
 class ActivityFactorButton extends StatefulWidget {
   final Function(int, String)? onSaved;
   final Function()? onCaloriesUpdated;
@@ -18,16 +16,19 @@ class ActivityFactorButton extends StatefulWidget {
 }
 
 class _ActivityFactorButtonState extends State<ActivityFactorButton> {
+  // State Variables
   int? _savedLevel;
   String? _savedLabel;
   bool _isLocked = false;
 
+  // Lifecycle: โหลดข้อมูลที่บันทึกไว้
   @override
   void initState() {
     super.initState();
     _loadSavedData();
   }
 
+  // Helper: แปลง Activity Factor เป็น Level และ Label
   Map<String, dynamic> _getLevelFromActivityFactor(double factor) {
     if (factor == 1.2) return {'level': 1, 'label': 'น้อยมาก'};
     if (factor == 1.4) return {'level': 2, 'label': 'น้อย'};
@@ -37,8 +38,11 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
     return {'level': 0, 'label': 'ไม่ทราบ'};
   }
 
+  // Business Logic: โหลดข้อมูลจาก API และ SharedPreferences
+  // ตรวจสอบว่าเลือกไปแล้ววันนี้หรือยัง
   Future<void> _loadSavedData() async {
     try {
+      // API Call: ดึงสถานะแคลอรี่
       final status = await KalService.getCalorieStatus();
       if (status.targetCalories > 0 && status.activityLevel > 0) {
         final levelData = _getLevelFromActivityFactor(status.activityLevel);
@@ -51,6 +55,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
           _isLocked = true;
         });
 
+        // Save to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('activity_level', level);
         await prefs.setString('activity_label', label);
@@ -64,6 +69,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
         });
       }
     } catch (_) {
+      // Fallback: ใช้ข้อมูลจาก SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final savedLevel = prefs.getInt('activity_level');
       final savedLabel = prefs.getString('activity_label');
@@ -83,7 +89,10 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
     }
   }
 
+  // Business Logic: เปิด Dialog เลือกระดับกิจกรรม
+  // ถ้าเลือกไปแล้ววันนี้จะไม่ให้เลือกอีก
   Future<void> _openActivitySelector(BuildContext context) async {
+    // Validation: ตรวจสอบว่าล็อคแล้วหรือยัง
     if (_isLocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -103,6 +112,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
       return;
     }
 
+    // Show Dialog
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.7),
@@ -113,6 +123,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
       final level = result['level'] as int;
       final label = result['label'] as String;
 
+      // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('activity_level', level);
       await prefs.setString('activity_label', label);
@@ -125,6 +136,7 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
         _isLocked = true;
       });
 
+      // Show success message
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -142,17 +154,19 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
         );
       }
 
+      // Callback to parent
       widget.onSaved?.call(level, label);
       widget.onCaloriesUpdated?.call();
     }
   }
 
+  // UI: สร้างปุ่ม Activity Factor
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    // Responsive: ปรับขนาดตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double containerHeight = isSmallScreen ? 50 : 60;
     final double padding = isSmallScreen ? 10 : 14;
@@ -280,10 +294,8 @@ class _ActivityFactorButtonState extends State<ActivityFactorButton> {
   }
 }
 
-// ============================================
-// ActivityFactorDialog - Responsive
-// ============================================
-
+// Activity Factor Dialog
+// Dialog สำหรับเลือกระดับกิจกรรม 1-5
 class ActivityFactorDialog extends StatefulWidget {
   const ActivityFactorDialog({Key? key}) : super(key: key);
 
@@ -292,8 +304,10 @@ class ActivityFactorDialog extends StatefulWidget {
 }
 
 class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
+  // State: ระดับที่เลือก
   int? _selectedLevel;
 
+  // ข้อมูลระดับกิจกรรม 5 ระดับ
   final List<Map<String, dynamic>> _activityLevels = [
     {'level': 1, 'label': 'น้อยมาก', 'description': 'นอนเฉยๆ', 'factor': 1.2},
     {'level': 2, 'label': 'น้อย', 'description': 'ทำงานเบาๆ เดินเล่น', 'factor': 1.4},
@@ -302,7 +316,9 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
     {'level': 5, 'label': 'มากที่สุด', 'description': 'นักกีฬา', 'factor': 1.9},
   ];
 
+  // Business Logic: บันทึกการเลือกและเรียก API
   Future<void> _saveSelection() async {
+    // Validation: ต้องเลือกระดับก่อน
     if (_selectedLevel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -325,6 +341,7 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
         _activityLevels.firstWhere((item) => item['level'] == _selectedLevel);
     final activityFactor = selectedData['factor'] as double;
 
+    // Show loading
     if (!context.mounted) return;
     showDialog(
       context: context,
@@ -337,11 +354,12 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
     );
 
     try {
+      // API Call: คำนวณและบันทึกแคลอรี่
       await KalService.calculateAndSaveCalories(activityLevel: activityFactor);
       await Future.delayed(const Duration(milliseconds: 300));
 
       if (!context.mounted) return;
-      Navigator.pop(context); // ปิด loading
+      Navigator.pop(context); // Close loading
       Navigator.pop(context, {
         'level': _selectedLevel,
         'label': selectedData['label'],
@@ -367,13 +385,14 @@ class _ActivityFactorDialogState extends State<ActivityFactorDialog> {
     }
   }
 
+  // UI: สร้าง Dialog เลือกระดับ
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    // Responsive: ปรับขนาดตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double dialogMaxWidth = isSmallScreen ? screenWidth * 0.9 : 420;
     final double dialogMaxHeight = isSmallScreen ? screenHeight * 0.7 : 480;

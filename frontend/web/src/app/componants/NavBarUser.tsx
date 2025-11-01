@@ -1,9 +1,13 @@
-// components/NavBarUser.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { useUser } from '../../context/user_context';
 
+/**
+ * NavBar User Component
+ * แถบนำทางสำหรับหน้าผู้ใช้งาน
+ * แสดงโลโก้ ชื่อแอป ชื่อผู้ใช้ และรูปโปรไฟล์
+ */
 export default function NavBarUser() {
   const router = useRouter();
   const { userProfile, loading } = useUser();
@@ -16,14 +20,11 @@ export default function NavBarUser() {
     router.push('/profile');
   };
 
-  // แสดง username จาก backend หรือ default
   const displayUsername = userProfile?.username || 'USER';
-  
-  // แสดงรูปโปรไฟล์จาก backend หรือ default
   const profileImageSrc = userProfile?.image_profile_url || '/pic/person.png';
 
   return (
-    <nav 
+    <nav
       className="w-full relative"
       style={{
         background: 'linear-gradient(to right, #6fa85e, #8bc273)',
@@ -34,9 +35,8 @@ export default function NavBarUser() {
     >
       <div className="safe-area-inset px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Left Side: Logo + App Name */}
+          {/* Logo & App Name */}
           <div className="flex items-center gap-3">
-            {/* Logo */}
             <button
               onClick={handleLogoClick}
               className="relative"
@@ -57,37 +57,34 @@ export default function NavBarUser() {
               />
             </button>
 
-            {/* App Name */}
             <button
               onClick={handleLogoClick}
               className="flex flex-col items-start"
             >
-              {/* Pixel Dots */}
               <div className="flex gap-0.5 mb-1">
-                <div 
+                <div
                   className="w-1.5 h-1.5"
-                  style={{ 
+                  style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.8)',
                     border: '1px solid black',
                   }}
                 ></div>
-                <div 
+                <div
                   className="w-1.5 h-1.5"
-                  style={{ 
+                  style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.6)',
                     border: '1px solid black',
                   }}
                 ></div>
-                <div 
+                <div
                   className="w-1.5 h-1.5"
-                  style={{ 
+                  style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.4)',
                     border: '1px solid black',
                   }}
                 ></div>
               </div>
 
-              {/* Title */}
               <span
                 className="font-bold text-white tracking-wider"
                 style={{
@@ -101,9 +98,8 @@ export default function NavBarUser() {
             </button>
           </div>
 
-          {/* Right Side: Username + Profile */}
+          {/* User Info */}
           <div className="flex items-center gap-3">
-            {/* Username Box */}
             <div
               className="px-3 py-2 bg-white"
               style={{
@@ -112,7 +108,6 @@ export default function NavBarUser() {
               }}
             >
               <div className="flex items-center gap-1.5">
-                {/* Pixel Square */}
                 <div
                   className="w-2 h-2"
                   style={{
@@ -121,7 +116,6 @@ export default function NavBarUser() {
                   }}
                 ></div>
 
-                {/* Username - แสดงจาก backend */}
                 <span
                   className="text-lg font-bold text-gray-800"
                   style={{
@@ -134,7 +128,6 @@ export default function NavBarUser() {
               </div>
             </div>
 
-            {/* Profile Icon - แสดงรูปจาก backend */}
             <button
               onClick={handleProfileClick}
               className="w-18 h-18 bg-white flex items-center justify-center overflow-hidden"
@@ -148,7 +141,6 @@ export default function NavBarUser() {
                 alt="Profile"
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  // Fallback เป็นรูป default ถ้าโหลดไม่ได้
                   e.currentTarget.src = '/pic/person.png';
                 }}
               />

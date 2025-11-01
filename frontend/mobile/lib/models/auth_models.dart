@@ -1,6 +1,4 @@
-// lib/service/auth_models.dart
-
-// ========== Model สำหรับ Response จาก Register API ==========
+// Model สำหรับ Response จากการสมัครสมาชิก
 class RegisterResponse {
   final String message;
 
@@ -13,13 +11,13 @@ class RegisterResponse {
   }
 }
 
-// ========== Model สำหรับ Response จาก Login API ==========
+// Model สำหรับ Response จากการเข้าสู่ระบบ
 class LoginResponse {
   final String message;
-  final String role;          // เก็บไว้เพื่อ parse JSON จาก Backend
-  final String? userId;       // ✅ เพิ่ม userId
+  final String role;
+  final String? userId;
   final String accessToken;
-  final String? refreshToken; // มีเฉพาะ user (mobile)
+  final String? refreshToken;
   final String expiresIn;
 
   LoginResponse({
@@ -35,9 +33,9 @@ class LoginResponse {
     return LoginResponse(
       message: json['message'] ?? 'Login successful',
       role: json['role'] ?? 'user',
-      userId: json['userId']?.toString(), // ✅ เพิ่ม userId
+      userId: json['userId']?.toString(),
       accessToken: json['accessToken'] ?? '',
-      refreshToken: json['refreshToken'], // อาจเป็น null ถ้าเป็น admin
+      refreshToken: json['refreshToken'],
       expiresIn: json['expiresIn'] ?? '30m',
     );
   }
@@ -54,7 +52,7 @@ class LoginResponse {
   }
 }
 
-// ========== Model สำหรับ Response จาก Refresh Token API ==========
+// Model สำหรับ Response จากการรีเฟรช Token
 class RefreshTokenResponse {
   final String accessToken;
   final String expiresIn;
@@ -69,7 +67,7 @@ class RefreshTokenResponse {
   }
 }
 
-// ========== Model สำหรับข้อมูล User (ใช้ในแอป) ==========
+// Model ข้อมูลผู้ใช้
 class User {
   final String userId;
   final String username;
@@ -101,12 +99,10 @@ class User {
       username: json['username'] ?? '',
       email: json['email'],
       phoneNumber: json['phone_number'],
-      // Parse age ให้ปลอดภัย
       age: json['age'] is int
           ? json['age']
           : (json['age'] != null ? int.tryParse(json['age'].toString()) : null),
       gender: json['gender'],
-      // Parse height และ weight ให้รองรับทั้ง String และ num
       height: json['height'] != null
           ? double.tryParse(json['height'].toString())
           : null,
@@ -134,10 +130,10 @@ class User {
   }
 }
 
-// ========== Model สำหรับ Error Response ==========
+// Model สำหรับ Error Response
 class ErrorResponse {
   final String message;
-  final int? attemptsLeft; // จำนวนครั้งที่เหลือก่อนถูกล็อค
+  final int? attemptsLeft;
 
   ErrorResponse({required this.message, this.attemptsLeft});
 

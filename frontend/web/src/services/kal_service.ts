@@ -1,17 +1,10 @@
-// src/app/services/kal_service.ts
-
 import api from './auth_service'
 import { getNodeApiUrl } from '@/config/api.config'
 
-// ========================================
-// Configuration
-// ========================================
 const API_BASE_URL = getNodeApiUrl()
 const DAILY_API_URL = `${API_BASE_URL}/api/daily`
 
-// ========================================
-// Types / Models
-// ========================================
+// ประเภทข้อมูล Response และ Model
 export interface CalculateCaloriesResponse {
   message: string
   activity_level: number
@@ -47,45 +40,31 @@ export interface WeeklyCaloriesResponse {
   data: DailyCalorieData[]
 }
 
-// ========================================
-// Helper: Get User ID from localStorage
-// ========================================
+// ดึง User ID จาก localStorage
 function getUserId(): string | null {
   if (typeof window === 'undefined') {
-    console.log('⚠️ [getUserId] Window is undefined (SSR)');
     return null;
   }
 
   const userStr = localStorage.getItem('user')
   if (!userStr) {
-    console.error('❌ [getUserId] No user found in localStorage');
     return null;
   }
 
   try {
     const user = JSON.parse(userStr)
-    console.log('👤 [getUserId] User from localStorage:', user);
-
     if (!user.id) {
-      console.error('❌ [getUserId] user.id is missing or 0:', user.id);
       return null;
     }
-
-    console.log('✅ [getUserId] Returning user ID:', user.id);
     return user.id?.toString() || null
   } catch (error) {
-    console.error('❌ [getUserId] Error parsing user from localStorage:', error);
     return null
   }
 }
 
-// ========================================
-// KalService - Calorie & Daily APIs
-// ========================================
+// Service สำหรับคำนวณและจัดการแคลอรี่
 export const kalService = {
-  /**
-   * Calculate and save BMR, TDEE and Target Calories
-   */
+  // คำนวณและบันทึก BMR, TDEE และแคลอรี่เป้าหมาย
   calculateAndSaveCalories: async (activityLevel: number): Promise<CalculateCaloriesResponse> => {
     try {
       const userId = getUserId()
@@ -93,27 +72,19 @@ export const kalService = {
         throw new Error('User ID not found. Please login again.')
       }
 
-      console.log('[KalService] Calculating calories with activity level:', activityLevel)
       const url = `${DAILY_API_URL}/calculate-calories/${userId}`
-      console.log('[KalService] API URL:', url)
-
       const response = await api.post<CalculateCaloriesResponse>(url, {
         activityLevel: activityLevel,
       })
 
-      console.log('[KalService] Response:', response.data)
-      console.log('[KalService] Successfully calculated calories')
       return response.data
     } catch (error: any) {
-      console.error('[KalService] Exception in calculateAndSaveCalories:', error)
       const errorMessage = error.response?.data?.message || error.message || 'Failed to calculate calories'
       throw new Error(errorMessage)
     }
   },
 
-  /**
-   * Get calorie status (Target, Consumed, Burned, Net, Remaining)
-   */
+  // ดึงสถานะแคลอรี่ (เป้าหมาย, บริโภค, เผาผลาญ, คงเหลือ)
   getCalorieStatus: async (): Promise<CalorieStatus> => {
     try {
       const userId = getUserId()
@@ -122,15 +93,11 @@ export const kalService = {
       }
 
       const url = `${DAILY_API_URL}/status/${userId}`
-
       const response = await api.get<CalorieStatus>(url)
 
-      console.log('[KalService] Successfully fetched calorie status')
       return response.data
     } catch (error: any) {
-      // If 404, no data found for today (this is expected when user hasn't selected activity level)
       if (error.response?.status === 404) {
-        console.log('[KalService] No calorie data found for today (user needs to select activity level)')
         return {
           activity_level: 0,
           target_calories: 0,
@@ -141,16 +108,12 @@ export const kalService = {
         }
       }
 
-      // For other errors, log and rethrow
-      console.error('[KalService] Error in getCalorieStatus:', error.response?.status || error.message)
       const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch calorie status'
       throw new Error(errorMessage)
     }
   },
 
-  /**
-   * Get daily macros (Protein, Fat, Carbohydrate)
-   */
+  // ดึงข้อมูลสารอาหารรายวัน (โปรตีน, ไขมัน, คาร์โบไฮเดรต)
   getDailyMacros: async (): Promise<DailyMacros> => {
     try {
       const userId = getUserId()
@@ -158,25 +121,17 @@ export const kalService = {
         throw new Error('User ID not found. Please login again.')
       }
 
-      console.log('[KalService] Fetching daily macros for user:', userId)
       const url = `${DAILY_API_URL}/macros/${userId}`
-
       const response = await api.get<DailyMacros>(url)
 
-      console.log('[KalService] Response status:', response.status)
-      console.log('[KalService] Successfully fetched daily macros')
       return response.data
     } catch (error: any) {
-      console.error('[KalService] Exception in getDailyMacros:', error)
       const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch daily macros'
       throw new Error(errorMessage)
     }
   },
 
-  /**
-   * Get weekly calories (ดึงข้อมูล 7 วันล่าสุด)
-   * Backend จะใช้ user_id จาก JWT token โดยอัตโนมัติ
-   */
+  // ดึงข้อมูลแคลอรี่รายสัปดาห์ (7 วันล่าสุด)
   getWeeklyCalories: async (): Promise<WeeklyCaloriesResponse> => {
     try {
       const userId = getUserId()
@@ -184,23 +139,14 @@ export const kalService = {
         throw new Error('User ID not found. Please login again.')
       }
 
-      console.log('🌐 [KalService] Fetching weekly calories for user:', userId)
       const url = `${DAILY_API_URL}/weekly/${userId}`
-
       const response = await api.get<WeeklyCaloriesResponse>(url)
 
-      console.log('✅ [KalService] Response status:', response.status)
-      console.log('✅ [KalService] Weekly data received:', response.data.data.length, 'days')
       return response.data
     } catch (error: any) {
-      console.error('❌ [KalService] Exception in getWeeklyCalories:', error)
-
-      // แยกประเภท error
       if (error.response?.status === 401) {
         throw new Error('Session expired. Please login again.')
       } else if (error.response?.status === 404) {
-        // ไม่มีข้อมูล - return empty array
-        console.log('⚠️ [KalService] No weekly data found')
         return {
           message: 'No weekly data found',
           data: []

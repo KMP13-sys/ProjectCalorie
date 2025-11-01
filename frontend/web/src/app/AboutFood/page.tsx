@@ -6,6 +6,9 @@ import Image from 'next/image';
 import NavBarAdmin from '../componants/NavBarAdmin';
 import { adminService, Food } from '../../services/adminService';
 
+/**
+ * Type สำหรับเก็บข้อมูลอาหารที่กำลังแก้ไข
+ */
 type EditingFood = {
   food_id: number;
   food_name: string;
@@ -15,18 +18,28 @@ type EditingFood = {
   calories: number;
 };
 
+/**
+ * หน้าจัดการข้อมูลอาหาร (About Food)
+ * ใช้สำหรับแสดงและแก้ไขข้อมูลอาหารทั้งหมดในระบบ
+ */
 export default function AboutFoodPage() {
   const router = useRouter();
   const [foods, setFoods] = useState<Food[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingData, setEditingData] = useState<EditingFood | null>(null);
-  const [successModal, setSuccessModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null); // ID ของอาหารที่กำลังแก้ไข
+  const [editingData, setEditingData] = useState<EditingFood | null>(null); // ข้อมูลชั่วคราวสำหรับการแก้ไข
+  const [successModal, setSuccessModal] = useState(false); // สถานะการแสดง modal สำเร็จ
 
+  /**
+   * โหลดข้อมูลอาหารทั้งหมดเมื่อหน้าโหลดครั้งแรก
+   */
   useEffect(() => {
     fetchFoods();
   }, []);
 
+  /**
+   * ดึงข้อมูลอาหารทั้งหมดจาก API
+   */
   const fetchFoods = async () => {
     setIsLoading(true);
     try {
@@ -40,16 +53,26 @@ export default function AboutFoodPage() {
     }
   };
 
+  /**
+   * เริ่มโหมดแก้ไขข้อมูลอาหาร
+   * @param food - ข้อมูลอาหารที่ต้องการแก้ไข
+   */
   const handleEditClick = (food: Food) => {
     setEditingId(food.food_id);
     setEditingData({ ...food });
   };
 
+  /**
+   * ยกเลิกการแก้ไขและคืนค่าเป็นโหมดแสดงผล
+   */
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingData(null);
   };
 
+  /**
+   * บันทึกการแก้ไขข้อมูลอาหารและอัพเดทไปยัง API
+   */
   const handleSaveEdit = async () => {
     if (!editingData) return;
 
@@ -64,14 +87,18 @@ export default function AboutFoodPage() {
       setEditingId(null);
       setEditingData(null);
       setSuccessModal(true);
-      // Refresh food list
-      fetchFoods();
+      fetchFoods(); // รีเฟรชข้อมูลอาหารหลังจากแก้ไขสำเร็จ
     } catch (error) {
       console.error('Error updating food:', error);
       alert('ไม่สามารถแก้ไขข้อมูลอาหารได้');
     }
   };
 
+  /**
+   * อัพเดทค่าของฟิลด์ที่กำลังแก้ไข
+   * @param field - ชื่อฟิลด์ที่ต้องการแก้ไข
+   * @param value - ค่าใหม่
+   */
   const handleInputChange = (field: keyof EditingFood, value: string | number) => {
     if (!editingData) return;
     setEditingData({
@@ -80,15 +107,18 @@ export default function AboutFoodPage() {
     });
   };
 
+  /**
+   * กลับไปหน้า Admin Main
+   */
   const handleBack = () => {
     router.push('/AdminMain');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e8f5e9] via-[#f1f8e9] to-[#fff9c4] relative overflow-hidden">
-      
-      {/* Pixel Grid Background Pattern */}
-      <div 
+
+      {/* พื้นหลังแบบ Pixel Grid */}
+      <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
           backgroundImage: `
@@ -100,13 +130,13 @@ export default function AboutFoodPage() {
       ></div>
         <NavBarAdmin/>
 
-      {/* Main Content */}
+      {/* เนื้อหาหลัก */}
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
-        
-        {/* Header Section */}
+
+        {/* ส่วนหัวเพจ */}
         <div className="flex items-center gap-4 mb-8">
-          
-          {/* Back Button */}
+
+          {/* ปุ่มย้อนกลับ */}
           <button
             onClick={handleBack}
             className="bg-white border-6 border-black p-4 hover:translate-x-[-2px] hover:translate-y-[-2px] transition-transform"
@@ -118,16 +148,16 @@ export default function AboutFoodPage() {
             <span className="text-2xl font-bold text-[#000000]">◀</span>
           </button>
 
-          {/* Title Box */}
-          <div 
+          {/* กล่องหัวข้อหน้า */}
+          <div
             className="bg-white border-6 border-black px-12 py-4"
-            style={{ 
+            style={{
               boxShadow: '8px 8px 0px rgba(0,0,0,0.3)',
               imageRendering: 'pixelated'
             }}
           >
             <div className="relative">
-              {/* Decorative Corner Pixels */}
+              {/* จุด Pixel ประดับมุม */}
               <div className="absolute -top-6 -left-8 w-4 h-4 bg-[#ff9800]"></div>
               <div className="absolute -top-6 -right-8 w-4 h-4 bg-[#ff9800]"></div>
               <div className="absolute -bottom-6 -left-8 w-4 h-4 bg-[#ff9800]"></div>
@@ -146,7 +176,7 @@ export default function AboutFoodPage() {
           </div>
         </div>
 
-        {/* Table Container */}
+        {/* กล่องตาราง */}
         <div
           className="bg-white border-8 border-[#ff9800] overflow-hidden relative"
           style={{
@@ -154,13 +184,13 @@ export default function AboutFoodPage() {
             imageRendering: 'pixelated'
           }}
         >
-          {/* Decorative Corner Pixels */}
+          {/* จุด Pixel ประดับมุม */}
           <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#ff9800]"></div>
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#ff9800]"></div>
           <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#ff9800]"></div>
           <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#ff9800]"></div>
 
-          {/* Table */}
+          {/* ตารางข้อมูลอาหาร */}
           <div className="overflow-x-auto">
             <table className="w-full" style={{ fontFamily: 'TA8bit' }}>
               <thead>
@@ -188,8 +218,8 @@ export default function AboutFoodPage() {
               <tbody>
                 {foods.length > 0 ? (
                   foods.map((food, index) => {
-                    const isEditing = editingId === food.food_id;
-                    const displayData = isEditing && editingData ? editingData : food;
+                    const isEditing = editingId === food.food_id; // เช็คว่าแถวนี้อยู่ในโหมดแก้ไขหรือไม่
+                    const displayData = isEditing && editingData ? editingData : food; // แสดงข้อมูลที่กำลังแก้ไข หรือข้อมูลจริง
 
                     return (
                       <tr
@@ -201,7 +231,7 @@ export default function AboutFoodPage() {
                         <td className="px-4 py-6 border-r-4 border-black text-center">
                           {isEditing ? (
                             <div className="flex gap-2 justify-center">
-                              {/* Cancel Button */}
+                              {/* ปุ่มยกเลิก */}
                               <button
                                 onClick={handleCancelEdit}
                                 className="bg-white border-4 border-black p-2 hover:bg-red-100 transition-colors inline-flex items-center justify-center"
@@ -209,7 +239,7 @@ export default function AboutFoodPage() {
                               >
                                 <span className="text-2xl font-bold text-red-600">✕</span>
                               </button>
-                              {/* Save Button */}
+                              {/* ปุ่มบันทึก */}
                               <button
                                 onClick={handleSaveEdit}
                                 className="bg-white border-4 border-black p-2 hover:bg-green-100 transition-colors inline-flex items-center justify-center"
@@ -317,7 +347,7 @@ export default function AboutFoodPage() {
             </table>
           </div>
 
-          {/* Loading State */}
+          {/* สถานะกำลังโหลด */}
           {isLoading && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
               <div className="text-center">
@@ -346,7 +376,7 @@ export default function AboutFoodPage() {
         </div>
       </div>
 
-      {/* Success Modal */}
+      {/* Modal แสดงความสำเร็จ */}
       {successModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div
@@ -356,15 +386,15 @@ export default function AboutFoodPage() {
               imageRendering: 'pixelated'
             }}
           >
-            {/* Decorative Corner Pixels */}
+            {/* จุด Pixel ประดับมุม */}
             <div className="absolute -top-3 -left-3 w-8 h-8 bg-[#ffd54f] border-4 border-black"></div>
             <div className="absolute -top-3 -right-3 w-8 h-8 bg-[#ffd54f] border-4 border-black"></div>
             <div className="absolute -bottom-3 -left-3 w-8 h-8 bg-[#ffd54f] border-4 border-black"></div>
             <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-[#ffd54f] border-4 border-black"></div>
 
-            {/* Modal Header */}
+            {/* ส่วนหัว Modal */}
             <div className="bg-gradient-to-r from-[#ff9800] to-[#ff6f00] border-b-8 border-black px-8 py-6 relative">
-              {/* Header decoration pixels */}
+              {/* จุด Pixel ประดับหัว */}
               <div className="absolute top-2 left-4 w-3 h-3 bg-[#ffb74d]"></div>
               <div className="absolute top-2 right-4 w-3 h-3 bg-[#ffb74d]"></div>
 
@@ -379,12 +409,12 @@ export default function AboutFoodPage() {
               </h3>
             </div>
 
-            {/* Modal Body */}
+            {/* เนื้อหา Modal */}
             <div className="p-10 bg-[#fffde7] border-b-8 border-black relative">
-              {/* Body decoration pixels */}
+              {/* จุด Pixel ประดับเนื้อหา */}
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#ff9800] to-transparent opacity-30"></div>
 
-              {/* Success icon */}
+              {/* ไอคอนสำเร็จ */}
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <div className="w-24 h-24 bg-[#4caf50] border-8 border-black relative"
@@ -394,7 +424,7 @@ export default function AboutFoodPage() {
                       <span className="text-6xl text-white font-bold">✓</span>
                     </div>
                   </div>
-                  {/* Sparkle pixels */}
+                  {/* จุด Pixel ระยิบระยับ */}
                   <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#ffeb3b] border-2 border-black"></div>
                   <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-[#ffeb3b] border-2 border-black"></div>
                 </div>
@@ -417,7 +447,7 @@ export default function AboutFoodPage() {
               </p>
             </div>
 
-            {/* Modal Footer */}
+            {/* ส่วนท้าย Modal */}
             <div className="p-6 bg-[#fff9c4]">
               <button
                 onClick={() => setSuccessModal(false)}

@@ -6,6 +6,8 @@ import '../../config/api_config.dart';
 import '../../service/storage_helper.dart';
 import '../../service/profile_service.dart';
 
+// NavBarUser Widget
+// Navigation Bar สำหรับผู้ใช้ทั่วไป แสดงโลโก, ชื่อแอป, username และรูปโปรไฟล์
 class NavBarUser extends StatefulWidget {
   const NavBarUser({Key? key}) : super(key: key);
 
@@ -14,16 +16,19 @@ class NavBarUser extends StatefulWidget {
 }
 
 class _NavBarUserState extends State<NavBarUser> {
+  // State Variables
   String username = 'USER';
   String? profileImageUrl;
   bool isLoading = true;
 
+  // Lifecycle: โหลดข้อมูลโปรไฟล์เมื่อเริ่มต้น
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
   }
 
+  // Helper: ทดสอบว่า URL รูปภาพใช้ได้หรือไม่
   Future<bool> _testImageUrl(String url) async {
     try {
       final response = await http.get(Uri.parse(url));
@@ -33,6 +38,7 @@ class _NavBarUserState extends State<NavBarUser> {
     }
   }
 
+  // Business Logic: โหลดข้อมูลโปรไฟล์จาก API
   Future<void> _loadUserProfile() async {
     try {
       final userProfile = await ProfileService.getMyProfile();
@@ -66,6 +72,7 @@ class _NavBarUserState extends State<NavBarUser> {
     }
   }
 
+  // Widget: สร้างรูปโปรไฟล์เริ่มต้น (default)
   Widget _buildDefaultProfileImage(double size) {
     return Container(
       width: size,
@@ -89,10 +96,11 @@ class _NavBarUserState extends State<NavBarUser> {
     );
   }
 
+  // UI: สร้าง Navigation Bar แบบ Pixel Art Style
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      // ✅ Enhanced responsive breakpoints
+      // Responsive: Enhanced responsive breakpoints
       final isUltraSmall = constraints.maxWidth < 320;
       final isSmallScreen = constraints.maxWidth < 360;
       final isMediumScreen = constraints.maxWidth < 400;
@@ -114,7 +122,7 @@ class _NavBarUserState extends State<NavBarUser> {
           border: const Border(bottom: BorderSide(color: Colors.black, width: 6)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               offset: const Offset(0, 6),
               blurRadius: 0,
             ),
@@ -126,7 +134,7 @@ class _NavBarUserState extends State<NavBarUser> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // ฝั่งซ้าย: Logo + App Name
+                // Section: Left Side - Logo + App Name
                 Flexible(
                   child: Row(
                     children: [
@@ -197,7 +205,7 @@ class _NavBarUserState extends State<NavBarUser> {
                   ),
                 ),
 
-                // ฝั่งขวา: Username + Profile Image
+                // Section: Right Side - Username + Profile Image
                 isLoading
                     ? _buildLoadingState(isSmallScreen, profileSize)
                     : Row(
@@ -278,6 +286,7 @@ class _NavBarUserState extends State<NavBarUser> {
     });
   }
 
+  // Widget: สร้างรูปโปรไฟล์ (ดึงจาก network หรือแสดง default)
   Widget _buildProfileImage(double size) {
     if (profileImageUrl != null && profileImageUrl!.isNotEmpty) {
       return FutureBuilder<bool>(
@@ -311,6 +320,7 @@ class _NavBarUserState extends State<NavBarUser> {
     }
   }
 
+  // Widget: สร้าง Loading State สำหรับ username และ profile
   Widget _buildLoadingState(bool isSmallScreen, double profileSize) {
     final borderWidth = isSmallScreen ? 1.5 : 2.0;
     final shadowOffset = isSmallScreen ? 2.0 : 3.0;
@@ -377,6 +387,7 @@ class _NavBarUserState extends State<NavBarUser> {
     );
   }
 
+  // Widget: สร้างจุด Pixel สำหรับตกแต่ง
   Widget _buildPixelDot(Color color) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;

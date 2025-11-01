@@ -26,10 +26,10 @@ export default function MainPage() {
     checkActivityLevel();
   }, []);
 
+  // รีเฟรชข้อมูลเมื่อกลับมาที่หน้าและเมื่อ component โหลดเสร็จ
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('🔄 Page visible, refreshing data...');
         setKcalbarKey(prev => prev + 1);
         setPieKey(prev => prev + 1);
         setListSportKey(prev => prev + 1);
@@ -39,7 +39,6 @@ export default function MainPage() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     const refreshOnMount = () => {
-      console.log('🔄 Component mounted, refreshing...');
       setKcalbarKey(prev => prev + 1);
       setPieKey(prev => prev + 1);
       setListSportKey(prev => prev + 1);
@@ -63,8 +62,8 @@ export default function MainPage() {
     }
   };
 
+  // รีเฟรชข้อมูลเมื่อผู้ใช้อัปเดต Activity Factor
   const handleActivityUpdated = () => {
-    console.log('🔄 Activity updated, refreshing...');
     setHasActivityLevel(true);
     setKcalbarKey(prev => prev + 1);
     setPieKey(prev => prev + 1);
@@ -72,18 +71,14 @@ export default function MainPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* NavBar */}
       <NavBarUser />
 
-      {/* 🔹 MAIN LAYOUT AREA */}
       <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6">
-        
-        {/* ======================================================= */}
-        {/* ROW 1: Main Content Grid */}
-        {/* ======================================================= */}
+
+        {/* พื้นที่หลัก: แถบแคลอรี่, กราฟ, การควบคุม, และรายการ */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-5 lg:items-start">
 
-          {/* 1. Kcalbar & Pie Graph */}
+          {/* แถบแคลอรี่และกราฟวงกลม */}
           <div className="md:col-span-1 lg:col-span-4 flex flex-col bg-white rounded-lg shadow-md p-2 sm:p-3 md:p-4 lg:h-[70vh]">
             <div className="h-[100px] sm:h-[110px] md:h-[120px]">
               <Kcalbar key={kcalbarKey} />
@@ -93,7 +88,7 @@ export default function MainPage() {
             </div>
           </div>
 
-          {/* 2. Controls (Activity Factor, Camera, Activity) */}
+          {/* การควบคุม: Activity Factor, กล้อง, และกิจกรรม */}
           <div className="md:col-span-1 lg:col-span-2 flex flex-col space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 bg-white rounded-lg shadow-md py-3 px-3 sm:py-4 sm:px-4 md:py-5 md:px-4 lg:h-[70vh]">
             <div>
               <Activityfactor onCaloriesUpdated={handleActivityUpdated} />
@@ -112,36 +107,34 @@ export default function MainPage() {
             }} />
           </div>
 
-          {/* 3. List MENU */}
+          {/* รายการอาหาร */}
           <div className="md:col-span-1 lg:col-span-3 h-fit">
             <ListMenu />
           </div>
 
-          {/* 4. List Sport */}
+          {/* รายการกีฬา */}
           <div className="md:col-span-1 lg:col-span-3 h-fit">
             <ListSport key={listSportKey} />
           </div>
         </div>
 
-        {/* ======================================================= */}
-        {/* ROW 2: Statistics & Recommendations */}
-        {/* ======================================================= */}
+        {/* สถิติและคำแนะนำ */}
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-6">
-          
-          {/* 5. Weekly Graph */}
+
+          {/* กราฟสัปดาห์ */}
           <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md min-h-[300px] sm:min-h-[350px] md:min-h-[400px] lg:h-[40vh]">
             <WeeklyGraph />
           </div>
 
-          {/* Container for Recommendations */}
+          {/* คำแนะนำอาหารและกีฬา */}
           <div className="w-full lg:w-1/2 flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-6">
 
-            {/* 6. Recommend MENU */}
+            {/* คำแนะนำอาหาร */}
             <div className="flex-1 min-h-[250px] sm:min-h-[300px] lg:min-h-0">
               <RacMenu remainingCalories={remainingCalories} refreshTrigger={kcalbarKey} />
             </div>
 
-            {/* 7. Recommend Sport */}
+            {/* คำแนะนำกีฬา */}
             <div className="flex-1 min-h-[250px] sm:min-h-[300px] lg:min-h-0">
               <RacSport refreshTrigger={listSportKey} />
             </div>

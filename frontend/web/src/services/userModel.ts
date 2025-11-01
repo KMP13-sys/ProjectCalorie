@@ -1,10 +1,9 @@
-// src/app/models/userModel.ts
-
+// Model ข้อมูลผู้ใช้
 export interface User {
   user_id: number;
   username: string;
   email: string;
-  role?: "user" | "admin"; 
+  role?: "user" | "admin";
   phone_number?: string;
   age?: number;
   gender?: "male" | "female";
@@ -15,6 +14,7 @@ export interface User {
   updated_at?: Date;
 }
 
+// Response สำหรับรายชื่อผู้ใช้ทั้งหมด
 export interface AllUsersResponse {
   message: string;
   users: User[];

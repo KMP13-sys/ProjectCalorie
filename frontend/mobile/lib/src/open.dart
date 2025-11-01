@@ -1,7 +1,8 @@
-// lib/src/open.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+/// SplashScreen Widget
+/// หน้า Splash Screen แบบ Pixel Art พร้อม Animation
 class SplashScreen extends StatefulWidget {
   final Widget destination;
 
@@ -16,27 +17,33 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
+  /// Animation Controllers
   late AnimationController _pulseController;
   late AnimationController _progressController;
   late AnimationController _bounceController;
 
+  /// Lifecycle: เริ่มต้น Animations และ Navigation Timer
   @override
   void initState() {
     super.initState();
 
+    // Animation: Pulse effect (1 วินาที)
     _pulseController =
         AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)
           ..repeat(reverse: true);
 
+    // Animation: Bounce effect (1.5 วินาที)
     _bounceController =
         AnimationController(duration: const Duration(milliseconds: 1500), vsync: this)
           ..repeat(reverse: true);
 
+    // Animation: Progress bar (2 วินาที)
     _progressController =
         AnimationController(duration: const Duration(seconds: 2), vsync: this);
 
     _progressController.forward();
 
+    // Navigation: ไปหน้าปลายทางหลังจาก 2 วินาที
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
@@ -47,6 +54,7 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
+  /// Lifecycle: ทำความสะอาด Animation Controllers
   @override
   void dispose() {
     _pulseController.dispose();
@@ -57,6 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Responsive: คำนวณขนาดตามหน้าจอ
     final size = MediaQuery.of(context).size;
     final isSmall = size.width < 600;
     final isTablet = size.width >= 600 && size.width < 1024;
@@ -72,12 +81,14 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         child: Stack(
           children: [
+            // Section: Pixel Grid Background
             CustomPaint(painter: PixelGridPainter(), size: Size.infinite),
 
-            // Floating pixel clouds
+            // Decoration: Floating pixel clouds
             _buildPixelCloud(top: 40, left: 40, isSmall: isSmall),
             _buildPixelCloud(top: isSmall ? 120 : 130, right: isSmall ? 60 : 80, isSmall: isSmall),
 
+            // Section: Main Content
             Center(
               child: SingleChildScrollView(
                 child: Padding(
@@ -92,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // Floating pixel stars
+            // Decoration: Floating pixel stars
             _buildFloatingStar(top: null, bottom: null, left: size.width * 0.25, isSmall: isSmall, delay: 0),
             _buildFloatingStar(top: null, bottom: size.height * 0.3, right: size.width * 0.25, isSmall: isSmall, delay: 300),
           ],
@@ -101,6 +112,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Widget: สร้าง Pixel Cloud สำหรับตกแต่ง
   Widget _buildPixelCloud({double? top, double? bottom, double? left, double? right, required bool isSmall}) {
     final cloudSize = isSmall ? 60.0 : 96.0;
     final pixelSize = isSmall ? 8.0 : 12.0;
@@ -137,6 +149,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Widget: สร้าง Floating Star พร้อม Bounce Animation
   Widget _buildFloatingStar({double? top, double? bottom, double? left, double? right, required bool isSmall, required int delay}) {
     final starSize = isSmall ? 12.0 : 16.0;
 
@@ -161,7 +174,9 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Widget: สร้าง Main Container (Logo, Title, Loading)
   Widget _buildMainContainer({required Size size, required bool isSmall, required bool isTablet}) {
+    // Responsive: ขนาดต่างๆ ตามหน้าจอ
     final logoSize = isSmall ? 100.0 : (isTablet ? 120.0 : 128.0);
     final titleSize = isSmall ? 32.0 : (isTablet ? 40.0 : 48.0);
     final dotSize = isSmall ? 6.0 : 8.0;
@@ -183,7 +198,7 @@ class _SplashScreenState extends State<SplashScreen>
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Decorative corner pixels
+          // Decoration: Corner pixels
           Positioned(top: 0, left: 0, child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e))),
           Positioned(top: 0, right: 0, child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e))),
           Positioned(bottom: 0, left: 0, child: Container(width: 24, height: 24, color: const Color(0xFF6fa85e))),
@@ -192,11 +207,11 @@ class _SplashScreenState extends State<SplashScreen>
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Logo with pixel border
+              // Section: Logo
               _buildPixelLogo(size: logoSize, isSmall: isSmall),
               SizedBox(height: isSmall ? 20 : 24),
 
-              // Title
+              // Section: Title
               Text(
                 'CAL-DEFICITS',
                 style: TextStyle(
@@ -212,7 +227,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const SizedBox(height: 8),
 
-              // Pixel dots
+              // Decoration: Pixel dots
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -229,7 +244,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               SizedBox(height: isSmall ? 20 : 24),
 
-              // Loading text
+              // Section: Loading text with pulse animation
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 decoration: BoxDecoration(
@@ -257,7 +272,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               SizedBox(height: isSmall ? 16 : 20),
 
-              // Loading bar
+              // Section: Loading progress bar
               Container(
                 width: loadingBarWidth,
                 padding: const EdgeInsets.all(8),
@@ -299,7 +314,7 @@ class _SplashScreenState extends State<SplashScreen>
             ],
           ),
 
-          // Sparkle pixels on logo corners
+          // Decoration: Sparkle pixels on corners
           Positioned(
             top: -8,
             right: -8,
@@ -339,6 +354,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Widget: สร้าง Logo พร้อม Pulse Animation
   Widget _buildPixelLogo({required double size, required bool isSmall}) {
     return AnimatedBuilder(
       animation: _pulseController,
@@ -373,6 +389,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
+/// PixelGridPainter Class
+/// วาดตาราง Pixel เป็น Background
 class PixelGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

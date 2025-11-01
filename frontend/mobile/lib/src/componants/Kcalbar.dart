@@ -1,11 +1,13 @@
-// components/calorie_progress_bar.dart
 import 'package:flutter/material.dart';
 import '../../service/kal_service.dart';
 import '../../models/kal_models.dart';
 
+// Kcalbar Widget
+// แถบแสดงความคืบหน้าแคลอรี่ประจำวัน
 class Kcalbar extends StatefulWidget {
-  final Color progressColor;   // สีของแถบความคืบหน้า
-  final Color backgroundColor; // สีพื้นหลัง
+  // Customization: สีของแถบความคืบหน้าและพื้นหลัง
+  final Color progressColor;
+  final Color backgroundColor;
 
   const Kcalbar({
     super.key,
@@ -18,16 +20,19 @@ class Kcalbar extends StatefulWidget {
 }
 
 class _KcalbarState extends State<Kcalbar> {
+  // State Variables
   CalorieStatus? _calorieStatus;
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Lifecycle: โหลดข้อมูลแคลอรี่เมื่อเริ่มต้น
   @override
   void initState() {
     super.initState();
     _loadCalorieStatus();
   }
 
+  // Business Logic: โหลดสถานะแคลอรี่จาก API
   Future<void> _loadCalorieStatus() async {
     setState(() {
       _isLoading = true;
@@ -48,8 +53,10 @@ class _KcalbarState extends State<Kcalbar> {
     }
   }
 
+  // Public Method: รีเฟรชข้อมูลแคลอรี่
   void refresh() => _loadCalorieStatus();
 
+  // Helper: ตรวจสอบว่ามีข้อมูลแคลอรี่หรือไม่
   Future<bool> hasCalorieData() async {
     try {
       final status = await KalService.getCalorieStatus();
@@ -59,12 +66,13 @@ class _KcalbarState extends State<Kcalbar> {
     }
   }
 
+  // UI: สร้างแถบแสดงแคลอรี่แบบ Pixel Art Style
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    // Responsive: ปรับขนาด font/padding/layout ตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double fontSizeTitle = isSmallScreen ? 10 : 12;
     final double fontSizeText = isSmallScreen ? 9 : 11;
@@ -73,6 +81,7 @@ class _KcalbarState extends State<Kcalbar> {
     final double barHeight = isSmallScreen ? 28 : 36;
     final double borderWidth = isSmallScreen ? 2 : 3;
 
+    // State: Loading
     if (_isLoading) {
       return Container(
         height: isSmallScreen ? 80 : 100,
@@ -85,6 +94,7 @@ class _KcalbarState extends State<Kcalbar> {
       );
     }
 
+    // State: Error
     if (_errorMessage != null) {
       return Container(
         height: isSmallScreen ? 120 : 150,
@@ -138,6 +148,7 @@ class _KcalbarState extends State<Kcalbar> {
       );
     }
 
+    // State: No activity factor selected
     if (_calorieStatus == null || _calorieStatus!.targetCalories == 0) {
       return Container(
         height: isSmallScreen ? 70 : 80,
@@ -179,11 +190,13 @@ class _KcalbarState extends State<Kcalbar> {
       );
     }
 
+    // Data: คำนวณค่าแคลอรี่และความคืบหน้า
     final current = _calorieStatus!.netCalories;
     final target = _calorieStatus!.targetCalories;
     final remaining = _calorieStatus!.remainingCalories;
     final progress = target > 0 ? (current / target).clamp(0.0, 1.5) : 0.0;
 
+    // Display: ปรับสีและค่าแสดงผล (แดงถ้าเกินเป้าหมาย)
     final displayProgress = progress > 1.0 ? 1.0 : progress;
     final barColor = progress > 1.0 ? Colors.red : widget.progressColor;
 
@@ -192,6 +205,7 @@ class _KcalbarState extends State<Kcalbar> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Section: Header - แสดงค่าปัจจุบัน/เป้าหมาย
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: padding,
@@ -225,7 +239,7 @@ class _KcalbarState extends State<Kcalbar> {
               ),
             ),
 
-            // Progress Bar responsive
+            // Section: Progress Bar
             Container(
               height: barHeight,
               margin: EdgeInsets.symmetric(horizontal: padding),

@@ -1,4 +1,3 @@
-// lib/src/home/home.dart
 import 'package:flutter/material.dart';
 import '../../service/storage_helper.dart';
 import '../componants/navbaruser.dart';
@@ -13,6 +12,8 @@ import '../componants/RecSport.dart';
 import '../componants/Activity.dart';
 import '../componants/WeeklyGraph.dart';
 
+/// HomeScreen Widget
+/// หน้าหลักของแอปพลิเคชัน - แสดงข้อมูลแคลอรี่, รายการอาหาร, กิจกรรม, และคำแนะนำ
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -21,15 +22,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  /// State Variables: Global Keys สำหรับ Refresh Components
   final GlobalKey _kcalbarKey = GlobalKey();
   final GlobalKey _listSportKey = GlobalKey();
   final GlobalKey _listMenuKey = GlobalKey();
   final GlobalKey _recMenuKey = GlobalKey();
   final GlobalKey _recSportKey = GlobalKey();
-  bool _hasSelectedActivityLevel = false;
 
+  /// State Variables: UI State
+  bool _hasSelectedActivityLevel = false;
   int? _userId;
 
+  /// Lifecycle: เริ่มต้น Observers และโหลดข้อมูลผู้ใช้
   @override
   void initState() {
     super.initState();
@@ -37,29 +41,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkActivityLevelStatus();
     });
-    _loadUserInfo(); // ✅ โหลด token / userId
+    _loadUserInfo();
   }
 
+  /// Business Logic: โหลดข้อมูลผู้ใช้จาก Storage
   Future<void> _loadUserInfo() async {
-    // ✅ ใช้ StorageHelper ดึง userId จาก secure storage
     final userIdStr = await StorageHelper.getUserId();
     setState(() {
       _userId = userIdStr != null ? int.tryParse(userIdStr) : null;
     });
   }
 
+  /// Lifecycle: ทำความสะอาด Observers
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
+  /// Lifecycle: จัดการ App Lifecycle State (กลับมาที่แอป)
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _checkActivityLevelStatus();
-      // Refresh ทุก component เมื่อกลับมาที่หน้าจอนี้ (เช่น หลังจากถ่ายรูปอาหาร)
       _refreshKcalbar();
       _refreshListMenu();
       _refreshListSport();
@@ -68,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Business Logic: ตรวจสอบว่าผู้ใช้เลือก Activity Level แล้วหรือยัง
   Future<void> _checkActivityLevelStatus() async {
     final state = _kcalbarKey.currentState;
     if (state != null) {
@@ -80,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Helper: Refresh Kcalbar Component
   void _refreshKcalbar() {
     final state = _kcalbarKey.currentState;
     if (state != null) {
@@ -88,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _checkActivityLevelStatus();
   }
 
+  /// Helper: Refresh ListSport Component
   void _refreshListSport() {
     final state = _listSportKey.currentState;
     if (state != null) {
@@ -95,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Helper: Refresh ListMenu Component
   void _refreshListMenu() {
     final state = _listMenuKey.currentState;
     if (state != null) {
@@ -102,6 +111,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Helper: Refresh RecMenu Component
   void _refreshRecMenu() {
     final state = _recMenuKey.currentState;
     if (state != null) {
@@ -109,6 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Helper: Refresh RecSport Component
   void _refreshRecSport() {
     final state = _recSportKey.currentState;
     if (state != null) {
@@ -118,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Responsive calculations
+    // Responsive: คำนวณขนาดและ spacing ตามขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final bool isSmallScreen = screenWidth < 600;
@@ -132,19 +143,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       backgroundColor: const Color(0xFFDBFFC8),
       body: Column(
         children: [
-          // Navbar บน
+          // Section: Navbar
           NavBarUser(),
 
-          // เนื้อหา Scroll ได้
+          // Section: Scrollable Content
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // แบ่งฝั่งซ้าย/ขวา
+                  // Section: Two Column Layout
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ฝั่งซ้าย
+                      // Section: Left Column
                       Expanded(
                         flex: 1,
                         child: Container(
@@ -158,7 +169,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               SizedBox(height: smallSpacing),
                               ListSportPage(key: _listSportKey),
                               SizedBox(height: smallSpacing),
-                              // ✅ RecSport ในฝั่งซ้าย
+
+                              // Section: Recommended Sport
                               if (_userId != null)
                                 RacSport(
                                   key: _recSportKey,
@@ -181,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ),
                       ),
 
-                      // ฝั่งขวา
+                      // Section: Right Column
                       Expanded(
                         flex: 1,
                         child: Container(
@@ -196,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ListMenuPage(key: _listMenuKey),
                               SizedBox(height: smallSpacing),
 
-                              // ✅ เชื่อม RacMenu เข้ากับ RecommendationService
+                              // Section: Recommended Menu
                               if (_userId != null)
                                 RacMenu(
                                   key: _recMenuKey,
@@ -232,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
                   SizedBox(height: isMobileScreen ? 3 : 5),
 
-                  // Weekly Graph - ✅ Responsive height
+                  // Section: Weekly Graph (Responsive height)
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isMobileScreen ? 2 : 4,
@@ -253,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ],
       ),
 
-      // Navbar ล่าง (กล้อง)
+      // Section: Bottom Navigation Bar (Camera - แสดงเมื่อเลือก Activity Level แล้ว)
       bottomNavigationBar: _hasSelectedActivityLevel
           ? const CameraBottomNavBar()
           : null,

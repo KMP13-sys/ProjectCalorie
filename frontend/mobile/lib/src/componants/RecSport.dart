@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../service/recommend_service.dart';
 
+// SportItem Model
+// โมเดลสำหรับเก็บข้อมูลกีฬา
 class SportItem {
   final int id;
   final String name;
@@ -9,6 +11,7 @@ class SportItem {
 
   SportItem({required this.id, required this.name, required this.calories});
 
+  // Factory: แปลง JSON เป็น SportItem object
   factory SportItem.fromJson(Map<String, dynamic> json) {
     return SportItem(
       id: json['id'] ?? 0,
@@ -18,7 +21,10 @@ class SportItem {
   }
 }
 
+// RacSport Widget
+// แสดงรายการกีฬาที่แนะนำ
 class RacSport extends StatefulWidget {
+  // Parameters
   final int remainingCalories;
   final int refreshTrigger;
   final int userId;
@@ -35,30 +41,32 @@ class RacSport extends StatefulWidget {
 }
 
 class _RacSportState extends State<RacSport> {
+  // State Variables
   bool loading = true;
   List<SportItem> sportList = [];
 
+  // Business Logic: ดึงรายการกีฬาแนะนำจาก API
   Future<void> fetchRecommend() async {
     setState(() => loading = true);
 
     try {
+      // API Call: ดึงรายการกีฬาแนะนำ
       final recommendations =
           await RecommendationService.getSportRecommendations(
             userId: widget.userId,
             topN: 5,
           );
 
+      // Data: แปลงข้อมูลและเลือก 3 รายการแรก
       final items = recommendations
           .map((rec) => SportItem.fromJson(rec))
           .toList();
 
       setState(() {
-        // ✅ เอาแค่ 3 รายการแรก เพราะ API ไม่ส่ง calories มาให้ filter
         sportList = items.take(3).toList();
         loading = false;
       });
     } catch (e) {
-      print("❌ Error: $e");
       setState(() {
         sportList = [];
         loading = false;
@@ -66,12 +74,14 @@ class _RacSportState extends State<RacSport> {
     }
   }
 
+  // Lifecycle: โหลดรายการแนะนำเมื่อเริ่มต้น
   @override
   void initState() {
     super.initState();
     fetchRecommend();
   }
 
+  // Lifecycle: รีเฟรชเมื่อ refreshTrigger เปลี่ยน
   @override
   void didUpdateWidget(covariant RacSport oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -80,18 +90,19 @@ class _RacSportState extends State<RacSport> {
     }
   }
 
-  // Public refresh method ที่จะถูกเรียกจาก parent widget
+  // Public Method: รีเฟรชรายการแนะนำ
   void refresh() {
     fetchRecommend();
   }
 
+  // UI: สร้างหน้ารายการกีฬาแนะนำแบบ Pixel Art Style
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ ปรับขนาด font/padding ตามหน้าจอ
+    // Responsive: ปรับขนาด font/padding/layout ตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double fontSizeTitle = isSmallScreen ? 18 : 24;
     final double fontSizeText = isSmallScreen ? 12 : 16;
@@ -106,7 +117,7 @@ class _RacSportState extends State<RacSport> {
         border: Border.all(color: const Color(0xFF2a2a2a), width: 5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             offset: const Offset(8, 8),
             blurRadius: 0,
           ),
@@ -116,7 +127,7 @@ class _RacSportState extends State<RacSport> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Section: Header
           Center(
             child: Text(
               'RECOMMEND SPORT',
@@ -131,7 +142,7 @@ class _RacSportState extends State<RacSport> {
           ),
           const SizedBox(height: 10),
 
-          // หัวคอลัมน์
+          // Section: Column Headers
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -151,11 +162,11 @@ class _RacSportState extends State<RacSport> {
 
           const SizedBox(height: 10),
 
-          // เส้นคั่น
+          // Decoration: Divider
           Container(height: 3, color: const Color(0xFF2a2a2a)),
           const SizedBox(height: 10),
 
-          // เนื้อหา
+          // Section: Content - รายการกีฬาแนะนำ
           Expanded(
             child: loading
                 ? const Center(
@@ -177,6 +188,7 @@ class _RacSportState extends State<RacSport> {
                     : SingleChildScrollView(
                         child: Column(
                           children: sportList.asMap().entries.map((entry) {
+                            // Data: แต่ละรายการกีฬา
                             final sport = entry.value;
                             return Padding(
                               padding:

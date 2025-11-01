@@ -1,8 +1,9 @@
-// componants/ListSport.dart
 import 'package:flutter/material.dart';
 import '../../service/list_service.dart';
 import '../../models/list_models.dart';
 
+// ListSportPage Widget
+// แสดงรายการกีฬา/กิจกรรมที่ทำในวันนี้
 class ListSportPage extends StatefulWidget {
   const ListSportPage({super.key});
 
@@ -11,17 +12,22 @@ class ListSportPage extends StatefulWidget {
 }
 
 class _ListSportPageState extends State<ListSportPage> {
+  // Dependencies
   final ListService _listService = ListService();
+
+  // State Variables
   List<ActivityItem> _activities = [];
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Lifecycle: โหลดรายการกิจกรรมเมื่อเริ่มต้น
   @override
   void initState() {
     super.initState();
     _loadActivities();
   }
 
+  // Business Logic: โหลดรายการกิจกรรมวันนี้จาก API
   Future<void> _loadActivities() async {
     setState(() {
       _isLoading = true;
@@ -42,18 +48,19 @@ class _ListSportPageState extends State<ListSportPage> {
     }
   }
 
-  // Public refresh method ที่จะถูกเรียกจาก parent widget
+  // Public Method: รีเฟรชรายการกิจกรรม
   void refresh() {
     _loadActivities();
   }
 
+  // UI: สร้างหน้ารายการกีฬาแบบ Pixel Art Style
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ ปรับขนาด font/padding ตามหน้าจอ
+    // Responsive: ปรับขนาด font/padding/layout ตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double fontSizeTitle = isSmallScreen ? 18 : 24;
     final double fontSizeText = isSmallScreen ? 12 : 16;
@@ -68,7 +75,7 @@ class _ListSportPageState extends State<ListSportPage> {
         border: Border.all(color: const Color(0xFF2a2a2a), width: 5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             offset: const Offset(8, 8),
             blurRadius: 0,
           ),
@@ -78,7 +85,7 @@ class _ListSportPageState extends State<ListSportPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Section: Header
           Center(
             child: Text(
               'LIST SPORT',
@@ -93,7 +100,7 @@ class _ListSportPageState extends State<ListSportPage> {
           ),
           const SizedBox(height: 10),
 
-          // หัวคอลัมน์
+          // Section: Column Headers
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -132,11 +139,11 @@ class _ListSportPageState extends State<ListSportPage> {
 
           const SizedBox(height: 10),
 
-          // เส้นคั่น
+          // Decoration: Divider
           Container(height: 3, color: const Color(0xFF2a2a2a)),
           const SizedBox(height: 10),
 
-          // เนื้อหา
+          // Section: Content - รายการกีฬา
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -186,6 +193,7 @@ class _ListSportPageState extends State<ListSportPage> {
                         : SingleChildScrollView(
                             child: Column(
                               children: _activities.asMap().entries.map((entry) {
+                                // Data: แต่ละรายการกิจกรรม
                                 final activity = entry.value;
                                 return Padding(
                                   padding:
@@ -196,7 +204,7 @@ class _ListSportPageState extends State<ListSportPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      // ชื่อกีฬา
+                                      // Data: ชื่อกีฬา
                                       Expanded(
                                         child: Text(
                                           activity.sportName,
@@ -210,7 +218,7 @@ class _ListSportPageState extends State<ListSportPage> {
                                         ),
                                       ),
 
-                                      // เวลา
+                                      // Data: เวลา (นาที)
                                       Text(
                                         '${activity.time}',
                                         style: TextStyle(
@@ -223,7 +231,7 @@ class _ListSportPageState extends State<ListSportPage> {
 
                                       SizedBox(width: isSmallScreen ? 10 : 30),
 
-                                      // แคลอรี่ที่เผาผลาญ
+                                      // Data: แคลอรี่ที่เผาผลาญ
                                       Text(
                                         '-${activity.caloriesBurned}',
                                         style: TextStyle(

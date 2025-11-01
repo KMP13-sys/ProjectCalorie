@@ -1,8 +1,9 @@
-// componants/ListMenu.dart
 import 'package:flutter/material.dart';
 import '../../service/list_service.dart';
 import '../../models/list_models.dart';
 
+// ListMenuPage Widget
+// แสดงรายการอาหารที่กินในวันนี้
 class ListMenuPage extends StatefulWidget {
   const ListMenuPage({super.key});
 
@@ -11,17 +12,22 @@ class ListMenuPage extends StatefulWidget {
 }
 
 class _ListMenuPageState extends State<ListMenuPage> {
+  // Dependencies
   final ListService _listService = ListService();
+
+  // State Variables
   List<MealItem> _meals = [];
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Lifecycle: โหลดรายการอาหารเมื่อเริ่มต้น
   @override
   void initState() {
     super.initState();
     _loadMeals();
   }
 
+  // Business Logic: โหลดรายการอาหารวันนี้จาก API
   Future<void> _loadMeals() async {
     setState(() {
       _isLoading = true;
@@ -42,18 +48,19 @@ class _ListMenuPageState extends State<ListMenuPage> {
     }
   }
 
-  // Public refresh method ที่จะถูกเรียกจาก parent widget
+  // Public Method: รีเฟรชรายการอาหาร
   void refresh() {
     _loadMeals();
   }
 
+  // UI: สร้างหน้ารายการอาหารแบบ Pixel Art Style
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ ปรับขนาด font/padding ตามหน้าจอ
+    // Responsive: ปรับขนาด font/padding/layout ตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double fontSizeTitle = isSmallScreen ? 18 : 24;
     final double fontSizeText = isSmallScreen ? 12 : 16;
@@ -68,7 +75,7 @@ class _ListMenuPageState extends State<ListMenuPage> {
         border: Border.all(color: const Color(0xFF2a2a2a), width: 5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             offset: const Offset(8, 8),
             blurRadius: 0,
           ),
@@ -78,7 +85,7 @@ class _ListMenuPageState extends State<ListMenuPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Section: Header
           Center(
             child: Text(
               'LIST MENU',
@@ -93,7 +100,7 @@ class _ListMenuPageState extends State<ListMenuPage> {
           ),
           const SizedBox(height: 10),
 
-          // หัวคอลัมน์
+          // Section: Column Headers
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -122,11 +129,11 @@ class _ListMenuPageState extends State<ListMenuPage> {
 
           const SizedBox(height: 10),
 
-          // เส้นคั่น
+          // Decoration: Divider
           Container(height: 3, color: const Color(0xFF2a2a2a)),
           const SizedBox(height: 10),
 
-          // เนื้อหา
+          // Section: Content - รายการอาหาร
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -176,6 +183,7 @@ class _ListMenuPageState extends State<ListMenuPage> {
                         : SingleChildScrollView(
                             child: Column(
                               children: _meals.asMap().entries.map((entry) {
+                                // Data: แต่ละรายการอาหาร
                                 final meal = entry.value;
                                 return Padding(
                                   padding:

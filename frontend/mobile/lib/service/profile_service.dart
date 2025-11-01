@@ -1,4 +1,3 @@
-// lib/services/profile_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -7,8 +6,9 @@ import '../config/api_config.dart';
 import 'storage_helper.dart';
 import 'auth_service.dart';
 
+// Service สำหรับจัดการข้อมูล Profile ผู้ใช้
 class ProfileService {
-  // ========== ดึงข้อมูลโปรไฟล์ผู้ใช้ ==========
+  // ดึงข้อมูล Profile ของผู้ใช้
   static Future<UserProfile> getUserProfile(String userId) async {
     try {
       final url = '${ApiConfig.profileUrl}/$userId';
@@ -31,7 +31,7 @@ class ProfileService {
     }
   }
 
-  // ========== ดึงข้อมูลโปรไฟล์ของ User ที่ login อยู่ ==========
+  // ดึงข้อมูล Profile ของผู้ใช้ที่ login อยู่
   static Future<UserProfile> getMyProfile() async {
     try {
       final userId = await StorageHelper.getUserId();
@@ -47,7 +47,7 @@ class ProfileService {
     }
   }
 
-  // ========== อัปเดทรูปโปรไฟล์ ==========
+  // อัปเดทรูป Profile
   static Future<UpdateProfileImageResponse> updateProfileImage({
     required String userId,
     required File imageFile,
@@ -60,11 +60,7 @@ class ProfileService {
       }
 
       final url = Uri.parse('${ApiConfig.profileUrl}/$userId/image');
-      print('[Profile Service] Upload URL: $url');
-      print('[Profile Service] Image path: ${imageFile.path}');
-      print('[Profile Service] File exists: ${await imageFile.exists()}');
 
-      // สร้าง multipart request
       var request = http.MultipartRequest('PUT', url);
       request.headers['Authorization'] = 'Bearer $accessToken';
       request.files.add(
@@ -74,23 +70,14 @@ class ProfileService {
         ),
       );
 
-      print('[Profile Service] Sending request...');
-
-      // ส่ง request
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
-      print('[Profile Service] Response status: ${response.statusCode}');
-      print('[Profile Service] Response body: ${response.body}');
-
       // ถ้า token หมดอายุ ให้ refresh แล้วลองใหม่
       if (response.statusCode == 401 || response.statusCode == 403) {
-        print('[Profile Service] Token expired, refreshing...');
         try {
           accessToken = await AuthService.refreshAccessToken();
-          print('[Profile Service] Token refreshed, retrying upload...');
 
-          // ลองอัพโหลดอีกครั้งด้วย token ใหม่
           request = http.MultipartRequest('PUT', url);
           request.headers['Authorization'] = 'Bearer $accessToken';
           request.files.add(
@@ -102,45 +89,36 @@ class ProfileService {
 
           streamedResponse = await request.send();
           response = await http.Response.fromStream(streamedResponse);
-
-          print('[Profile Service] Retry response status: ${response.statusCode}');
-          print('[Profile Service] Retry response body: ${response.body}');
         } catch (e) {
-          print('[Profile Service] Refresh token error: $e');
           throw Exception('Session expired. Please login again.');
         }
       }
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        print('[Profile Service] Upload successful!');
         return UpdateProfileImageResponse(
           message: data['message'] ?? 'Profile image updated successfully',
           imageUrl: data['image_url'],
         );
       } else {
-        // พยายาม parse error message จาก response
         String errorMessage = 'Failed to update profile image';
         try {
           final error = jsonDecode(response.body);
           errorMessage = error['message'] ?? errorMessage;
-        } catch (e) {
+        } catch (_) {
           errorMessage = 'Server error: ${response.statusCode} - ${response.body}';
         }
-        print('[Profile Service] Upload failed: $errorMessage');
         throw Exception(errorMessage);
       }
-    } on SocketException catch (e) {
-      print('[Profile Service] Network error: $e');
+    } on SocketException {
       throw Exception('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
     } catch (e) {
-      print('[Profile Service] Error: $e');
       if (e is Exception) rethrow;
       throw Exception('เกิดข้อผิดพลาด: ${e.toString()}');
     }
   }
 
-  // ========== อัปเดทข้อมูลโปรไฟล์ ==========
+  // อัปเดทข้อมูล Profile
   static Future<UpdateProfileResponse> updateProfile({
     required String userId,
     double? weight,
@@ -178,7 +156,7 @@ class ProfileService {
     }
   }
 
-  // ========== อัปเดทโปรไฟล์ของ User ที่ login อยู่ ==========
+  // อัปเดทข้อมูล Profile ของผู้ใช้ที่ login อยู่
   static Future<UpdateProfileResponse> updateMyProfile({
     double? weight,
     double? height,
@@ -207,12 +185,11 @@ class ProfileService {
     }
   }
 
-  // ========== อัปเดทรูปโปรไฟล์ของ User ที่ login อยู่ ==========
+  // อัปเดทรูป Profile ของผู้ใช้ที่ login อยู่
   static Future<UpdateProfileImageResponse> updateMyProfileImage({
     required File imageFile,
   }) async {
     try {
-      // ✅ ดึง userId จาก JWT token โดยตรงแทนที่จะใช้จาก storage
       final accessToken = await StorageHelper.getAccessToken();
 
       if (accessToken == null || accessToken.isEmpty) {
@@ -230,13 +207,10 @@ class ProfileService {
           final resp = utf8.decode(base64Url.decode(normalized));
           final payloadMap = json.decode(resp);
 
-          // Backend ใช้ field 'id' ใน JWT
           userId = payloadMap['id']?.toString();
-
-          print('[Profile Service] Decoded userId from token: $userId');
         }
-      } catch (e) {
-        print('[Profile Service] Error decoding token: $e');
+      } catch (_) {
+        // ถ้า decode ไม่ได้ จะใช้ fallback
       }
 
       // ถ้า decode ไม่ได้ ให้ fallback ไปใช้จาก storage
@@ -248,7 +222,6 @@ class ProfileService {
         }
 
         userId = userIdStr;
-        print('[Profile Service] Using userId from storage: $userId');
       }
 
       return await updateProfileImage(

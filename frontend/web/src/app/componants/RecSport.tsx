@@ -10,21 +10,23 @@ interface SportItem {
 
 interface RacSportProps {
   remainingCalories?: number;
-  refreshTrigger?: number; // ตัวนี้จะเปลี่ยนเมื่อแนบรูปใหม่
+  refreshTrigger?: number;
 }
 
+/**
+ * Recommend Sport Component
+ * แสดงกีฬาที่แนะนำตามประวัติการออกกำลังกาย
+ */
 const RacSport: React.FC<RacSportProps> = ({ remainingCalories = 0, refreshTrigger = 0 }) => {
   const [sportList, setSportList] = useState<SportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ดึงข้อมูลแนะนำจาก API
   const fetchRecommend = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // ดึง userId จาก localStorage
       const user = authAPI.getCurrentUser();
       if (!user?.user_id) {
         setError('กรุณาเข้าสู่ระบบ');
@@ -32,11 +34,9 @@ const RacSport: React.FC<RacSportProps> = ({ remainingCalories = 0, refreshTrigg
         return;
       }
 
-      // เรียก API
       const response = await recommendAPI.getSportRecommendations(user.user_id, 5);
 
       if (response.success && response.recommendations) {
-        // แปลง string[] เป็น SportItem[] และแสดงแค่ 3 รายการ
         const items: SportItem[] = response.recommendations
           .map((name, index) => ({
             id: index + 1,
@@ -46,7 +46,6 @@ const RacSport: React.FC<RacSportProps> = ({ remainingCalories = 0, refreshTrigg
 
         setSportList(items);
       } else {
-        // ไม่พบข้อมูลหรือไม่สำเร็จ
         setSportList([]);
         setError(response.message || 'ไม่พบข้อมูลแนะนำ');
       }
@@ -73,15 +72,14 @@ const RacSport: React.FC<RacSportProps> = ({ remainingCalories = 0, refreshTrigg
         RECOMMEND SPORT
       </div>
 
-      {/* หัวคอลัมน์ */}
+      {/* Table Header */}
       <div className="flex justify-between text-[#2a2a2a] text-[15px] font-bold mb-2">
         <span className="flex-1">SPORT</span>
       </div>
 
-      {/* เส้นคั่น */}
       <div className="h-[3px] bg-[#2a2a2a] mb-4" />
 
-      {/* เนื้อหา */}
+      {/* Sport List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-center text-[#2a2a2a] font-bold text-[16px] mt-5">

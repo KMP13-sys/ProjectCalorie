@@ -1,11 +1,6 @@
-// services/adminService.ts
-
 import api from './auth_service';
-import { getNodeApiUrl } from '@/config/api.config';
 
-// ========================================
-// Types (ตรงกับ Backend Response)
-// ========================================
+// ประเภทข้อมูลผู้ใช้
 export type User = {
   user_id: number;
   username: string;
@@ -19,6 +14,7 @@ export type User = {
   last_login_at?: string;
 };
 
+// ประเภทข้อมูลอาหาร
 export type Food = {
   food_id: number;
   food_name: string;
@@ -28,6 +24,7 @@ export type Food = {
   calories: number;
 };
 
+// ประเภทข้อมูล Response
 export type GetUsersResponse = {
   users: User[];
 };
@@ -46,22 +43,20 @@ export type UpdateFoodResponse = {
   message: string;
 };
 
-// ========================================
-// Admin Service (ใช้ axios จาก auth_service)
-// ========================================
+// Service สำหรับ Admin จัดการผู้ใช้และอาหาร
 export const adminService = {
-  // ดึงผู้ใช้ทั้งหมด
+  // ดึงรายชื่อผู้ใช้ทั้งหมด
   getAllUsers: async (): Promise<User[]> => {
     try {
       const response = await api.get<GetUsersResponse>('/api/admin/users');
-      return response.data.users; // Backend ส่งมาในรูป { users: [...] }
+      return response.data.users;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Failed to fetch users';
       throw new Error(errorMessage);
     }
   },
 
-  // ลบผู้ใช้
+  // ลบผู้ใช้ตาม ID
   deleteUser: async (id: number): Promise<DeleteUserResponse> => {
     try {
       const response = await api.delete<DeleteUserResponse>(`/api/admin/users/${id}`);
@@ -72,18 +67,18 @@ export const adminService = {
     }
   },
 
-  // ดึงข้อมูลอาหารทั้งหมด
+  // ดึงรายการอาหารทั้งหมด
   getAllFoods: async (): Promise<Food[]> => {
     try {
       const response = await api.get<GetFoodsResponse>('/api/admin/foods');
-      return response.data.data; // Backend ส่งมาในรูป { data: [...] }
+      return response.data.data;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Failed to fetch foods';
       throw new Error(errorMessage);
     }
   },
 
-  // แก้ไขข้อมูลอาหาร
+  // แก้ไขข้อมูลอาหารตาม ID
   updateFood: async (id: number, data: Partial<Food>): Promise<UpdateFoodResponse> => {
     try {
       const response = await api.put<UpdateFoodResponse>(`/api/admin/foods/${id}`, data);

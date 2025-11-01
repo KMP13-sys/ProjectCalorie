@@ -1,9 +1,6 @@
-// src/app/services/add_activity_service.ts
 import api from './auth_service';
-import { getNodeApiUrl } from '@/config/api.config';
 
-const API_BASE_URL = getNodeApiUrl();
-
+// ประเภทข้อมูลที่ได้จากการบันทึกกิจกรรม
 interface LogActivityResponse {
   success: boolean;
   message: string;
@@ -13,15 +10,14 @@ interface LogActivityResponse {
   total_burned: number;
 }
 
+// ประเภทข้อมูลกีฬา
 interface Sport {
   sport_id: number;
   sport_name: string;
   burn_out: number;
 }
 
-// ========================================
-// Helper Functions
-// ========================================
+// ดึง User ID จาก localStorage
 function getUserId(): number | null {
   if (typeof window === 'undefined') return null;
 
@@ -36,13 +32,9 @@ function getUserId(): number | null {
   }
 }
 
-// ========================================
-// Activity Service
-// ========================================
+// Service สำหรับจัดการกิจกรรมและกีฬา
 export const AddActivityService = {
-  /**
-   * Log an activity/sport session
-   */
+  // บันทึกกิจกรรม/กีฬาที่ทำ
   async logActivity(sportName: string, time: number): Promise<LogActivityResponse> {
     try {
       const userId = getUserId();
@@ -51,18 +43,11 @@ export const AddActivityService = {
         throw new Error('User ID not found. Please login again.');
       }
 
-      console.log('🏃 Calling activity API:', `${API_BASE_URL}/api/activity/${userId}`);
-      console.log('📦 Request body:', { sport_name: sportName, time });
-
-      // ใช้ axios instance จาก auth_service ที่มี interceptor อยู่แล้ว
       const response = await api.post(`/api/activity/${userId}`, {
         sport_name: sportName,
         time: time,
       });
 
-      console.log('📡 Response data:', response.data);
-
-      // แปลง response ให้ตรงกับ interface
       return {
         success: true,
         message: response.data.message || 'Activity logged successfully',
@@ -72,16 +57,12 @@ export const AddActivityService = {
         total_burned: parseFloat(response.data.data?.total_burned) || 0,
       };
     } catch (error: any) {
-      console.error('❌ Error logging activity:', error);
-
       const errorMessage = error.response?.data?.message || error.message || 'Failed to log activity';
       throw new Error(errorMessage);
     }
   },
 
-  /**
-   * Get list of all sports
-   */
+  // ดึงรายการกีฬาทั้งหมด
   async getSportsList(): Promise<Sport[]> {
     try {
       const response = await api.get('/api/sports');
@@ -94,7 +75,6 @@ export const AddActivityService = {
         throw new Error('Unexpected response format');
       }
     } catch (error: any) {
-      console.error('❌ Error fetching sports list:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch sports list');
     }
   },

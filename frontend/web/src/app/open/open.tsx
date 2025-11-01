@@ -3,22 +3,21 @@ import React, { useEffect } from 'react'
 import Image from 'next/image'
 
 interface OpenProps {
-  onComplete?: () => void  // เพิ่ม prop นี้
+  onComplete?: () => void
 }
 
 export default function Open({ onComplete }: OpenProps) {
+  // เปลี่ยนหน้าอัตโนมัติหลังจาก 2 วินาที
   useEffect(() => {
-    // เรียก callback แทนการ push route
     const timer = setTimeout(() => {
       if (onComplete) {
         onComplete()
       }
-    }, 2000) // 2 วินาที
+    }, 2000)
 
     return () => clearTimeout(timer)
   }, [onComplete])
 
-  // ลบ handleSkip function หรือแก้ไขให้เรียก onComplete
   const handleSkip = () => {
     if (onComplete) {
       onComplete()
@@ -27,8 +26,8 @@ export default function Open({ onComplete }: OpenProps) {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#6fa85e] via-[#8bc273] to-[#a8d48f] relative overflow-hidden">
-      {/* Pixel Grid Background Pattern */}
-      <div 
+      {/* พื้นหลังลาย Pixel Grid */}
+      <div
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `
@@ -39,7 +38,7 @@ export default function Open({ onComplete }: OpenProps) {
         }}
       ></div>
 
-      {/* Floating Pixel Clouds */}
+      {/* เมฆลอยแบบ Pixel Art */}
       <div className="absolute top-10 left-10 w-24 h-16 opacity-20">
         <div className="grid grid-cols-6 gap-1">
           {[...Array(24)].map((_, i) => (
@@ -64,23 +63,23 @@ export default function Open({ onComplete }: OpenProps) {
         </div>
       </div>
 
-      {/* Main Content Container */}
+      {/* กล่องเนื้อหาหลัก */}
       <div className="relative z-10">
-        <div 
+        <div
           className="bg-white border-8 border-black p-12 relative"
-          style={{ 
+          style={{
             boxShadow: '12px 12px 0px rgba(0,0,0,0.3)',
             imageRendering: 'pixelated'
           }}
         >
-          {/* Decorative Corner Pixels */}
+          {/* Pixel มุมกล่องตกแต่ง */}
           <div className="absolute top-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
           <div className="absolute top-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
           <div className="absolute bottom-0 left-0 w-6 h-6 bg-[#6fa85e]"></div>
           <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#6fa85e]"></div>
 
           <div className="flex flex-col items-center justify-center gap-6 text-center">
-            {/* Logo with Pixel Border */}
+            {/* โลโก้พร้อมกรอบ Pixel */}
             <div className="relative">
               <div 
                 className="bg-gradient-to-br from-[#a8d48f] to-[#8bc273] border-6 border-black p-4"
@@ -96,12 +95,12 @@ export default function Open({ onComplete }: OpenProps) {
                   priority
                 />
               </div>
-              {/* Sparkle Pixels */}
+              {/* ประกายดาว Pixel */}
               <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-300 animate-ping"></div>
               <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-yellow-300 animate-ping" style={{ animationDelay: '0.5s' }}></div>
             </div>
 
-            {/* Title with Pixel Style */}
+            {/* ชื่อแอป */}
             <div className="relative">
               <h1 
                 className="text-5xl md:text-6xl font-bold text-gray-800 tracking-wider mb-2"
@@ -121,9 +120,9 @@ export default function Open({ onComplete }: OpenProps) {
               </div>
             </div>
 
-            {/* Pixel Loading Text */}
+            {/* ข้อความโหลด */}
             <div className="bg-black border-4 border-[#6fa85e] px-6 py-2">
-              <p 
+              <p
                 className="text-white text-lg font-bold animate-pulse"
                 style={{ fontFamily: 'TA8bit' }}
               >
@@ -131,18 +130,17 @@ export default function Open({ onComplete }: OpenProps) {
               </p>
             </div>
 
-            {/* Pixel Art Loading Bar */}
+            {/* แถบแสดงความคืบหน้า */}
             <div className="w-64">
               <div className="bg-black border-4 border-gray-800 p-2">
                 <div className="bg-gray-900 h-8 relative overflow-hidden">
-                  <div 
+                  <div
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#6fa85e] to-[#a8d48f]"
                     style={{
                       animation: 'pixelLoading 2s ease-in-out',
                       width: '100%'
                     }}
                   >
-                    {/* Pixel shine effect */}
                     <div className="absolute top-0 left-0 w-full h-2 bg-white opacity-40"></div>
                     <div className="absolute bottom-0 left-0 w-full h-2 bg-black opacity-20"></div>
                   </div>
@@ -152,7 +150,7 @@ export default function Open({ onComplete }: OpenProps) {
           </div>
         </div>
 
-        {/* Floating Pixel Stars */}
+        {/* ดาวลอย Pixel */}
         <div className="absolute -top-8 left-1/4 w-4 h-4 bg-yellow-300 animate-bounce"></div>
         <div className="absolute -bottom-8 right-1/4 w-4 h-4 bg-yellow-300 animate-bounce" style={{ animationDelay: '0.3s' }}></div>
       </div>

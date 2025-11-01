@@ -1,12 +1,9 @@
-// lib/src/componants/WeeklyGraph.dart
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../service/kal_service.dart';
 
-/// Widget สำหรับแสดงกราฟแคลอรี่รายสัปดาห์
-/// - ดึงข้อมูลจาก KalService.getWeeklyCalories()
-/// - แสดงผลเหมือนเว็บ: หัวข้อด้านบน + กราฟด้านล่าง
-/// - Responsive ทุกส่วน
+// WeeklyGraph Widget
+// แสดงกราฟแคลอรี่รายสัปดาห์แบบ Line Chart พร้อม Responsive Design
 class WeeklyGraph extends StatefulWidget {
   const WeeklyGraph({super.key});
 
@@ -15,21 +12,19 @@ class WeeklyGraph extends StatefulWidget {
 }
 
 class _WeeklyGraphState extends State<WeeklyGraph> {
-  // ข้อมูลกราฟที่แปลงแล้ว
+  // State Variables
   List<Map<String, dynamic>> weeklyData = [];
-  // สถานะการโหลด
   bool isLoading = true;
-  // ข้อความ error (ถ้ามี)
   String errorMessage = '';
 
+  // Lifecycle: โหลดข้อมูลกราฟเมื่อเริ่มต้น
   @override
   void initState() {
     super.initState();
     _loadWeeklyData();
   }
 
-  // ========== โหลดข้อมูลกราฟรายสัปดาห์ ==========
-
+  // Business Logic: โหลดข้อมูลกราฟรายสัปดาห์จาก API
   Future<void> _loadWeeklyData() async {
     try {
       setState(() {
@@ -37,19 +32,16 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
         errorMessage = '';
       });
 
-      debugPrint('🌐 Fetching weekly calories data...');
-
+      // API Call: ดึงข้อมูลแคลอรี่รายสัปดาห์
       final response = await KalService.getWeeklyCalories();
 
-      debugPrint('✅ Weekly data received: ${response.data.length} items');
-
-      // แปลงข้อมูลจาก API ให้อยู่ในรูปแบบที่ใช้งานได้
+      // Data: แปลงข้อมูลจาก API ให้อยู่ในรูปแบบที่ใช้งานได้
       final formattedData = response.data.map((item) {
-        // แปลงวันที่เป็นชื่อวัน (Mon, Tue, Wed, ...)
+        // แปลงวันที่เป็นชื่อวัน (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
         final date = DateTime.parse(item.date);
         final weekday = date.weekday;
         final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        final dayName = dayNames[weekday - 1]; // weekday starts from 1 (Monday)
+        final dayName = dayNames[weekday - 1];
 
         return {
           'name': dayName,
@@ -62,11 +54,8 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
         weeklyData = formattedData;
         isLoading = false;
       });
-
-      debugPrint('✅ Weekly data loaded successfully');
     } catch (e) {
-      debugPrint('❌ Error loading weekly data: $e');
-
+      // Error: จัดการ error message
       String errorMsg = 'Failed to load weekly data';
 
       if (e.toString().contains('Session expired') ||
@@ -87,13 +76,14 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
     }
   }
 
+  // UI: สร้างกราฟ Line Chart รายสัปดาห์
   @override
   Widget build(BuildContext context) {
-    // ✅ ใช้ MediaQuery เพื่อคำนวณขนาดหน้าจอ
+    // Responsive: คำนวณขนาดหน้าจอ
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ ปรับขนาด responsive ตามหน้าจอ
+    // Responsive: ปรับขนาดทุกส่วนตามหน้าจอ
     final bool isSmallScreen = screenWidth < 400;
     final double chartHeight = isSmallScreen
         ? screenHeight * 0.4
@@ -116,7 +106,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
         ? screenWidth * 0.1
         : screenWidth * 0.12;
 
-    // ========== Loading State ==========
+    // State: Loading
     if (isLoading) {
       return Padding(
         padding: EdgeInsets.symmetric(
@@ -150,7 +140,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
       );
     }
 
-    // ========== Error State ==========
+    // State: Error
     if (errorMessage.isNotEmpty && weeklyData.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(
@@ -219,7 +209,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
       );
     }
 
-    // ========== Empty State ==========
+    // State: Empty data
     if (weeklyData.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(
@@ -264,24 +254,23 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
       );
     }
 
-    // ========== คำนวณข้อมูลสำหรับกราฟ ==========
-
+    // Data: คำนวณข้อมูลสำหรับกราฟ
     final spots = List.generate(weeklyData.length, (index) {
       return FlSpot(index.toDouble(), weeklyData[index]['NetCal'].toDouble());
     });
 
-    // คำนวณผลรวมแคลอรี่ทั้งสัปดาห์
+    // Data: คำนวณผลรวมแคลอรี่ทั้งสัปดาห์
     final totalWeek =
         weeklyData.fold(0, (sum, item) => sum + (item['NetCal'] as int));
 
-    // หา maxValue สำหรับ Y-axis
+    // Data: หา maxValue สำหรับ Y-axis
     final values = weeklyData.map((e) => e['NetCal'] as int).toList();
     final maxValue = values.reduce((a, b) => a > b ? a : b).toDouble();
 
-    // ✅ เหมือนเว็บ: Y-axis เริ่มจาก 0 เสมอ
+    // Chart: Y-axis เริ่มจาก 0 เสมอ
     final minY = 0.0;
 
-    // ✅ คำนวณ interval ก่อน (แบ่งเป็น 4-5 ช่วง)
+    // Chart: คำนวณ interval (แบ่งเป็น 4-5 ช่วง)
     double interval;
     if (maxValue <= 100) {
       interval = 25;
@@ -297,16 +286,8 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
       interval = 1000;
     }
 
-    // ✅ ปัด maxY ขึ้นให้เป็น multiple ของ interval
-    // ตัวอย่าง: maxValue = 711, interval = 200 → maxY = 800
-    // ตัวอย่าง: maxValue = 850, interval = 200 → maxY = 1000
+    // Chart: ปัด maxY ขึ้นให้เป็น multiple ของ interval
     final maxY = ((maxValue / interval).ceil() * interval).toDouble();
-
-    debugPrint('📊 Weekly Data: $weeklyData');
-    debugPrint('📊 Values: $values');
-    debugPrint('📊 Max: $maxValue, Total: $totalWeek, MaxY: $maxY, Interval: $interval');
-
-    // ========== แสดงกราฟ ==========
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -327,7 +308,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
         ),
         child: Column(
           children: [
-            // ✅ หัวข้อด้านบน: แสดงผลรวมแคลอรี่ทั้งสัปดาห์
+            // Section: Header - แสดงผลรวมแคลอรี่ทั้งสัปดาห์
             Padding(
               padding: EdgeInsets.all(padding * 1.5),
               child: Text(
@@ -340,7 +321,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                 textAlign: TextAlign.center,
               ),
             ),
-            // ✅ กราฟ
+            // Section: Line Chart
             Expanded(
               child: Padding(
                 padding: EdgeInsets.all(padding),
@@ -410,7 +391,7 @@ class _WeeklyGraphState extends State<WeeklyGraph> {
                                 style: TextStyle(
                                   color: Colors.black87,
                                   fontWeight: FontWeight.w500,
-                                  fontSize: fontSize * 0.75, // ลดจาก 0.85 เป็น 0.75
+                                  fontSize: fontSize * 0.75,
                                 ),
                               ),
                             );

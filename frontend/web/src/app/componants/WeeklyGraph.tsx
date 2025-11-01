@@ -19,6 +19,11 @@ interface WeeklyChartData {
   date: string;
 }
 
+/**
+ * Weekly Graph Component
+ * แสดงกราฟเส้นแคลอรี่สุทธิที่รับประทานในแต่ละวันของสัปดาห์
+ * รีเฟรชข้อมูลอัตโนมัติทุก 60 วินาที
+ */
 export default function WeeklyGraph() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [weeklyData, setWeeklyData] = useState<WeeklyChartData[]>([]);
@@ -26,7 +31,7 @@ export default function WeeklyGraph() {
   const [error, setError] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // โหลดข้อมูลกราฟรายสัปดาห์
+  // Load weekly calorie data with auto-refresh every 60 seconds
   useEffect(() => {
     const loadWeeklyData = async () => {
       try {
@@ -62,15 +67,11 @@ export default function WeeklyGraph() {
     };
 
     loadWeeklyData();
-
-    // รีเฟรชอัตโนมัติทุก 60 วินาที (เพราะเป็นข้อมูลรายสัปดาห์ไม่ต้องรีเฟรชบ่อยมาก)
     const intervalId = setInterval(loadWeeklyData, 60000);
-
-    // ทำความสะอาด interval เมื่อ component ถูก unmount
     return () => clearInterval(intervalId);
   }, []);
 
-  // จัดการขนาดหน้าจอ
+  // Handle responsive chart dimensions
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
@@ -139,7 +140,7 @@ export default function WeeklyGraph() {
     );
   }
 
-  // ✅ คำนวณผลรวมแคลอรี่ทั้งสัปดาห์
+  // Calculate total weekly calories
   const totalCalories = weeklyData.reduce((sum, item) => sum + item.NetCal, 0);
 
   return (
@@ -148,7 +149,7 @@ export default function WeeklyGraph() {
       className="w-full h-full bg-white rounded-lg p-4"
       style={{ minHeight: '300px' }}
     >
-      {/* ✅ แสดงผลรวมแคลอรี่ทั้งสัปดาห์ */}
+      {/* Weekly Total */}
       <div className="text-center mb-4">
         <h2 className="text-lg font-semibold text-gray-700">
           รวมแคลที่ทานไปทั้งสัปดาห์: <span className="text-green-600">{totalCalories.toLocaleString()}</span> kcal
@@ -169,8 +170,6 @@ export default function WeeklyGraph() {
             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
             <XAxis dataKey="name" stroke="#555" style={{ fontSize: '14px', fontWeight: 500 }} />
             <YAxis stroke="#555" style={{ fontSize: '14px', fontWeight: 500 }} />
-            
-            {/* ✅ แก้ข้อความ tooltip */}
             <Tooltip
               formatter={(value) => [`${value} Kcal`, 'ทานไป']}
               contentStyle={{
@@ -179,10 +178,7 @@ export default function WeeklyGraph() {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               }}
             />
-            
-            {/* ✅ แก้ชื่อ legend */}
             <Legend formatter={() => 'รวมแคลต่อวัน (Kcal)'} />
-
             <Line
               type="monotone"
               dataKey="NetCal"

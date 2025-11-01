@@ -11,21 +11,24 @@ interface MenuItem {
 
 interface RacMenuProps {
   remainingCalories?: number;
-  refreshTrigger?: number; // ตัวนี้จะเปลี่ยนเมื่อแนบรูปใหม่
+  refreshTrigger?: number;
 }
 
+/**
+ * Recommend Menu Component
+ * แสดงเมนูอาหารที่แนะนำตามแคลอรี่ที่เหลือและประวัติการกิน
+ * กรองเฉพาะอาหารที่มีแคลอรี่ไม่เกินที่เหลือ
+ */
 const RacMenu: React.FC<RacMenuProps> = ({ remainingCalories = 0, refreshTrigger = 0 }) => {
   const [menuList, setMenuList] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ดึงข้อมูลแนะนำจาก API
   const fetchRecommend = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // ดึง userId จาก localStorage
       const user = authAPI.getCurrentUser();
       if (!user?.user_id) {
         setError('กรุณาเข้าสู่ระบบ');
@@ -33,11 +36,9 @@ const RacMenu: React.FC<RacMenuProps> = ({ remainingCalories = 0, refreshTrigger
         return;
       }
 
-      // เรียก API
       const response = await recommendAPI.getFoodRecommendations(user.user_id, 5);
 
       if (response.success && response.recommendations) {
-        // แปลง FoodRecommendation เป็น MenuItem และกรองตามแคลอรี่ที่เหลือ
         const items: MenuItem[] = response.recommendations
           .map((rec: FoodRecommendation) => ({
             id: rec.food_id,
@@ -45,11 +46,10 @@ const RacMenu: React.FC<RacMenuProps> = ({ remainingCalories = 0, refreshTrigger
             calories: rec.calories,
           }))
           .filter((item) => remainingCalories === 0 || item.calories <= remainingCalories)
-          .slice(0, 3); // แสดงแค่ 3 รายการ
+          .slice(0, 3);
 
         setMenuList(items);
       } else {
-        // ไม่พบข้อมูลหรือไม่สำเร็จ
         setMenuList([]);
         setError(response.message || 'ไม่พบข้อมูลแนะนำ');
       }
@@ -76,16 +76,15 @@ const RacMenu: React.FC<RacMenuProps> = ({ remainingCalories = 0, refreshTrigger
         RECOMMEND MENU
       </div>
 
-      {/* หัวคอลัมน์ */}
+      {/* Table Header */}
       <div className="flex justify-between text-[#2a2a2a] text-[15px] font-bold mb-2">
         <span className="flex-1">FOOD</span>
         <span className="w-[60px] text-center">KCAL</span>
       </div>
 
-      {/* เส้นคั่น */}
       <div className="h-[3px] bg-[#2a2a2a] mb-4" />
 
-      {/* เนื้อหา */}
+      {/* Menu List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-center text-[#2a2a2a] font-bold text-[16px] mt-5">
