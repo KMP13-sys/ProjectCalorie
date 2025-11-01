@@ -225,3 +225,16 @@ class FoodRecommendationSystem:
                 'remaining_calories': 0,
                 'recommendations': []
             }
+
+if __name__ == "__main__":
+    print("🚀 Starting Food Recommendation System...")
+
+    system = FoodRecommendationSystem()
+    # ทดสอบ connect database
+    try:
+        with system._get_connection() as conn:
+            print("✅ Database connected successfully!")
+    except Exception as e:
+        print("❌ Failed to connect:", e)
+
+
