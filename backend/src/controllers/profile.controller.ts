@@ -19,14 +19,35 @@ const storage = multer.diskStorage({
 
 // ✅ เพิ่มการตรวจสอบประเภทไฟล์
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  console.log('[File Filter] Original filename:', file.originalname);
+  console.log('[File Filter] Mimetype:', file.mimetype);
+  console.log('[File Filter] Extension:', path.extname(file.originalname).toLowerCase());
 
-  if (extname && mimetype) {
+  // รองรับ mimetype ทั้งแบบ image/jpeg และ image/jpg
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp'
+  ];
+
+  const allowedExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+
+  const hasValidExtension = allowedExtensions.test(file.originalname);
+  const hasValidMimetype = allowedMimeTypes.includes(file.mimetype.toLowerCase());
+
+  console.log('[File Filter] Has valid extension:', hasValidExtension);
+  console.log('[File Filter] Has valid mimetype:', hasValidMimetype);
+
+  if (hasValidExtension && hasValidMimetype) {
+    console.log('[File Filter] ✅ File accepted');
     cb(null, true);
   } else {
-    cb(new Error("Only image files (JPEG, JPG, PNG, GIF, WebP) are allowed!"));
+    console.error('[File Filter] ❌ File rejected');
+    console.error('[File Filter] Received mimetype:', file.mimetype);
+    console.error('[File Filter] Received extension:', path.extname(file.originalname));
+    cb(new Error(`Invalid file type. Received: ${file.mimetype}`));
   }
 };
 
@@ -145,13 +166,25 @@ export const updateProfileImage = async (req: Request, res: Response) => {
       image_url: `${req.protocol}://${req.get("host")}/uploads/${imageName}`,
     });
   } catch (error) {
-    console.error("[Update Profile Image] Error:", error);
+    console.error("[Update Profile Image] ============ ERROR ============");
+    console.error("[Update Profile Image] Error type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("[Update Profile Image] Error message:", error instanceof Error ? error.message : String(error));
+    console.error("[Update Profile Image] Error stack:", error instanceof Error ? error.stack : 'No stack trace');
+    console.error("[Update Profile Image] Full error object:", error);
 
     // ลบไฟล์ที่อัปโหลดมาใหม่ถ้าเกิด error
     if (req.file) {
+      console.log("[Update Profile Image] Cleaning up uploaded file:", req.file.filename);
       deleteOldImage(req.file.filename);
     }
 
-    res.status(500).json({ message: "Server error" });
+    // ส่ง error message ที่ละเอียดกลับไปให้ client (เฉพาะ development)
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const errorMessage = error instanceof Error ? error.message : 'Server error';
+
+    res.status(500).json({
+      message: isDevelopment ? `Server error: ${errorMessage}` : "Server error",
+      ...(isDevelopment && { error: String(error) })
+    });
   }
 };
