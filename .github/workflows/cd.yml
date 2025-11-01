@@ -1,0 +1,60 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ coco543 }}
+        password: ${{ dckr_pat_KL4eLyUKG8uU99FF5JXKhb3vt_M }}
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build and push Backend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/backend.dockerfile
+        push: true
+        tags: |
+          ${{ coco543 }}/calories-backend:latest
+          ${{ dckr_pat_KL4eLyUKG8uU99FF5JXKhb3vt_M }}/calories-backend:${{ github.sha }}
+    
+    - name: Build and push Frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend/web
+        file: ./frontend/web/frontend-web.dockerfile
+        push: true
+        tags: |
+          ${{ coco543 }}/calories-frontend:latest
+          ${{ dckr_pat_KL4eLyUKG8uU99FF5JXKhb3vt_M }}/calories-frontend:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    # SSH เข้าเครื่อง server ปลายทาง แล้วสั่ง docker-compose up -d
+    steps:
+    - name: Deploy to production server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ 192.168.56.102 }}
+        username: ${{ coco }}
+        key: ${{ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAUm3dAlKr2yU3IDiCX3viHheWLrKHEp2oylO7sYTx88 tent9@DESKTOP-IIKNEFG }}
+        script: |
+          cd /opt/calories-app
+          docker-compose pull
+          docker-compose up -d
