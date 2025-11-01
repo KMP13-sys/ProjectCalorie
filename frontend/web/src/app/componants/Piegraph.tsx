@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell } from 'recharts';
-import { kalService } from '@/app/services/kal_service';
+import { kalService } from '@/services/kal_service';
 
 interface MacrosData {
   carbs: number;

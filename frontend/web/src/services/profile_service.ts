@@ -1,11 +1,12 @@
 // src/app/services/profile_service.ts
 
 import axios from 'axios';
+import { getNodeApiUrl } from '@/config/api.config';
 
 // ========================================
 // Configuration
 // ========================================
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE_URL = getNodeApiUrl();
 
 // ========================================
 // Types

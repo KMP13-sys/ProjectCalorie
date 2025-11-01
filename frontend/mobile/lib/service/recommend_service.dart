@@ -1,21 +1,12 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'storage_helper.dart';
 import 'auth_service.dart';
+import '../config/api_config.dart';
 
 class RecommendationService {
-  // ✅ Recommendation APIs อยู่ใน Flask server (port 5000) ไม่ใช่ Node.js (port 4000)
-  static String get baseUrl {
-    if (kIsWeb) {
-      // Web: ใช้ localhost
-      return "http://localhost:5000";
-    } else {
-      // Mobile/Desktop: ใช้ localhost (iOS/Desktop) หรือ 10.0.2.2 (Android Emulator)
-      // สำหรับ Android Emulator ให้เปลี่ยนเป็น 10.0.2.2 ด้วยตัวเอง
-      return "http://localhost:5000";
-    }
-  }
+  // ✅ ใช้ Flask URL จาก ApiConfig
+  static String get baseUrl => ApiConfig.flaskUrl;
 
   /// 🍱 ฟังก์ชันดึงข้อมูลแนะนำอาหาร
   static Future<List<Map<String, dynamic>>> getFoodRecommendations({

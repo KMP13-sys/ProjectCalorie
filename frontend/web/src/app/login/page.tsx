@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../context/auth_context';
-import { useUser } from '../context/user_context';
+import { useAuth } from '../../context/auth_context';
+import { useUser } from '../../context/user_context';
 
 export default function LoginPage() {
   const router = useRouter();

@@ -1,6 +1,7 @@
 // services/adminService.ts
 
 import api from './auth_service';
+import { getNodeApiUrl } from '@/config/api.config';
 
 // ========================================
 // Types (ตรงกับ Backend Response)

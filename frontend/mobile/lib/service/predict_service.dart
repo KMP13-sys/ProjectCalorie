@@ -3,19 +3,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:image/image.dart' as img;
 import 'storage_helper.dart';
+import '../config/api_config.dart';
 
 class PredictService {
-  // ใช้ environment variable หรือค่า default
-  static String get baseUrl {
-    // ใช้ค่า default ตาม environment
-    const String defaultUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'http://localhost:5000',
-      //10.13.2.102
-      //10.13.2.112
-    );
-    return defaultUrl;
-  }
+  // ใช้ Flask URL จาก ApiConfig
+  static String get baseUrl => ApiConfig.flaskUrl;
 
   /// ตรวจสอบความคมชัดของภาพ
   static Future<bool> isImageClear(File imageFile) async {

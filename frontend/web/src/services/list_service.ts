@@ -1,5 +1,6 @@
 // ใช้ axios instance จาก auth_service เพื่อใช้ interceptor ร่วมกัน
 import api, { authAPI } from './auth_service';
+import { getNodeApiUrl } from '@/config/api.config';
 
 // ========================================
 // Types สำหรับข้อมูลที่ได้จาก API

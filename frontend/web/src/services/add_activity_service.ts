@@ -1,7 +1,8 @@
 // src/app/services/add_activity_service.ts
 import api from './auth_service';
+import { getNodeApiUrl } from '@/config/api.config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE_URL = getNodeApiUrl();
 
 interface LogActivityResponse {
   success: boolean;

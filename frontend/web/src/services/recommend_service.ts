@@ -2,11 +2,12 @@
 // Purpose: Service for food and sport recommendations
 
 import axios from 'axios';
+import { getFlaskApiUrl } from '@/config/api.config';
 
 // ====================================
 // Configuration
 // ====================================
-const FLASK_API_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://localhost:5000';
+const FLASK_API_URL = getFlaskApiUrl();
 
 // ====================================
 // Type Definitions

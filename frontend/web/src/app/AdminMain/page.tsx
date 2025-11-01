@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import NavbarAdmin from '../componants/NavBarAdmin';
-import { authAPI } from '../services/auth_service';
+import { authAPI } from '../../services/auth_service';
 
 export default function AdminMainPage() {
   const router = useRouter();

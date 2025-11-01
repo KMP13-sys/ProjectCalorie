@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { listAPI, MealItem } from '@/app/services/list_service';
+import { listAPI, MealItem } from '@/services/list_service';
 
 interface ListMenuProps {
   // ไม่ต้องใช้ props แล้ว เพราะดึงข้อมูลจาก API

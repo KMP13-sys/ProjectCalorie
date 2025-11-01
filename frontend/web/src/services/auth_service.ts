@@ -1,5 +1,6 @@
 // src/app/services/auth_service.ts
 import axios from 'axios'
+import { getNodeApiUrl } from '@/config/api.config'
 
 // ========================================
 // Helper: Decode JWT
@@ -24,7 +25,7 @@ function decodeJWT(token: string): any {
 // ========================================
 // Configuration
 // ========================================
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+const API_BASE_URL = getNodeApiUrl()
 
 // ========================================
 // Types (ตรงกับ Backend)

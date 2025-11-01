@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import NavBarAdmin from '../componants/NavBarAdmin';
-import { adminService, Food } from '../services/adminService';
+import { adminService, Food } from '../../services/adminService';
 
 type EditingFood = {
   food_id: number;

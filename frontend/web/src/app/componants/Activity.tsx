@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AddActivityService } from "../services/add_activity_service";
+import { AddActivityService } from "../../services/add_activity_service";
 
 type ActivityProps = {
   onSave: (caloriesBurned: number) => void;

@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import NavBarUser from '../componants/NavBarUser';
-import { profileService, UserProfile } from '../services/profile_service';
-import { authAPI } from '../services/auth_service';
+import { profileService, UserProfile } from '../../services/profile_service';
+import { authAPI } from '../../services/auth_service';
 import { useRouter } from 'next/navigation';
-import { useUser } from '../context/user_context';
+import { useUser } from '../../context/user_context';
 
 // Pixel Grid Background Component
 const PixelGridBackground = () => (
@@ -410,14 +410,14 @@ export default function PixelProfilePage() {
                   className="flex-1 bg-gray-800 text-white border-4 border-black p-4 font-bold text-sm hover:bg-gray-700 transition-colors" 
                   style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
                 >
-                  ◀ BACK
+                  BACK
                 </button>
                 <button 
                   onClick={handleEdit}
                   className="flex-1 bg-[#6fa85e] text-white border-4 border-black p-4 font-bold text-sm hover:bg-[#5a8e3d] transition-colors"
                   style={{ boxShadow: '4px 4px 0 rgba(0,0,0,0.3)', letterSpacing: '1px' }}
                 >
-                  ✎ EDIT
+                  EDIT
                 </button>
                 <button 
                   onClick={handleLogout}
@@ -428,7 +428,7 @@ export default function PixelProfilePage() {
                     letterSpacing: '1px'
                   }}
                 >
-                  LOGOUT ▶
+                  LOGOUT
                 </button>
               </div>
             </div>

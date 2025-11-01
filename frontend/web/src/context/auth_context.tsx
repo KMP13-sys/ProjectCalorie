@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         // fallback ถ้า getCurrentUser() ยังว่าง
         const userData: User = {
-          id: response.userId || 0,
+          user_id: response.userId || 0,
           username: username,
           email: '',
           role: response.role,

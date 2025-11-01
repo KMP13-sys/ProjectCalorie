@@ -12,7 +12,7 @@ import ListSport from '../componants/ListSport';
 import RacMenu from '../componants/RecMenu';
 import RacSport from '../componants/RecSport';
 import WeeklyGraph from '../componants/WeeklyGraph';
-import { kalService } from '../services/kal_service';
+import { kalService } from '../../services/kal_service';
 import Activity from '../componants/Activity';
 
 export default function MainPage() {

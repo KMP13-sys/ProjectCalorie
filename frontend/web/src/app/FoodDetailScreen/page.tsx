@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { saveMeal } from '../services/predict_service';
+import { saveMeal } from '../../services/predict_service';
 import NavBarUser from '../componants/NavBarUser';
 
 interface FoodDetail {

@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import db from "../config/db";
+import fs from "fs";
+import path from "path";
 
 // === DELETE USER by ADMIN ===
 export const deleteUserByAdmin = async (req: Request, res: Response) => {
@@ -11,19 +13,62 @@ export const deleteUserByAdmin = async (req: Request, res: Response) => {
 
     const { id } = req.params;
 
-    // ตรวจสอบว่าผู้ใช้มีอยู่จริงไหม
-    const [rows]: any = await db.query("SELECT * FROM users WHERE user_id = ?", [id]);
+    // ตรวจสอบว่าผู้ใช้มีอยู่จริงไหม และดึงข้อมูลรูปโปรไฟล์
+    const [rows]: any = await db.query("SELECT user_id, image_profile FROM users WHERE user_id = ?", [id]);
     if (rows.length === 0) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // ลบผู้ใช้
-    await db.query("DELETE FROM users WHERE user_id = ?", [id]);
+    const user = rows[0];
+    const imageProfile = user.image_profile;
+
+    // ลบรูปโปรไฟล์ (ถ้ามี)
+    if (imageProfile) {
+      const imagePath = path.join(__dirname, "../../uploads", imageProfile);
+      if (fs.existsSync(imagePath)) {
+        try {
+          fs.unlinkSync(imagePath);
+          console.log(`Deleted profile image: ${imagePath}`);
+        } catch (err) {
+          console.error(`Failed to delete profile image: ${imagePath}`, err);
+        }
+      }
+    }
+
+    // ลบข้อมูลที่เกี่ยวข้องทั้งหมดก่อน (ตาม foreign key constraints)
+    // 1. ลบ MealDetails ที่เกี่ยวข้องกับ Meals ของ user
+    await db.query(`
+      DELETE md FROM MealDetails md
+      INNER JOIN Meals m ON md.meal_id = m.meal_id
+      WHERE m.user_id = ?
+    `, [id]);
+
+    // 2. ลบ Meals
+    await db.query("DELETE FROM Meals WHERE user_id = ?", [id]);
+
+    // 3. ลบ ActivityDetail ที่เกี่ยวข้องกับ Activity ของ user
+    await db.query(`
+      DELETE ad FROM ActivityDetail ad
+      INNER JOIN Activity a ON ad.activity_id = a.activity_id
+      WHERE a.user_id = ?
+    `, [id]);
+
+    // 4. ลบ Activity
+    await db.query("DELETE FROM Activity WHERE user_id = ?", [id]);
+
+    // 5. ลบ DailyCalories
+    await db.query("DELETE FROM DailyCalories WHERE user_id = ?", [id]);
+
+    // 6. ลบ AIAnalysis (ถ้ามี)
+    await db.query("DELETE FROM AIAnalysis WHERE user_id = ?", [id]);
+
+    // 7. สุดท้าย ลบผู้ใช้
+    await db.query("DELETE FROM Users WHERE user_id = ?", [id]);
 
     res.json({ message: "User deleted successfully" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("deleteUserByAdmin error:", err);
+    res.status(500).json({ message: "Internal server error", error: err });
   }
 };
 

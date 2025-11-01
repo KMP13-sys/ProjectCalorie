@@ -2,8 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { useUser } from '../context/user_context';
+import { useUser } from '../../context/user_context';
 
 export default function NavBarUser() {
   const router = useRouter();

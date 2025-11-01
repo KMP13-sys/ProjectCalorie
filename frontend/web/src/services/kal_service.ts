@@ -1,11 +1,12 @@
 // src/app/services/kal_service.ts
 
 import api from './auth_service'
+import { getNodeApiUrl } from '@/config/api.config'
 
 // ========================================
 // Configuration
 // ========================================
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+const API_BASE_URL = getNodeApiUrl()
 const DAILY_API_URL = `${API_BASE_URL}/api/daily`
 
 // ========================================

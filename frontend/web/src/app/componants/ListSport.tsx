@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { listAPI, ActivityItem } from '@/app/services/list_service';
+import { listAPI, ActivityItem } from '@/services/list_service';
 
 interface ListSportProps {
   // ไม่ต้องใช้ props แล้ว เพราะดึงข้อมูลจาก API

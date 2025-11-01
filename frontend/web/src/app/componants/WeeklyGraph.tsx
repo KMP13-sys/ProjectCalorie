@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import kalService, { DailyCalorieData } from '../services/kal_service';
+import kalService, { DailyCalorieData } from '../../services/kal_service';
 
 interface WeeklyChartData {
   name: string;

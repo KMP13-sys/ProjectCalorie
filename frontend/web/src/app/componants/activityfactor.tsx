@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { kalService } from '../services/kal_service';
+import { kalService } from '../../services/kal_service';
 
 interface ActivityFactorButtonProps {
   onSaved?: (level: number, label: string) => void;

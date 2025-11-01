@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import NavBarAdmin from '../componants/NavBarAdmin';
-import { adminService, User } from '../services/adminService';
+import { adminService, User } from '../../services/adminService';
 
 export default function AboutUserPage() {
   const router = useRouter();

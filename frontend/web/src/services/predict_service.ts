@@ -1,6 +1,8 @@
 // File: frontend/web/src/app/services/predict_service.ts
 // Purpose: Service to interact with the Flask API for food prediction and meal saving
 
+import { getFlaskApiUrl } from '@/config/api.config';
+
 // ============================================
 // Types & Interfaces
 // ============================================
@@ -57,7 +59,7 @@ export interface ApiErrorResponse {
 // Configuration
 // ============================================
 
-const FLASK_API_BASE_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://127.0.0.1:5000';
+const FLASK_API_BASE_URL = getFlaskApiUrl();
 
 // ============================================
 // Helper Functions

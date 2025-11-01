@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { kalService, CalorieStatus } from '../services/kal_service';
+import { kalService, CalorieStatus } from '../../services/kal_service';
 
 interface KcalBarProps {
   progressColor?: string;

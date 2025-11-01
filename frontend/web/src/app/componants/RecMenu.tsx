@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import recommendAPI, { FoodRecommendation } from '@/app/services/recommend_service';
-import { authAPI } from '@/app/services/auth_service';
+import recommendAPI, { FoodRecommendation } from '@/services/recommend_service';
+import { authAPI } from '@/services/auth_service';
 
 interface MenuItem {
   id: number;

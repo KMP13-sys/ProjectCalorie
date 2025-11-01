@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../context/auth_context';
+import { useAuth } from '../../context/auth_context';
 
 export default function NavBarAdmin() {
   const router = useRouter();
