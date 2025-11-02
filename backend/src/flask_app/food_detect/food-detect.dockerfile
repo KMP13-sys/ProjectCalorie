@@ -8,8 +8,9 @@ WORKDIR /app
 
 # ติดตั้ง library ระบบที่จำเป็นสำหรับ OpenCV / Torch / Pillow
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # ติดตั้ง Python dependencies ที่จำเป็นโดยตรง

@@ -1,34 +1,39 @@
-# Build stage
-FROM node:20-alpine AS builder
+# Flutter development environment
+FROM ubuntu:22.04
 
-# Install essential build tools
-RUN apk add --no-cache python3 make g++ \
-    && apk add --no-cache git
+# Install essential tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    unzip \
+    xz-utils \
+    zip \
+    libglu1-mesa \
+    openjdk-11-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up Flutter
+ENV FLUTTER_HOME=/opt/flutter
+ENV PATH=$FLUTTER_HOME/bin:$PATH
+
+# Download and install Flutter
+RUN git clone https://github.com/flutter/flutter.git -b stable $FLUTTER_HOME && \
+    flutter doctor && \
+    flutter channel stable && \
+    flutter upgrade && \
+    flutter config --enable-web
 
 WORKDIR /app
 
-# Install dependencies
-COPY ./frontend/package*.json ./
-RUN npm install
+# Copy Flutter project files
+COPY pubspec.yaml pubspec.lock ./
+RUN flutter pub get
 
-# Copy source code
+# Copy the rest of the application
 COPY . .
 
-# Environment setup
-ENV NEXT_DISABLE_ESLINT=true
-ENV NODE_ENV=development
-ENV EXPO_CLI_VERSION=7.3.0
+# Expose Flutter web port
+EXPOSE 8080
 
-# Install Expo CLI
-RUN npm install -g expo
-
-# Install app dependencies
-RUN npm install
-
-# Expose development port
-EXPOSE 19000
-EXPOSE 19001
-EXPOSE 19002
-
-# Start development server
-CMD ["npm", "start"]
+# Start Flutter web server
+CMD ["flutter", "run", "-d", "web-server", "--web-hostname", "0.0.0.0", "--web-port", "8080"]
