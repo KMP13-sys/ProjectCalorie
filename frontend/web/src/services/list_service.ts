@@ -28,13 +28,14 @@ export const listAPI = {
   getTodayMeals: async (): Promise<TodayMealsResponse> => {
     try {
       const user = authAPI.getCurrentUser();
+      const userId = user?.id ?? user?.user_id;
 
-      if (!user || !user.id) {
+      if (!user || !userId) {
         throw new Error('กรุณาเข้าสู่ระบบก่อนใช้งาน');
       }
 
       const response = await api.get<TodayMealsResponse>(
-        `/api/daily/meals/${user.id}`
+        `/api/daily/meals/${userId}`
       );
 
       return response.data;
@@ -53,13 +54,14 @@ export const listAPI = {
   getTodayActivities: async (): Promise<TodayActivitiesResponse> => {
     try {
       const user = authAPI.getCurrentUser();
+      const userId = user?.id ?? user?.user_id;
 
-      if (!user || !user.id) {
+      if (!user || !userId) {
         throw new Error('กรุณาเข้าสู่ระบบก่อนใช้งาน');
       }
 
       const response = await api.get<TodayActivitiesResponse>(
-        `/api/daily/activities/${user.id}`
+        `/api/daily/activities/${userId}`
       );
 
       return response.data;

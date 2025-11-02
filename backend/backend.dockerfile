@@ -33,7 +33,6 @@ COPY --from=builder /app/.env ./.env
 
 # เพิ่มโฟลเดอร์ uploads
 RUN mkdir -p ./src/uploads
-COPY --from=builder /app/src/uploads ./src/uploads
 
 # Add wait-for script (รอ MySQL ก่อนเริ่ม API)
 RUN apk add --no-cache netcat-openbsd

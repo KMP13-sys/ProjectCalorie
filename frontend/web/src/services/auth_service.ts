@@ -22,7 +22,8 @@ const API_BASE_URL = getNodeApiUrl()
 
 // ประเภทข้อมูลผู้ใช้
 export interface User {
-  user_id: number
+  id?: number;
+  user_id?: number
   username: string
   email: string
   role: 'user' | 'admin'

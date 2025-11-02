@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { saveMeal } from '../../services/predict_service';
@@ -18,23 +18,38 @@ interface FoodDetail {
 }
 
 /**
- * Food Detail Screen Component
- * แสดงรายละเอียดอาหารที่ AI ทำนาย พร้อมข้อมูลโภชนาการ
- * ผู้ใช้สามารถบันทึกอาหารเข้าสู่ระบบได้
+ * Wrapper หลัก — ใช้ Suspense ครอบไว้
  */
 export default function FoodDetailScreen() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center font-mono">Loading...</div>
+        </div>
+      }
+    >
+      <FoodDetailContent />
+    </Suspense>
+  );
+}
+
+/**
+ * Component หลักที่ใช้ useSearchParams
+ */
+function FoodDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [errorDialog, setErrorDialog] = useState<{show: boolean, title: string, message: string}>({
+  const [errorDialog, setErrorDialog] = useState<{ show: boolean; title: string; message: string }>({
     show: false,
     title: '',
     message: ''
   });
   const [foodDetail, setFoodDetail] = useState<FoodDetail | null>(null);
 
-  // Load food details from URL parameters and sessionStorage
+  // โหลดข้อมูลอาหารจาก URL + sessionStorage
   useEffect(() => {
     if (foodDetail) return;
 
@@ -63,10 +78,9 @@ export default function FoodDetailScreen() {
     }
   }, [searchParams, router, foodDetail]);
 
-  // Save meal data to database
+  // ฟังก์ชันบันทึกมื้ออาหาร
   const handleSaveMeal = async () => {
     if (isSaving || !foodDetail) return;
-
     setIsSaving(true);
 
     try {
@@ -82,9 +96,7 @@ export default function FoodDetailScreen() {
         }
       }
 
-      if (!userId) {
-        throw new Error('User not logged in. Please login first.');
-      }
+      if (!userId) throw new Error('User not logged in. Please login first.');
 
       const result = await saveMeal(userId, {
         food_id: foodDetail.foodId,
@@ -137,27 +149,31 @@ export default function FoodDetailScreen() {
         }
       `}</style>
 
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(to bottom, #f0f4f0 0%, #e8ede8 100%)',
-        backgroundAttachment: 'fixed',
-        position: 'relative'
-      }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: 'linear-gradient(to bottom, #f0f4f0 0%, #e8ede8 100%)',
+          backgroundAttachment: 'fixed',
+          position: 'relative'
+        }}
+      >
         {/* Background Pattern */}
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0.05,
-          pointerEvents: 'none',
-          backgroundImage: `
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            opacity: 0.05,
+            pointerEvents: 'none',
+            backgroundImage: `
             repeating-linear-gradient(0deg, #000 0px, #000 1px, transparent 1px, transparent 20px),
             repeating-linear-gradient(90deg, #000 0px, #000 1px, transparent 1px, transparent 20px)
           `,
-          zIndex: 0
-        }}></div>
+            zIndex: 0
+          }}
+        ></div>
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           <NavBarUser />
@@ -165,7 +181,6 @@ export default function FoodDetailScreen() {
 
         <div className="py-8 px-6" style={{ position: 'relative', zIndex: 1 }}>
           <div className="max-w-5xl mx-auto">
-
             <button
               onClick={handleBack}
               className="mb-6 p-2 bg-white border-4 border-black hover:bg-gray-100 transition-all hover:translate-x-1 hover:translate-y-1 relative z-10"
@@ -188,217 +203,115 @@ export default function FoodDetailScreen() {
               </svg>
             </button>
 
-          {/* Main Content */}
-          <div className="bg-white border-8 border-black p-8 relative" style={{
-            boxShadow: '12px 12px 0px rgba(0,0,0,0.3)',
-            imageRendering: 'pixelated'
-          }}>
-            <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
-            <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
-            <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
+            {/* Main Content */}
+            <div
+              className="bg-white border-8 border-black p-8 relative"
+              style={{
+                boxShadow: '12px 12px 0px rgba(0,0,0,0.3)',
+                imageRendering: 'pixelated'
+              }}
+            >
+              <div className="absolute -top-2 -left-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
+              <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
+              <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-[#A3EBA1] border-2 border-black"></div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-
-              {/* Food Image */}
-              <div className="flex flex-col items-center">
-                <div
-                  className="w-full max-w-[400px] h-[350px] relative border-6 border-black bg-gray-100"
-                  style={{
-                    boxShadow: '8px 8px 0px rgba(0,0,0,0.2)',
-                    imageRendering: 'pixelated'
-                  }}
-                >
-                  <div className="absolute -top-1 -left-1 w-3 h-3 bg-gray-800"></div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-800"></div>
-                  <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-gray-800"></div>
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-gray-800"></div>
-
-                  <Image
-                    src={foodDetail.imageUrl}
-                    alt={foodDetail.foodName}
-                    fill
-                    className="object-cover"
-                    style={{ imageRendering: 'auto' }}
-                  />
-                </div>
-              </div>
-
-              {/* Food Information */}
-              <div className="flex flex-col">
-                <div
-                  className="bg-gradient-to-r from-[#A3EBA1] to-[#8bc273] border-4 border-black p-3 mb-4 relative"
-                  style={{
-                    boxShadow: '6px 6px 0px rgba(0,0,0,0.2)',
-                    fontFamily: 'TA8bit'
-                  }}
-                >
-                  <h2 className="text-2xl font-bold text-center text-gray-800" style={{
-                    textShadow: '2px 2px 0px rgba(255,255,255,0.5)'
-                  }}>
-                    ★ What food is this ★
-                  </h2>
-                </div>
-
-                <div
-                  className="border-6 border-black bg-gradient-to-b from-[#FFFFCC] to-[#FFFFAA] p-4 mb-6"
-                  style={{
-                    boxShadow: '6px 6px 0px rgba(0,0,0,0.2)',
-                    fontFamily: 'TA8bit',
-                    color: '#333333',
-                    fontSize: '35px'
-                  }}
-                >
-                  <InfoBox text={`Menu: ${foodDetail.foodName}`} />
-                  <InfoBox text={`Carbs: ${foodDetail.carbs} g`} />
-                  <InfoBox text={`Fat: ${foodDetail.fat} g`} />
-                  <InfoBox text={`Protein: ${foodDetail.protein} g`} />
-                  <InfoBox text={`Calories: ${foodDetail.calories} kcal`} />
-                  <InfoBox text={`Confidence: ${(foodDetail.confidence * 100).toFixed(1)}%`} />
-                </div>
-
-                <div className="flex justify-center">
-                  <button
-                    onClick={handleSaveMeal}
-                    disabled={isSaving}
-                    className={`w-full max-w-[250px] h-[55px] border-6 border-black font-mono font-bold text-xl transition-all relative ${
-                      isSaving
-                        ? 'bg-[#CCCCCC] cursor-not-allowed'
-                        : 'bg-gradient-to-b from-[#A3EBA1] to-[#8bc273] hover:translate-x-2 hover:translate-y-2 active:translate-x-1 active:translate-y-1'
-                    }`}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                {/* Food Image */}
+                <div className="flex flex-col items-center">
+                  <div
+                    className="w-full max-w-[400px] h-[350px] relative border-6 border-black bg-gray-100"
                     style={{
-                      boxShadow: isSaving ? '3px 3px 0px rgba(0,0,0,0.3)' : '8px 8px 0px rgba(0,0,0,0.3)',
-                      textShadow: '2px 2px 0px rgba(0,0,0,0.2)'
+                      boxShadow: '8px 8px 0px rgba(0,0,0,0.2)',
+                      imageRendering: 'pixelated'
                     }}
                   >
-                    {!isSaving && (
-                      <>
-                        <div className="absolute -top-1 -left-1 w-2 h-2 bg-white"></div>
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-white"></div>
-                      </>
-                    )}
+                    <div className="absolute -top-1 -left-1 w-3 h-3 bg-gray-800"></div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-800"></div>
+                    <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-gray-800"></div>
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-gray-800"></div>
 
-                    <span className="flex items-center justify-center gap-2">
-                      {isSaving ? 'SAVING...' : 'SAVE'}
-                    </span>
-                  </button>
+                    <Image src={foodDetail.imageUrl} alt={foodDetail.foodName} fill className="object-cover" style={{ imageRendering: 'auto' }} />
+                  </div>
                 </div>
 
-                <div className="flex justify-center mt-4 gap-1">
-                  <div className="w-3 h-3 bg-[#A3EBA1] border border-black"></div>
-                  <div className="w-3 h-3 bg-[#8bc273] border border-black"></div>
-                  <div className="w-3 h-3 bg-[#A3EBA1] border border-black"></div>
-                  <div className="w-3 h-3 bg-[#8bc273] border border-black"></div>
-                  <div className="w-3 h-3 bg-[#A3EBA1] border border-black"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                {/* Food Information */}
+                <div className="flex flex-col">
+                  <div
+                    className="bg-gradient-to-r from-[#A3EBA1] to-[#8bc273] border-4 border-black p-3 mb-4 relative"
+                    style={{
+                      boxShadow: '6px 6px 0px rgba(0,0,0,0.2)',
+                      fontFamily: 'TA8bit'
+                    }}
+                  >
+                    <h2
+                      className="text-2xl font-bold text-center text-gray-800"
+                      style={{
+                        textShadow: '2px 2px 0px rgba(255,255,255,0.5)'
+                      }}
+                    >
+                      ★ What food is this ★
+                    </h2>
+                  </div>
 
-      {/* Success Dialog */}
-      {showSuccessDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div
-            className="bg-gradient-to-b from-[#a8d48f] to-[#8bc273] border-8 border-black w-full max-w-md relative"
-            style={{
-              boxShadow: '8px 8px 0px rgba(0,0,0,0.3)',
-              imageRendering: 'pixelated'
-            }}
-          >
-            <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
-            <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
-            <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
-            <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
+                  <div
+                    className="border-6 border-black bg-gradient-to-b from-[#FFFFCC] to-[#FFFFAA] p-4 mb-6"
+                    style={{
+                      boxShadow: '6px 6px 0px rgba(0,0,0,0.2)',
+                      fontFamily: 'TA8bit',
+                      color: '#333333',
+                      fontSize: '35px'
+                    }}
+                  >
+                    <InfoBox text={`Menu: ${foodDetail.foodName}`} />
+                    <InfoBox text={`Carbs: ${foodDetail.carbs} g`} />
+                    <InfoBox text={`Fat: ${foodDetail.fat} g`} />
+                    <InfoBox text={`Protein: ${foodDetail.protein} g`} />
+                    <InfoBox text={`Calories: ${foodDetail.calories} kcal`} />
+                    <InfoBox text={`Confidence: ${(foodDetail.confidence * 100).toFixed(1)}%`} />
+                  </div>
 
-            <div className="p-8 text-center relative">
-              <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
-                <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'TA8bit' }}>
-                  ★ MEAL SAVED! ★
-                </h3>
-              </div>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={handleSaveMeal}
+                      disabled={isSaving}
+                      className={`w-full max-w-[250px] h-[55px] border-6 border-black font-mono font-bold text-xl transition-all relative ${
+                        isSaving ? 'bg-[#CCCCCC] cursor-not-allowed' : 'bg-gradient-to-b from-[#A3EBA1] to-[#8bc273] hover:translate-x-2 hover:translate-y-2 active:translate-x-1 active:translate-y-1'
+                      }`}
+                      style={{
+                        boxShadow: isSaving ? '3px 3px 0px rgba(0,0,0,0.3)' : '8px 8px 0px rgba(0,0,0,0.3)',
+                        textShadow: '2px 2px 0px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      {!isSaving && (
+                        <>
+                          <div className="absolute -top-1 -left-1 w-2 h-2 bg-white"></div>
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-white"></div>
+                        </>
+                      )}
 
-              <div className="flex justify-center mb-4">
-                <div className="relative w-16 h-16">
-                  <div className="grid grid-cols-5 gap-0">
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
+                      <span className="flex items-center justify-center gap-2">{isSaving ? 'SAVING...' : 'SAVE'}</span>
+                    </button>
+                  </div>
 
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-                    <div className="w-3 h-3 bg-yellow-300"></div>
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
-
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-                    <div className="w-3 h-3 bg-yellow-300"></div>
-                    <div className="w-3 h-3 bg-yellow-200"></div>
-                    <div className="w-3 h-3 bg-yellow-300"></div>
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-                    <div className="w-3 h-3 bg-yellow-300"></div>
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
-
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-yellow-400"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
-                    <div className="w-3 h-3 bg-transparent"></div>
+                  <div className="flex justify-center mt-4 gap-1">
+                    <div className="w-3 h-3 bg-[#A3EBA1] border border-black"></div>
+                    <div className="w-3 h-3 bg-[#8bc273] border border-black"></div>
+                    <div className="w-3 h-3 bg-[#A3EBA1] border border-black"></div>
+                    <div className="w-3 h-3 bg-[#8bc273] border border-black"></div>
+                    <div className="w-3 h-3 bg-[#A3EBA1] border border-black"></div>
                   </div>
                 </div>
               </div>
-
-              <div className="bg-white border-4 border-black p-4 mb-6">
-                <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
-                  MEAL SAVED!
-                </p>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'TA8bit' }}>
-                  Your meal has been recorded successfully!
-                </p>
-              </div>
-
-              <p className="text-xs text-white animate-pulse" style={{ fontFamily: 'TA8bit', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
-                Returning to main page...
-              </p>
             </div>
+
+            {/* success และ error dialog */}
+            {showSuccessDialog && <SuccessDialog />}
+            {errorDialog.show && (
+              <ErrorDialog title={errorDialog.title} message={errorDialog.message} onClose={() => setErrorDialog({ show: false, title: '', message: '' })} />
+            )}
           </div>
         </div>
-      )}
-
-      {/* Error Dialog */}
-      {errorDialog.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-          <div
-            className="bg-[#FFC1C1] border-4 border-black p-4 max-w-sm w-full"
-            style={{
-              boxShadow: '6px 6px 0px rgba(0,0,0,0.4)',
-              fontFamily: 'TA8bit'
-            }}
-          >
-            <div className="bg-[#FF6B6B] py-2 mb-4 -mx-4 -mt-4 px-4">
-              <div className="font-bold text-center text-white">{errorDialog.title}</div>
-            </div>
-
-            <div className="text-center mb-5 text-sm">{errorDialog.message}</div>
-
-            <div className="flex justify-center">
-              <button
-                onClick={() => setErrorDialog({show: false, title: '', message: ''})}
-                className="w-[100px] py-2 bg-white border-[3px] border-black font-bold hover:bg-gray-100 transition-colors"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       </div>
     </>
   );
@@ -408,12 +321,112 @@ function InfoBox({ text, icon }: { text: string; icon?: string }) {
   return (
     <div
       className="w-full bg-gradient-to-r from-[#FFFFDD] to-[#FFFFB3] border-2 border-[#FFD700] py-2 my-1 font-mono text-sm font-bold flex items-center justify-between px-4"
-      style={{
-        boxShadow: '2px 2px 0px rgba(0,0,0,0.1)'
-      }}
+      style={{ boxShadow: '2px 2px 0px rgba(0,0,0,0.1)' }}
     >
       {icon && <span className="text-lg mr-2">{icon}</span>}
       <span className="flex-1 text-left">{text}</span>
+    </div>
+  );
+}
+
+function SuccessDialog() {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+      <div
+        className="bg-gradient-to-b from-[#a8d48f] to-[#8bc273] border-8 border-black w-full max-w-md relative"
+        style={{
+          boxShadow: '8px 8px 0px rgba(0,0,0,0.3)',
+          imageRendering: 'pixelated'
+        }}
+      >
+        <div className="absolute top-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
+        <div className="absolute top-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
+        <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#6fa85e]"></div>
+        <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#6fa85e]"></div>
+
+        <div className="p-8 text-center relative">
+          <div className="bg-[#6fa85e] border-b-4 border-black -mx-8 -mt-8 mb-6 py-3">
+            <h3 className="text-2xl font-bold text-white tracking-wider" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.3)', fontFamily: 'TA8bit' }}>
+              ★ MEAL SAVED! ★
+            </h3>
+          </div>
+
+          <div className="flex justify-center mb-4">
+            <div className="relative w-16 h-16">
+              <div className="grid grid-cols-5 gap-0">
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-yellow-400"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-yellow-400"></div>
+                <div className="w-3 h-3 bg-yellow-300"></div>
+                <div className="w-3 h-3 bg-yellow-400"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+
+                <div className="w-3 h-3 bg-yellow-400"></div>
+                <div className="w-3 h-3 bg-yellow-300"></div>
+                <div className="w-3 h-3 bg-yellow-200"></div>
+                <div className="w-3 h-3 bg-yellow-300"></div>
+                <div className="w-3 h-3 bg-yellow-400"></div>
+
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-yellow-400"></div>
+                <div className="w-3 h-3 bg-yellow-300"></div>
+                <div className="w-3 h-3 bg-yellow-400"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-yellow-400"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+                <div className="w-3 h-3 bg-transparent"></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border-4 border-black p-4 mb-6">
+            <p className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'TA8bit' }}>
+              MEAL SAVED!
+            </p>
+            <p className="text-sm text-gray-600" style={{ fontFamily: 'TA8bit' }}>
+              Your meal has been recorded successfully!
+            </p>
+          </div>
+
+          <p className="text-xs text-white animate-pulse" style={{ fontFamily: 'TA8bit', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+            Returning to main page...
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorDialog({ title, message, onClose }: { title: string; message: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
+      <div
+        className="bg-[#FFC1C1] border-4 border-black p-4 max-w-sm w-full"
+        style={{
+          boxShadow: '6px 6px 0px rgba(0,0,0,0.4)',
+          fontFamily: 'TA8bit'
+        }}
+      >
+        <div className="bg-[#FF6B6B] py-2 mb-4 -mx-4 -mt-4 px-4">
+          <div className="font-bold text-center text-white">{title}</div>
+        </div>
+
+        <div className="text-center mb-5 text-sm">{message}</div>
+
+        <div className="flex justify-center">
+          <button onClick={onClose} className="w-[100px] py-2 bg-white border-[3px] border-black font-bold hover:bg-gray-100 transition-colors">
+            OK
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
