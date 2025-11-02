@@ -1,9 +1,9 @@
+version: "3.8"
 services:
   # ใช้ image ของ MySQL 8.0 และสร้าง database ชื่อ calories_app
   mysql:
-    build:
-      context: ./backend/src/config
-      dockerfile: db.dockerfile
+    image: mysql:8.0.35
+    platform: linux/amd64
     container_name: db 
     environment:
       MYSQL_ROOT_PASSWORD: 1234
@@ -14,10 +14,12 @@ services:
       - db_data:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - backend-network
 
   # สร้าง container จาก Dockerfile ที่อยู่ใน backend/
   # ใช้ environment เชื่อม MySQL ผ่านชื่อ service mysql
@@ -36,29 +38,67 @@ services:
       DB_PORT: 3306
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000"]
+      test: ["CMD-SHELL", "curl -fsS --connect-timeout 5 http://localhost:4000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
     depends_on:
       - mysql
     command: npm run start
+    networks:
+      - backend-network
+      - frontend-network
 
   # รัน Next.js ผ่าน NGINX ที่พอร์ต 3000
-  frontend:
+  frontend-web:
     build:
       context: ./frontend/web
-      dockerfile: frontend-web.dockerfile 
+      dockerfile: frontend-web.dockerfile
     container_name: frontend-web
     ports:
       - "80:3000"
-    restart: unless-stopped
     depends_on:
       - backend
+    networks:
+      - frontend-network
+  
+  frontend-mobile:
+    build:
+      context: ./frontend/mobile
+      dockerfile: frontend-mobile.dockerfile
+    container_name: frontend-mobile
+    ports:
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+    networks:
+      - frontend-network
+
+  food-detect:
+    build:
+      context: ./backend
+      dockerfile: src/flask_app/food_detect/food-detect.dockerfile
+    container_name: food-detect
+    ports:
+      - "5000:5000"
+    networks:
+      - backend-network
+
+  recommendation:
+    build:
+      context: ./backend
+      dockerfile: src/flask_app/recommendation/recommendation.dockerfile
+    container_name: recommendation
+    ports:
+      - "5001:5001"
+    networks:
+      - backend-network
 
 volumes:
   db_data:
 
 networks:
   frontend-network:
+    driver: bridge
   backend-network:
+    driver: bridge

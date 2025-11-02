@@ -40,7 +40,12 @@ next-env.d.ts
 # Docker files
 *.dockerfile
 docker-compose.yml
+docker-compose.yaml
 .dockerignore
 
 # Visual Studio Code
 .vscode/
+
+# Python files
+__pycache__
+*.pyc
