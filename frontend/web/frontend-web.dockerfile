@@ -1,26 +1,26 @@
 # =========================
 #  FRONTEND WEB (Next.js)
 # =========================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
-
-# Copy and install dependencies
-COPY ./frontend/web/package*.json ./
+COPY package*.json ./
 RUN npm install
-
-# Copy all source code and build
-COPY . ./
-RUN npm run build --no-lint
+COPY . .
+RUN npm run build
 
 # ===========
 #  RUN STAGE
 # ===========
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app ./
+# Copy only necessary files
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
 CMD ["npm", "start"]

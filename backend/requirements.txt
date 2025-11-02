@@ -1,0 +1,26 @@
+# Web Framework
+Flask==3.0.0
+flask-cors==4.0.0
+
+# Authentication & Security
+PyJWT==2.8.0
+python-dotenv==1.0.0
+
+# Database
+mysql-connector-python==8.2.0
+
+# Deep Learning & Computer Vision
+torch==2.1.1
+torchvision==0.16.1
+Pillow==10.1.0
+
+# Machine Learning & Data Science
+numpy==1.26.2
+scikit-learn==1.3.2
+
+# Utilities
+Werkzeug==3.0.1
+
+# Optional: Development & Testing
+pytest==7.4.3
+pytest-flask==1.3.0
