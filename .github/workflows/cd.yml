@@ -38,8 +38,28 @@ jobs:
         file: ./frontend/web/frontend-web.dockerfile
         push: true
         tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/calories-frontend:latest
-          ${{ secrets.DOCKERHUB_USERNAME }}/calories-frontend:${{ github.sha }}
+          ${{ secrets.NEW_DOCKERHUB_USER }}/calories-frontend:latest
+          ${{ secrets.NEW_DOCKERHUB_USER }}/calories-frontend:${{ github.sha }}
+
+    - name: Build and push Recommendation Service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend/src/flask_app/recommendation
+        file: ./backend/src/flask_app/recommendation/recommendation.dockerfile
+        push: true
+        tags: |
+          ${{ secrets.NEW_DOCKERHUB_USER }}/calories-recommendation:latest
+          ${{ secrets.NEW_DOCKERHUB_USER }}/calories-recommendation:${{ github.sha }}
+
+    - name: Build and push Food Detection Service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend/src/flask_app/food_detect
+        file: ./backend/src/flask_app/food_detect/food-detect.dockerfile
+        push: true
+        tags: |
+          ${{ secrets.NEW_DOCKERHUB_USER }}/calories-food-detect:latest
+          ${{ secrets.NEW_DOCKERHUB_USER }}/calories-food-detect:${{ github.sha }}
 
   deploy:
     needs: build-and-push
