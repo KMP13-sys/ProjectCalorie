@@ -44,7 +44,7 @@ jobs:
     - name: Build and push Recommendation Service
       uses: docker/build-push-action@v5
       with:
-        context: ./backend/src/flask_app/recommendation
+        context: ./backend
         file: ./backend/src/flask_app/recommendation/recommendation.dockerfile
         push: true
         tags: |
@@ -54,7 +54,7 @@ jobs:
     - name: Build and push Food Detection Service
       uses: docker/build-push-action@v5
       with:
-        context: ./backend/src/flask_app/food_detect
+        context: ./backend
         file: ./backend/src/flask_app/food_detect/food-detect.dockerfile
         push: true
         tags: |
